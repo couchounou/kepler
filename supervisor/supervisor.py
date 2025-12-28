@@ -1,4 +1,3 @@
-import asyncio
 import sys
 import time
 from datetime import datetime
@@ -19,8 +18,6 @@ from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 from influxdb_client.client.exceptions import InfluxDBError
 from lte_init import test_ping, ready_or_connect, wlan0_has_internet
-from bleak import BleakScanner
-from bleak import BleakClient
 SHELLY_MAC = "30:30:F9:E7:07:76"
 SHELLY_MAC_2 = "7C:C6:B6:57:53:BA"
 POINTS = []
@@ -168,80 +165,6 @@ def read_loop(interval_minutes=0.1):
         else:
             print("No internet connection. Points not sent.")
         time.sleep(interval_minutes * 60)
-
-
-def decode_shelly_htg3(data: bytes):
-    """
-    Format Shelly H&T Gen3 (BLE advertising)
-    """
-    # Température : int16, centi-degrés
-    temp = int.from_bytes(data[6:8], "little", signed=True) / 100
-
-    # Humidité : uint16, centi-pourcent
-    hum = int.from_bytes(data[8:10], "little") / 100
-
-    # Batterie : pourcentage
-    battery = data[10]
-
-    return temp, hum, battery
-
-
-def decode_shelly_htg3(data: bytes):
-    """
-    Décodage du broadcast BLE du Shelly H&T Gen3.
-    data : manufacturer_data (bytes)
-    """
-    # Température : octets 4-5 (little endian), centi°C
-    temp = int.from_bytes(data[4:6], "little", signed=True) / 100
-    # Humidité : octets 6-7 (little endian), centi-%
-    hum = int.from_bytes(data[6:8], "little") / 100
-    # Batterie : octet 8
-    battery = data[8]  # généralement 0-100%
-    return temp, hum, battery
-
-
-def detection_callback(device, advertisement_data):
-    # Filtrer uniquement ton Shelly
-    if device.address != SHELLY_MAC:
-        return
-
-    # manufacturer_data peut contenir plusieurs clefs
-    for _, data in advertisement_data.manufacturer_data.items():
-        print(data)
-        if len(data) >= 9:  # vérifier longueur
-            temp, hum, batt = decode_shelly_htg3(data)
-            print(f"{time.strftime('%Y-%m-%d %H:%M:%S')} | "
-                  f"🌡️ {temp:.2f} °C | 💧 {hum:.1f} % | 🔋 {batt} %")
-
-
-async def smain():
-    scanner = BleakScanner(detection_callback)
-    await scanner.start()
-    print("🔍 Écoute BLE Shelly H&T Gen3 en continu…")
-    try:
-        while True:
-            await asyncio.sleep(3600)
-            # boucle infinie, callback déclenché à chaque trame
-    finally:
-        await scanner.stop()
-
-# UUID des caractéristiques (exemple générique, à ajuster pour H&T Gen3)
-UUID_TEMP = "00002a6e-0000-1000-8000-00805f9b34fb"  # Temperature
-UUID_HUM = "00002a6f-0000-1000-8000-00805f9b34fb"   # Humidity
-UUID_BATT = "00002a19-0000-1000-8000-00805f9b34fb"  # Battery Level
-
-
-async def read_shelly():
-    async with BleakClient(SHELLY_MAC) as client:
-        temp_bytes = await client.read_gatt_char(UUID_TEMP)
-        hum_bytes = await client.read_gatt_char(UUID_HUM)
-        batt_bytes = await client.read_gatt_char(UUID_BATT)
-
-        temp = int.from_bytes(temp_bytes, "little", signed=True) / 100
-        hum = int.from_bytes(hum_bytes, "little") / 100
-        batt = int(batt_bytes[0])
-
-        print(f"🌡️ {temp:.1f} °C | 💧 {hum:.1f} % | 🔋 {batt} %")
 
 
 if __name__ == "__main__":
