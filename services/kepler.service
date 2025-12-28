@@ -1,0 +1,17 @@
+[Unit]
+Description=Supervision kepler
+After=git-update.service
+
+[Service]
+Type=idle
+User=root
+ExecStart=/home/$USER/kepler/venv/bin/python3 /home/$USER/supervisor/supervisor.py
+WorkingDirectory=/home/$USER/kepler/supervisor/
+StandardOutput=journal
+StandardError=journal
+Restart=always
+RestartSec=60
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,6 @@
+# Fichiers à ignorer par git
+__pycache__/
+*.pyc
+.env
+.venv
+*.cfg
