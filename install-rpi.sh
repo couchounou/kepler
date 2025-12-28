@@ -11,6 +11,7 @@ sudo apt-get install -y git
 git clone https://github.com/couchounou/kepler.git
 sudo git config --global --add safe.directory ~/kepler
 cd ~/kepler
+/usr/bin/git pull
 sudo apt-get install -y python3-pip
 python3 -m venv ./venv
 source venv/bin/activate
