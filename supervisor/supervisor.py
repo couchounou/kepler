@@ -14,8 +14,7 @@ try:
     import adafruit_ads1x15.ads1x15 as ADSbase
     from adafruit_ads1x15.analog_in import AnalogIn
 except:
-    logging.warning("Failed to import Adafruit ADS1115 libraries. Ensure they are installed.")
-    pass
+    logging.warning("Failed to import Adafruit ")
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 from influxdb_client.client.exceptions import InfluxDBError
@@ -31,7 +30,7 @@ TOKEN = None
 SERVER = None
 INTERVAL = 30  # seconds
 
-client = None 
+client = None
 
 write_api = client.write_api(write_options=SYNCHRONOUS)
 
@@ -55,7 +54,7 @@ class SiteStatus:
         Update the status dictionary with new values for existing keys.
 
         Parameters:
-            **kwargs: Arbitrary keyword arguments 
+            **kwargs: Arbitrary keyword arguments
             where each key corresponds to a field in the status dictionary,
             and each value is converted to a float
             and assigned to the corresponding key.
@@ -81,7 +80,7 @@ class SiteStatus:
                    all status fields as float values,
                    and timestamped with the current UTC time.
         """
-        
+
         point = Point("site_metrics").tag("site_id", self.site_id)
         for field, value in self.status.items():
             point = point.field(field, float(value))
@@ -221,7 +220,7 @@ async def smain():
     print("🔍 Écoute BLE Shelly H&T Gen3 en continu…")
     try:
         while True:
-            await asyncio.sleep(3600)  
+            await asyncio.sleep(3600)
             # boucle infinie, callback déclenché à chaque trame
     finally:
         await scanner.stop()
