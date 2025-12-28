@@ -30,11 +30,12 @@ TEMPLATE=~/kepler/services/git-update.service
 TARGET=/etc/systemd/system/git-update.service
 sudo sed "s|\$USER|${REAL_USER}|g" "$TEMPLATE" | sudo tee "$TARGET" > /dev/null
 
+sudo chmod +x ~/kepler/git-update.sh
 TEMPLATE=~/kepler/git-update.sh
 TARGET=/home/$REAL_USER/git-update.sh
 sudo sed "s|\$USER|${REAL_USER}|g" "$TEMPLATE" | sudo tee "$TARGET" > /dev/null
 
-sudo chmod +x ~/git-update.sh
+
 sudo systemctl daemon-reload
 sudo systemctl enable git-update.service
 sudo systemctl start git-update.service
