@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# priotité wifi 
+sudo nmcli connection modify "wlan0" ipv4.route-metric 100
+sudo nmcli connection modify "eth0" ipv4.route-metric 200
+
+
 cd ~
 mkdir -p kepler
 sudo apt-get install -y git
