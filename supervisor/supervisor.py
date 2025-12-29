@@ -27,10 +27,9 @@ ORG = None
 TOKEN = None
 SERVER = None
 INTERVAL = 30  # seconds
+CLIENT = None
+WRITE_API = None
 
-client = None
-
-write_api = client.write_api(write_options=SYNCHRONOUS)
 
 
 class SiteStatus:
@@ -94,7 +93,7 @@ SiteStatus_instance = SiteStatus(site_id="site_001")
 
 def influx_write_pts(points: list, bucket: str = BUCKET) -> None:
     try:
-        write_api.write(org=ORG, bucket=bucket, record=points)
+        WRITE_API.write(org=ORG, bucket=bucket, record=points)
         return True
     except InfluxDBError as e:
         if e.response.status == 401 or e.response.status == 403:
@@ -177,9 +176,10 @@ if __name__ == "__main__":
         SERVER = Config.get("influx", "server")
         BUCKET = Config.get("influx", "bucket")
         ORG = Config.get("influx", "org")
-    client = InfluxDBClient(
+    CLIENT = InfluxDBClient(
         url=SERVER,
         token=TOKEN,
         org=ORG
     )
+    WRITE_API = CLIENT.write_api(write_options=SYNCHRONOUS)
     read_loop()
