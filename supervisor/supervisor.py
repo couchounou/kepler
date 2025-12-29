@@ -12,8 +12,10 @@ try:
     import adafruit_ads1x15.ads1115 as ADS
     import adafruit_ads1x15.ads1x15 as ADSbase
     from adafruit_ads1x15.analog_in import AnalogIn
+    ADAFRUIT_AVAILABLE = True
 except:
     logging.warning("Failed to import Adafruit ")
+    ADAFRUIT_AVAILABLE = False
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 from influxdb_client.client.exceptions import InfluxDBError
@@ -130,7 +132,7 @@ def read_all_ads1115_channels():
         AnalogIn(ads, 2),
         AnalogIn(ads, 3)
     ]
-    print("channel voltages:", [ch.voltage for ch in channels])
+    logging.info("channel voltages: %s", [ch.voltage for ch in channels])
     SiteStatus_instance.update(
         voltage_1=channels[0].voltage * 3.965,
         voltage_2=channels[1].voltage * 3.98,
@@ -145,8 +147,11 @@ def read_loop(interval_minutes=0.1):
     every 'interval_minutes' minutes and prints the results.
     """
     while True:
-        read_all_ads1115_channels()
-        print(SiteStatus_instance)
+        if ADAFRUIT_AVAILABLE:
+            read_all_ads1115_channels()
+        else:
+            read_all_ads1115_channels_fake()
+        logging.info(SiteStatus_instance)
         POINTS.append(SiteStatus_instance.to_point())
         SiteStatus_instance.reset()
 
@@ -159,17 +164,26 @@ def read_loop(interval_minutes=0.1):
         if connected:
             if influx_write_pts(POINTS):
                 POINTS.clear()
-                print("Points successfully written to InfluxDB.")
+                logging.info("Points successfully written to InfluxDB.")
             else:
-                print("Failed to write points to InfluxDB.")
+                logging.warning("Failed to write points to InfluxDB.")
         else:
-            print("No internet connection. Points not sent.")
+            logging.warning("No internet connection. Points not sent.")
         time.sleep(interval_minutes * 60)
 
 
 if __name__ == "__main__":
     cfgname = sys.argv[0][:-2] + "cfg"
     Config = configparser.ConfigParser()
+    logging.basicConfig(
+        filename=os.path.join(
+            os.path.abspath(sys.argv[0][:-2] + "log")
+        ),
+        filemode="a",
+        format="%(asctime)s,%(msecs)03d %(name)s %(levelname)s %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+        level=logging.INFO,
+    )
     if os.path.exists(cfgname):
         Config.read(cfgname)
         TOKEN = Config.get("influx", "token")
