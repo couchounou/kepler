@@ -6,7 +6,6 @@ Wants=network-online.target
 [Service]
 Type=oneshot
 User=$USER
-Group=$USER
 ExecStart=/home/$USER/kepler/git-update.sh
 WorkingDirectory=/home/$USER/kepler
 StandardOutput=journal

@@ -21,6 +21,7 @@ deactivate
 
 # utilisateur cible
 REAL_USER=$(logname 2>/dev/null || echo "$SUDO_USER")
+echo "Configuring services for user: $REAL_USER"
 
 TEMPLATE=~/kepler/services/kepler.service
 TARGET=/etc/systemd/system/kepler.service
