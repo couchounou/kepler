@@ -173,12 +173,15 @@ def read_loop(interval_minutes=0.1):
 
 
 if __name__ == "__main__":
-    cfgname = sys.argv[0][:-2] + "cfg"
+    # Place config and log in the parent of the parent directory of the script
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    parent_dir = os.path.dirname(script_dir)
+    grandparent_dir = os.path.dirname(parent_dir)
+    cfgname = os.path.join(grandparent_dir, "supervisor.cfg")
     Config = configparser.ConfigParser()
+    logname = os.path.join(grandparent_dir, "supervisor.log")
     logging.basicConfig(
-        filename=os.path.join(
-            os.path.abspath(sys.argv[0][:-2] + "log")
-        ),
+        filename=logname,
         filemode="a",
         format="%(asctime)s,%(msecs)03d %(name)s %(levelname)s %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
