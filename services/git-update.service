@@ -16,7 +16,7 @@ ExecStart=/home/$USER/kepler/git-update.sh
 
 # 🔁 Retry en cas d’échec
 Restart=on-failure
-RestartSec=30
+RestartSec=15
 
 StandardOutput=journal
 StandardError=journal
