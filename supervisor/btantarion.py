@@ -38,7 +38,7 @@ def decode_zone2_3(trame_hex):
 
 def notification_handler(handle, data):
     hex_str = data.hex()
-    
+    print(f"Notification reçue (handle: {handle}): {hex_str}")
     # Identifier la zone selon la longueur
     if len(hex_str) == 22*2:  # Zone 1 (22 caractères ASCII)
         courant, tension, capacite, energie = decode_zone1(hex_str)
