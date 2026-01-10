@@ -67,14 +67,14 @@ async def main():
                     print(f"  Char: {char.uuid}, Handle: {char.handle}, Properties: {char.properties}")
         async with BleakClient(address) as client:
             # Souscrire à toutes les notifications sur le handle 0x000f
-            await client.start_notify(0x000d, notification_handler)
-            print("En écoute des notifications sur handle 0x000f... (Ctrl+C pour arrêter)")
+            await client.start_notify(0x000e, notification_handler)
+            print("En écoute des notifications sur handle 0x000e... (Ctrl+C pour arrêter)")
             try:
                 while True:
                     await asyncio.sleep(1)  # boucle d'attente
             except KeyboardInterrupt:
                 print("Arrêt des notifications...")
-                await client.stop_notify(0x000d)
+                await client.stop_notify(0x000e)
     except Exception as e:
         print(f"Erreur Bleak : {e}")
 
