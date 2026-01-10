@@ -32,8 +32,8 @@ INTERVAL = 30  # seconds
 CLIENT = None
 WRITE_API = None
 
-logging.basicConfig(stream=sys.stdout, level=logging.INFO)
-logging.info("Test: Logging is working on Raspberry Pi console.")
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+logging.debug("Test: Logging is working at DEBUG level.")
 
 
 class SiteStatus:
@@ -177,6 +177,7 @@ def read_loop(interval_minutes=0.1):
 
 
 if __name__ == "__main__":
+    logging.debug("Test: Entered main block, logging should be visible.")
     # Place config and log in the parent of the parent directory of the script
     script_dir = os.path.dirname(os.path.abspath(__file__))
     parent_dir = os.path.dirname(script_dir)
