@@ -187,6 +187,9 @@ if __name__ == "__main__":
         SERVER = Config.get("influx", "server")
         BUCKET = Config.get("influx", "bucket")
         ORG = Config.get("influx", "org")
+    else:
+        logging.error("Config file %s not found, exiting", cfgname)
+        sys.exit(1)
     CLIENT = InfluxDBClient(
         url=SERVER,
         token=TOKEN,
