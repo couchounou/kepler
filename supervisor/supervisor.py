@@ -6,12 +6,21 @@ import random
 import configparser
 import os
 
+
+for handler in logging.root.handlers[:]:
+    logging.root.removeHandler(handler)
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+    console_handler.setFormatter(formatter)
+    logging.root.addHandler(console_handler)
+    logging.root.setLevel(logging.DEBUG)
+    logging.debug("Test: Logging is forcibly set to console.")
+
 try:
     import board
     import busio
     import adafruit_ads1x15.ads1115 as ADS
-    import adafruit_ads1x15.ads1x15 as ADSbase
-    from adafruit_ads1x15.analog_in import AnalogIn
     ADAFRUIT_AVAILABLE = True
 except:
     logging.warning("Failed to import Adafruit ")
