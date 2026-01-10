@@ -11,12 +11,12 @@ def parse_notification(data: bytearray):
     s = data.decode('ascii')
     
     # extraire les valeurs en fonction de la longueur connue
-    courant = int(s[0:4])       # 0000 → 0 A
-    tension = int(s[4:8])/10    # 1280 → 12.8 V
-    capacity = int(s[8:12])     # 0051 → 51 Ah
-    energie = int(s[12:18])     # 000614 → 640 Wh
+    courant = int(s[0:3])       # 0000 → 0 A
+    tension = int(s[3:8])/10    # 1280 → 12.8 V
+    capacity = int(s[10:14])     # 0051 → 51 Ah
+    energie = int(s[14:18])     # 000614 → 640 Wh
 
-    print(f"Zone 1 - Courant: {courant} A, Tension: {tension} V, Ah: {capacity}, Wh: {energie}")
+    print(f"rrr - Courant: {courant} A, Tension: {tension} V, Ah: {capacity}, Wh: {energie}")
 
 def decode_zone1(trame_hex):
     """
