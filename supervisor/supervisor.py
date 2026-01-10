@@ -180,13 +180,7 @@ if __name__ == "__main__":
     cfgname = os.path.join(grandparent_dir, "supervisor.cfg")
     Config = configparser.ConfigParser()
     logname = os.path.join(grandparent_dir, "supervisor.log")
-    logging.basicConfig(
-        filename=logname,
-        filemode="a",
-        format="%(asctime)s,%(msecs)03d %(name)s %(levelname)s %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-        level=logging.INFO,
-    )
+    logging.basicConfig(stream=sys.stdout, level=logging.INFO)
     if os.path.exists(cfgname):
         Config.read(cfgname)
         TOKEN = Config.get("influx", "token")
