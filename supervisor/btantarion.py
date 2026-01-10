@@ -70,6 +70,7 @@ async def main():
                         print(f"  Char: {char.uuid}, Handle: {char.handle}, Properties: {char.properties}")
             async with BleakClient(address) as client:
                 # Souscrire à toutes les notifications sur le handle 0x000f
+                print("Connexion établie. Souscription aux notifications...")
                 await client.start_notify(0x0029, notification_handler)
                 print("En écoute des notifications sur handle 0x0025... (Ctrl+C pour arrêter)")
                 try:
