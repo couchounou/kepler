@@ -56,9 +56,7 @@ def notification_handler(handle, data):
     if len(hex_str) == 22*2:  # Zone 1 (22 caractères ASCII)
         parse_notification(data)
     elif len(hex_str) == 20*2:  # Zone 2+3 (20 caractères ASCII)
-        puissance_p, tension_p, courant_s, tension_s, puissance_s = decode_zone2_3(hex_str)
-        print(f"Zone 2 - Panneau : Puissance={puissance_p} W, Tension={tension_p} V")
-        print(f"Zone 3 - Sortie : Courant={courant_s} A, Tension={tension_s} V, Puissance={puissance_s} W")
+        parse_notification(data)
     else:
         print("Trame inconnue :", hex_str)
 
