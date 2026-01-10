@@ -58,6 +58,7 @@ def notification_handler(handle, data):
 async def main():
     address = "00:0d:18:05:53:24"  # Remplace par l'adresse BLE de ton MPPT
     address = "00:0d:18:05:53:24"  # Remplace par l'adresse BLE de ton MPPT
+    notify_uuid = "f000ffc2-0451-4000-b000-000000000000"  # candidate principale
     try:
         async with BleakClient(address) as client:
             # Affichage des services
@@ -67,14 +68,14 @@ async def main():
                     print(f"  Char: {char.uuid}, Handle: {char.handle}, Properties: {char.properties}")
         async with BleakClient(address) as client:
             # Souscrire à toutes les notifications sur le handle 0x000f
-            await client.start_notify(0x000e, notification_handler)
-            print("En écoute des notifications sur handle 0x000e... (Ctrl+C pour arrêter)")
+            await client.start_notify(0x0025, notification_handler)
+            print("En écoute des notifications sur handle 0x0025... (Ctrl+C pour arrêter)")
             try:
                 while True:
                     await asyncio.sleep(1)  # boucle d'attente
             except KeyboardInterrupt:
                 print("Arrêt des notifications...")
-                await client.stop_notify(0x000e)
+                await client.stop_notify(0x0025)
     except Exception as e:
         print(f"Erreur Bleak : {e}")
 
