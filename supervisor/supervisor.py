@@ -1,7 +1,7 @@
+import logging
 import sys
 import time
 from datetime import datetime, UTC
-import logging
 import random
 import configparser
 import os
@@ -32,6 +32,7 @@ INTERVAL = 30  # seconds
 CLIENT = None
 WRITE_API = None
 
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
 
 class SiteStatus:
@@ -182,7 +183,6 @@ if __name__ == "__main__":
     cfgname = os.path.join(grandparent_dir, "supervisor.cfg")
     Config = configparser.ConfigParser()
     logname = os.path.join(grandparent_dir, "supervisor.log")
-    logging.basicConfig(stream=sys.stdout, level=logging.INFO)
     if os.path.exists(cfgname):
         Config.read(cfgname)
         TOKEN = Config.get("influx", "token")
