@@ -5,6 +5,19 @@ from bleak import BleakClient
 # Fonctions de décodage
 # =========================
 
+
+def parse_notification(data: bytearray):
+    # convertir bytes ASCII en string
+    s = data.decode('ascii')
+    
+    # extraire les valeurs en fonction de la longueur connue
+    courant = int(s[0:4])       # 0000 → 0 A
+    tension = int(s[4:8])/10    # 1280 → 12.8 V
+    capacity = int(s[8:12])     # 0051 → 51 Ah
+    energie = int(s[12:18])     # 000614 → 640 Wh
+
+    print(f"Zone 1 - Courant: {courant} A, Tension: {tension} V, Ah: {capacity}, Wh: {energie}")
+
 def decode_zone1(trame_hex):
     """
     Zone 1: Batterie / Charge
@@ -41,8 +54,7 @@ def notification_handler(handle, data):
     print(f"Notification reçue (handle: {handle}): {hex_str}")
     # Identifier la zone selon la longueur
     if len(hex_str) == 22*2:  # Zone 1 (22 caractères ASCII)
-        courant, tension, capacite, energie = decode_zone1(hex_str)
-        print(f"Zone 1 - Batterie : Courant={courant} A, Tension={tension} V, Capacité={capacite} Ah, Énergie={energie} Wh")
+        parse_notification(data)
     elif len(hex_str) == 20*2:  # Zone 2+3 (20 caractères ASCII)
         puissance_p, tension_p, courant_s, tension_s, puissance_s = decode_zone2_3(hex_str)
         print(f"Zone 2 - Panneau : Puissance={puissance_p} W, Tension={tension_p} V")
