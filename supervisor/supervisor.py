@@ -1,29 +1,24 @@
-import logging
-import sys
 import time
 from datetime import datetime, UTC
 import random
 import configparser
 import os
 
-
-for handler in logging.root.handlers[:]:
-    logging.root.removeHandler(handler)
-    console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-    console_handler.setFormatter(formatter)
-    logging.root.addHandler(console_handler)
-    logging.root.setLevel(logging.DEBUG)
-    logging.debug("Test: Logging is forcibly set to console.")
+import time
+from datetime import datetime, UTC
+import random
+import configparser
+import os
 
 try:
     import board
     import busio
     import adafruit_ads1x15.ads1115 as ADS
+    import adafruit_ads1x15.ads1x15 as ADSbase
+    from adafruit_ads1x15.analog_in import AnalogIn
     ADAFRUIT_AVAILABLE = True
 except:
-    logging.warning("Failed to import Adafruit ")
+    print("Failed to import Adafruit ")
     ADAFRUIT_AVAILABLE = False
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
@@ -108,14 +103,14 @@ def influx_write_pts(points: list, bucket: str) -> None:
         return True
     except InfluxDBError as e:
         if e.response.status == 401 or e.response.status == 403:
-            logging.warning("[influx] insufficient rights to %s", bucket)
+            print(f"[influx] insufficient rights to {bucket}")
         else:
-            logging.warning("[influx] influx error %r", e)
+            print(f"[influx] influx error {e}")
     except Exception as e:
         if hasattr(e, "reason"):
-            logging.warning("[influx] for bucket :%s : %s", bucket, e.reason)
+            print(f"[influx] for bucket :{bucket} : {e.reason}")
         else:
-            logging.warning("[influx] for bucket: %s: %s", bucket, e)
+            print(f"[influx] for bucket: {bucket}: {e}")
     return False
 
 
@@ -141,7 +136,7 @@ def read_all_ads1115_channels():
         AnalogIn(ads, 2),
         AnalogIn(ads, 3)
     ]
-    logging.info("channel voltages: %s", [ch.voltage for ch in channels])
+    print(f"channel voltages: {[ch.voltage for ch in channels]}")
     SiteStatus_instance.update(
         voltage_1=channels[0].voltage * 3.965,
         voltage_2=channels[1].voltage * 3.98,
@@ -156,13 +151,13 @@ def read_loop(interval_minutes=0.1):
     every 'interval_minutes' minutes and prints the results.
     """
     while True:
-        logging.info("try Reading ADS1115 channels...")
+        print("try Reading ADS1115 channels...")
         if ADAFRUIT_AVAILABLE:
             read_all_ads1115_channels()
         else:
-            logging.info("Using fake ADS1115 readings.")
+            print("Using fake ADS1115 readings.")
             read_all_ads1115_channels_fake()
-        logging.info(SiteStatus_instance)
+        print(SiteStatus_instance)
         POINTS.append(SiteStatus_instance.to_point())
         SiteStatus_instance.reset()
 
@@ -175,16 +170,15 @@ def read_loop(interval_minutes=0.1):
         if connected:
             if influx_write_pts(POINTS, BUCKET):
                 POINTS.clear()
-                logging.info("Points successfully written to InfluxDB.")
+                print("Points successfully written to InfluxDB.")
             else:
-                logging.warning("Failed to write points to InfluxDB.")
+                print("Failed to write points to InfluxDB.")
         else:
-            logging.warning("No internet connection. Points not sent.")
+            print("No internet connection. Points not sent.")
         time.sleep(interval_minutes * 60)
 
 
 if __name__ == "__main__":
-    logging.debug("Test: Entered main block, logging should be visible.")
     # Place config and log in the parent of the parent directory of the script
     script_dir = os.path.dirname(os.path.abspath(__file__))
     parent_dir = os.path.dirname(script_dir)
@@ -192,6 +186,7 @@ if __name__ == "__main__":
     cfgname = os.path.join(grandparent_dir, "supervisor.cfg")
     Config = configparser.ConfigParser()
     logname = os.path.join(grandparent_dir, "supervisor.log")
+    # logging removed
     if os.path.exists(cfgname):
         Config.read(cfgname)
         TOKEN = Config.get("influx", "token")
@@ -199,7 +194,7 @@ if __name__ == "__main__":
         BUCKET = Config.get("influx", "bucket")
         ORG = Config.get("influx", "org")
     else:
-        logging.error("Config file %s not found, exiting", cfgname)
+        print(f"Config file {cfgname} not found, exiting")
         sys.exit(1)
     CLIENT = InfluxDBClient(
         url=SERVER,
@@ -207,6 +202,6 @@ if __name__ == "__main__":
         org=ORG
     )
     WRITE_API = CLIENT.write_api(write_options=SYNCHRONOUS)
-    logging.info("Starting supervisor with InfluxDB on org %s, at %s, bucket %s", ORG, SERVER, BUCKET)
+    print(f"Starting supervisor with InfluxDB on org {ORG}, at {SERVER}, bucket {BUCKET}")
     print("Starting supervisor with InfluxDB org:%s, server:%s, bucket:%s" % (ORG, SERVER, BUCKET))
     read_loop()
