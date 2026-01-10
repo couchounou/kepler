@@ -147,9 +147,11 @@ def read_loop(interval_minutes=0.1):
     every 'interval_minutes' minutes and prints the results.
     """
     while True:
+        logging.info("try Reading ADS1115 channels...")
         if ADAFRUIT_AVAILABLE:
             read_all_ads1115_channels()
         else:
+            logging.info("Using fake ADS1115 readings.")
             read_all_ads1115_channels_fake()
         logging.info(SiteStatus_instance)
         POINTS.append(SiteStatus_instance.to_point())
