@@ -33,6 +33,7 @@ CLIENT = None
 WRITE_API = None
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+logging.info("Test: Logging is working on Raspberry Pi console.")
 
 
 class SiteStatus:
