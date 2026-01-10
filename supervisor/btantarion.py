@@ -77,7 +77,9 @@ async def main():
                 await client.start_notify(0x002d, notification_handler)
                 await client.start_notify(0x0025, notification_handler)
                 await client.start_notify(0x000e, notification_handler)
-                await client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True)
+                while True:
+                    await client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True)
+                    await asyncio.sleep(15)
                 print("En écoute des notifications sur handle 0x0029, 0x0025 et 0x000e... (Ctrl+C pour arrêter)")
                 try:
                     while True:
