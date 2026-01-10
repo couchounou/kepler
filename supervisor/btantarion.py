@@ -57,7 +57,12 @@ def notification_handler(handle, data):
 
 async def main():
     address = "00:0d:18:05:53:24"  # Remplace par l'adresse BLE de ton MPPT
-    
+    async with BleakClient(address) as client:
+            svcs = await client.get_services()
+            for service in svcs:
+                print("Service:", service.uuid)
+                for char in service.characteristics:
+                    print(f"  Char: {char.uuid}, Handle: {char.handle}, Properties: {char.properties}")
     async with BleakClient(address) as client:
         # Souscrire à toutes les notifications sur le handle 0x000f
         await client.start_notify(0x000f, notification_handler)
@@ -75,4 +80,5 @@ async def main():
 # =========================
 
 if __name__ == "__main__":
+    print("Démarrage du superviseur BT Antarion...")
     asyncio.run(main())
