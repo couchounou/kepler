@@ -49,7 +49,7 @@ class SiteStatus:
             "voltage_2": 0.0,
             "water_level": 0.0,
             "temperature_1": 0.0,
-            "temperature_2": 0.0
+            "temperature_2": 0.0,
             "lte_signal": 0
         }
 
