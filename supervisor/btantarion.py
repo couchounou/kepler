@@ -9,12 +9,12 @@ from bleak import BleakClient
 def parse_notification(data: bytearray):
     # convertir bytes ASCII en string
     s = data.decode('ascii')
-    
+    print(f"Trame reçue: {s}")
     # extraire les valeurs en fonction de la longueur connue
     courant = int(s[0:3])       # 0000 → 0 A
-    tension = int(s[3:8])/10    # 1280 → 12.8 V
-    capacity = int(s[10:14])     # 0051 → 51 Ah
-    energie = int(s[14:18])     # 000614 → 640 Wh
+    tension = int(s[3:7])/100    # 1280 → 12.8 V
+    capacity = int(s[7:13])     # 0051 → 51 Ah
+    energie = int(s[13:17])     # 000614 → 640 Wh
 
     print(f"rrr - Courant: {courant} A, Tension: {tension} V, Ah: {capacity}, Wh: {energie}")
 
