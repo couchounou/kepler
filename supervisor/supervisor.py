@@ -83,7 +83,7 @@ class SiteStatus:
         point = Point("site_metrics").tag("site_id", self.site_id)
         for field, value in self.status.items():
             point = point.field(field, float(value))
-        point = point.time(datetime.utcnow())
+        point = point.time(datetime.datetime.now(datetime.UTC))
         return point
 
     def __repr__(self):
@@ -197,4 +197,5 @@ if __name__ == "__main__":
     )
     WRITE_API = CLIENT.write_api(write_options=SYNCHRONOUS)
     logging.info("Starting supervisor with InfluxDB on org %s at %s, bucket %s", ORG, SERVER, BUCKET)
+    print("Starting supervisor with InfluxDB on org %s at %s, bucket %s" % (ORG, SERVER, BUCKET))
     read_loop()
