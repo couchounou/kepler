@@ -72,7 +72,9 @@ async def main():
                 # Souscrire à toutes les notifications sur le handle 0x000f
                 print("Connexion établie. Souscription aux notifications...")
                 await client.start_notify(0x0029, notification_handler)
-                print("En écoute des notifications sur handle 0x0025... (Ctrl+C pour arrêter)")
+                await client.start_notify(0x0025, notification_handler)
+                await client.start_notify(0x000e, notification_handler)
+                print("En écoute des notifications sur handle 0x0029, 0x0025 et 0x000e... (Ctrl+C pour arrêter)")
                 try:
                     while True:
                         await asyncio.sleep(1)  # boucle d'attente
