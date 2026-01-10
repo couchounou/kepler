@@ -41,8 +41,6 @@ INTERVAL = 30  # seconds
 CLIENT = None
 WRITE_API = None
 
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
-logging.debug("Test: Logging is working at DEBUG level.")
 
 
 class SiteStatus:
