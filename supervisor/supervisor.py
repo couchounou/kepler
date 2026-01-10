@@ -203,6 +203,5 @@ if __name__ == "__main__":
         org=ORG
     )
     WRITE_API = CLIENT.write_api(write_options=SYNCHRONOUS)
-    print(f"Starting supervisor with InfluxDB on org {ORG}, at {SERVER}, bucket {BUCKET}")
-    print("Starting supervisor with InfluxDB org:%s, server:%s, bucket:%s" % (ORG, SERVER, BUCKET))
+    print("Starting supervisor versin 224 with InfluxDB org:%s, server:%s, bucket:%s" % (ORG, SERVER, BUCKET))
     read_loop()
