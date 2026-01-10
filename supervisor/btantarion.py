@@ -13,8 +13,8 @@ def parse_notification(data: bytearray):
     # extraire les valeurs en fonction de la longueur connue
     courant = int(s[0:3])       # 0000 → 0 A
     tension = int(s[3:7])/100    # 1280 → 12.8 V
-    capacity = int(s[7:13])     # 0051 → 51 Ah
-    energie = int(s[13:17])     # 000614 → 640 Wh
+    capacity = int(s[7:14])     # 0051 → 51 Ah
+    energie = int(s[14:20])     # 000614 → 640 Wh
 
     print(f"rrr - Courant: {courant} A, Tension: {tension} V, Ah: {capacity}, Wh: {energie}")
 
