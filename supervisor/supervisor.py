@@ -1,6 +1,6 @@
 import sys
 import time
-from datetime import datetime
+from datetime import datetime, UTC
 import logging
 import random
 import configparser
@@ -83,7 +83,7 @@ class SiteStatus:
         point = Point("site_metrics").tag("site_id", self.site_id)
         for field, value in self.status.items():
             point = point.field(field, float(value))
-        point = point.time(datetime.now(datetime.UTC))
+        point = point.time(datetime.now(UTC))
         return point
 
     def __repr__(self):
