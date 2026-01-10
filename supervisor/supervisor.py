@@ -199,4 +199,5 @@ if __name__ == "__main__":
         org=ORG
     )
     WRITE_API = CLIENT.write_api(write_options=SYNCHRONOUS)
+    logging.info("Starting supervisor with InfluxDB on org %s at %s, bucket %s", ORG, SERVER, BUCKET)
     read_loop()
