@@ -93,7 +93,7 @@ class SiteStatus:
 SiteStatus_instance = SiteStatus(site_id="site_001")
 
 
-def influx_write_pts(points: list, bucket: str = BUCKET) -> None:
+def influx_write_pts(points: list, bucket: str) -> None:
     try:
         WRITE_API.write(org=ORG, bucket=bucket, record=points)
         return True
@@ -162,7 +162,7 @@ def read_loop(interval_minutes=0.1):
             connected = True
 
         if connected:
-            if influx_write_pts(POINTS):
+            if influx_write_pts(POINTS, BUCKET):
                 POINTS.clear()
                 logging.info("Points successfully written to InfluxDB.")
             else:
