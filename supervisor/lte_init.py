@@ -87,7 +87,7 @@ def ready_or_connect(force=True):
     connected_to_wlan = wlan0_has_internet()
     if connected_to_wlan:
         print("  WLAN0 already connected to internet.")
-        return True
+        return True, True
     if force or (not test_ping("8.8.8.8") and not connected_to_wlan):
         print("  LTE not connected, initializing...")
         try:

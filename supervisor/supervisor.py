@@ -50,6 +50,7 @@ class SiteStatus:
             "water_level": 0.0,
             "temperature_1": 0.0,
             "temperature_2": 0.0
+            "lte_signal": 0
         }
 
     def update(self, **kwargs):
@@ -163,7 +164,7 @@ def read_loop(interval_minutes=0.1):
 
         connected = False
         if not test_ping(1):
-            connected = ready_or_connect(force=False)
+            connected, _ = ready_or_connect(force=False)
         else:
             connected = True
 
