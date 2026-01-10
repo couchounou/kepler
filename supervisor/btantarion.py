@@ -72,6 +72,7 @@ async def main():
                 # Souscrire à toutes les notifications sur le handle 0x000f
                 print("Connexion établie. Souscription aux notifications...")
                 await client.start_notify(0x0029, notification_handler)
+                await client.start_notify(0x002d, notification_handler)
                 await client.start_notify(0x0025, notification_handler)
                 await client.start_notify(0x000e, notification_handler)
                 print("En écoute des notifications sur handle 0x0029, 0x0025 et 0x000e... (Ctrl+C pour arrêter)")
