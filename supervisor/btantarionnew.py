@@ -63,11 +63,13 @@ async def main():
                     WRITE_UUID = "00002af1-0000-1000-8000-00805f9b34fb"
                     print("3-> Connexion établie. Souscription aux notifications...")
                     await client.start_notify(0x000e, parse_notification_14)
-                    while i:
-                        while True:
-                            await client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True)
-                            await asyncio.sleep(15)
-                            print("4-> En écoute des notifications sur handle 0x0029, 0x0025 et 0x000e... (Ctrl+C pour arrêter)")
+                    await client.start_notify(0x0025, parse_notification_14)
+                    await client.start_notify(0x0029, parse_notification_14)
+                    await client.start_notify(0x002d, parse_notification_14)
+                    while True:
+                        await client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True)
+                        await asyncio.sleep(15)
+                        print("4-> En écoute des notifications sur handle 0x0029, 0x0025 et 0x000e... (Ctrl+C pour arrêter)")
                 except KeyboardInterrupt:
                     print("Arrêt des notifications...")
                     await client.stop_notify(0x000e)
