@@ -34,8 +34,9 @@ async def find_device_with_timeout(device_name, timeout=10):
         )
         
         for device in devices:
+            print(f"Device trouvé: {device.name}")
             if device.name == device_name:
-                print(f"Device trouvé: {device.name}")
+                print(f"Device correspondant: {device.name}")
                 return device
         
         print("Device non trouvé")
