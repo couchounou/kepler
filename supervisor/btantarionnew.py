@@ -2,6 +2,7 @@ import asyncio
 from datetime import datetime
 from bleak import BleakClient, BleakScanner
 
+
 def parse_notification_14(handle, data):
     # convertir bytes ASCII en string
     hex_str = data.hex()
@@ -9,7 +10,7 @@ def parse_notification_14(handle, data):
     print(f"Notification reçue (handle: {handle}): {hex_str}")
     print(f"Trame reçue: de {len(s)} caractères: {s}")
     if data[-1] == 0x0a:  # LF à la fin
-        print(f"... Fin de trame")
+        print("... Fin de trame")
     elif data[-1] == 0x0d:  # CR à la fin
         print(f"Trame reçue #1: de {len(s)} caractères: {s}")
         # extraire les valeurs en fonction de la longueur connue
@@ -22,7 +23,7 @@ def parse_notification_14(handle, data):
         inconnu = s[7:10]            # 00
         capacity = int(s[10:14])     # 0051 → 51 Ah
         energie = int(s[14:20])     # 000614 → 640 Wh
-        print(f"'{datetime.datetime.now()}: Courant: {courant} A, Tension: {tension} V, inconnu {inconnu} Ah: {capacity}, Wh: {energie} ")
+        print(f"'{datetime.now()}: Courant: {courant} A, Tension: {tension} V, inconnu {inconnu} Ah: {capacity}, Wh: {energie} ")
 
 
 async def find_device_with_timeout(device_name, timeout=10):
