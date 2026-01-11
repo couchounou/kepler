@@ -31,7 +31,7 @@ async def find_device_with_timeout(device_name, timeout=10):
     devices = await scanner.discover(timeout=10)
     if not devices:
         print("Aucun périphérique trouvé.")
-    for d in devices:s
+    for d in devices:
         if device_name.lower() in (d.name or "").lower():
             return d
     return None
