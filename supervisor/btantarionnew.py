@@ -86,12 +86,19 @@ async def main():
                 except KeyboardInterrupt:
                     print("Arrêt des notifications...")
                     await client.stop_notify(0x000e)
+                    await client.stop_notify(0x0025)
+                    await client.stop_notify(0x0029)
+                except Exception as e:
+                    print(f"Erreur durant la communication avec le MPPT: {e}")
                 finally:
                     await client.__aexit__(None, None, None)
             except asyncio.TimeoutError:
                 print("Timeout lors de la connexion au MPPT")
             except Exception as e:
                 print(f"Erreur Bleak : {e}")
+                if "Notify acquired" in str(e):
+                    print("Attente de 10 secondes avant nouvelle tentative...")
+                    await asyncio.sleep(10)
 
 if __name__ == "__main__":
     print("Démarrage du superviseur BT Antarion...")
