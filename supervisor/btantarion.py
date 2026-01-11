@@ -32,7 +32,8 @@ async def find_device_with_timeout(device_name, timeout=10):
     if not devices:
         print("Aucun périphérique trouvé.")
     for d in devices:
-        print(f"Adresse: {d.address} | Nom: {d.name}")
+        if device_name.lower() in (d.name or "").lower():
+            return d
 
 
 
@@ -41,32 +42,38 @@ async def main():
     notify_uuid = "f000ffc2-0451-4000-b000-000000000000"  # candidate principale
     while True:
         device = await find_device_with_timeout("Solar regulator")
-        print("-------> Tentative de connexion au MPPT... device:", device)
-        try:
-            async with BleakClient(address) as client:
-                # Affichage des services
-                for service in client.services:
-                    print("Service:", service.uuid)
-                    for char in service.characteristics:
-                        print(f"  Char: {char.uuid}, Handle: {char.handle}, Properties: {char.properties}")
-            async with BleakClient(address) as client:
-                # Souscrire à toutes les notifications sur le handle 0x000f
-                WRITE_COMMAND = bytearray([0x4F, 0x4B])
-                WRITE_UUID = "00002af1-0000-1000-8000-00805f9b34fb"
-                print("Connexion établie. Souscription aux notifications...")
-                await client.start_notify(0x000e, notification_handler_1)
-                while True:
-                    await client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True)
-                    await asyncio.sleep(15)
-                print("En écoute des notifications sur handle 0x0029, 0x0025 et 0x000e... (Ctrl+C pour arrêter)")
-                try:
+        if not device:
+            print("MPPT non trouvé, nouvelle tentative dans 10 secondes...")
+            await asyncio.sleep(10)
+            continue
+        
+        else:
+            print("-------> Tentative de connexion au MPPT... device:", device)
+            try:
+                async with BleakClient(device.address) as client:
+                    # Affichage des services
+                    for service in client.services:
+                        print("Service:", service.uuid)
+                        for char in service.characteristics:
+                            print(f"  Char: {char.uuid}, Handle: {char.handle}, Properties: {char.properties}")
+                async with BleakClient(address) as client:
+                    # Souscrire à toutes les notifications sur le handle 0x000f
+                    WRITE_COMMAND = bytearray([0x4F, 0x4B])
+                    WRITE_UUID = "00002af1-0000-1000-8000-00805f9b34fb"
+                    print("Connexion établie. Souscription aux notifications...")
+                    await client.start_notify(0x000e, notification_handler_1)
                     while True:
-                        await asyncio.sleep(1)  # boucle d'attente
-                except KeyboardInterrupt:
-                    print("Arrêt des notifications...")
-                    await client.stop_notify(0x0029)
-        except Exception as e:
-            print(f"Erreur Bleak : {e}")
+                        await client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True)
+                        await asyncio.sleep(15)
+                    print("En écoute des notifications sur handle 0x0029, 0x0025 et 0x000e... (Ctrl+C pour arrêter)")
+                    try:
+                        while True:
+                            await asyncio.sleep(1)  # boucle d'attente
+                    except KeyboardInterrupt:
+                        print("Arrêt des notifications...")
+                        await client.stop_notify(0x0029)
+            except Exception as e:
+                print(f"Erreur Bleak : {e}")
 
 # =========================
 # Exécution
