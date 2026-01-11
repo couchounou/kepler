@@ -26,25 +26,13 @@ def parse_notification_14(handle, data):
 
 
 async def find_device_with_timeout(device_name, timeout=10):
-    print(f"Recherche pendant {timeout} secondes...")
-    try:
-        scanner = BleakScanner(adapter='hci0')
-        devices = await asyncio.wait_for(
-            scanner.discover(timeout=timeout),
-            timeout=timeout
-        )
-        
-        for device in devices:
-            print(f"Device trouvé: {device}")
-            if device.name == device_name:
-                print(f"Device correspondant: {device.name}")
-                return device
-        
-        print("Device non trouvé")
-        return None
-    except asyncio.TimeoutError:
-        print("Timeout: recherche dépassée")
-        return None
+    print("Adaptateur utilisé : hci0 (par défaut sur Raspberry Pi)")
+    scanner = BleakScanner(adapter='hci0')
+    devices = await scanner.discover(timeout=10)
+    if not devices:
+        print("Aucun périphérique trouvé.")
+    for d in devices:
+        print(f"Adresse: {d.address} | Nom: {d.name}")
 
 
 
