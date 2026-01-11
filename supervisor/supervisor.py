@@ -119,8 +119,8 @@ def influx_write_pts(points: list, bucket: str) -> None:
 
 def read_all_ads1115_channels_fake():
     SiteStatus_instance.update(
-        voltage_1=random.uniform(0, 15),
-        voltage_2=random.uniform(0, 15),
+        chassis_voltage=random.uniform(0, 15),
+        house_voltage=random.uniform(0, 15),
         water_level=random.uniform(0, 100),
         temperature_1=random.uniform(-10, 50)
     )
@@ -141,7 +141,7 @@ def read_all_ads1115_channels():
     ]
     print(f"channel voltages: {[ch.voltage for ch in channels]}")
     SiteStatus_instance.update(
-        voltage_1=channels[0].voltage * 3.965,
+        =channels[0].voltage * 3.965,
         voltage_2=channels[1].voltage * 3.98,
         water_level=channels[2].voltage * 4.59,
         temperature_1=channels[3].voltage * 4.59
