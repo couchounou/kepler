@@ -105,10 +105,10 @@ async def main():
                         while True:
                             await asyncio.wait_for(
                                 client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True),
-                                timeout=10  # par exemple 10 secondes
+                                timeout=10
                             )
-                            await asyncio.sleep(55)
                             print("4-> En écoute des notifications sur handle 0x0029, 0x0025 et 0x000e... (Ctrl+C pour arrêter)")
+                            await asyncio.sleep(55)
                     except asyncio.TimeoutError:
                         print("Timeout global lors de la souscription aux notifications")
                         continue
