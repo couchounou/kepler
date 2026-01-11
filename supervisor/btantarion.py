@@ -23,7 +23,7 @@ def parse_notification(data: bytearray):
         inconnu = s[7:10]            # 00
         capacity = int(s[10:14])     # 0051 → 51 Ah
         energie = int(s[14:20])     # 000614 → 640 Wh
-        print(f"'{datetime.datetime.now()}: Courant: {courant} A, Tension: {tension} V, inconnu {inconnu} Ah: {capacity}, Wh: {energie} ")
+        print(f"'{datetime.now()}: Courant: {courant} A, Tension: {tension} V, inconnu {inconnu} Ah: {capacity}, Wh: {energie} ")
 
 def decode_zone1(trame_hex):
     """
