@@ -8,16 +8,15 @@ def parse_notification_14(handle, data):
     hex_str = data.hex()
     s = data.decode('ascii')
     print(f"Notification reçue (handle: {handle}): {hex_str}")
-    print(f"Trame reçue: de {len(s)} caractères: {s}")
     if data[-1] == 0x0a:  # LF à la fin
         print("... Fin de trame")
     elif data[-1] == 0x0d:  # CR à la fin
-        print(f"Trame reçue #1: de {len(s)} caractères: {s}")
+        print(f"Trame reçue #2: de {len(s)} caractères: {s}")
         # extraire les valeurs en fonction de la longueur connue
         tension = int(s[0:4])/100
         print(f"R2 - Tension: {tension}")
     else:
-        print(f"Trame reçue #2: de {len(s)} caractères: {s}")
+        print(f"Trame reçue #1: de {len(s)} caractères: {s}")
         courant = int(s[0:3])       # 0000 → 0 A
         tension = int(s[3:7])/100    # 1280 → 12.8 V
         inconnu = s[7:10]            # 00
