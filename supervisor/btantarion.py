@@ -28,8 +28,9 @@ def parse_notification_14(handle, data):
 async def find_device_with_timeout(device_name, timeout=10):
     print(f"Recherche pendant {timeout} secondes...")
     try:
+        scanner = BleakScanner(adapter='hci0')
         devices = await asyncio.wait_for(
-            BleakScanner.discover(timeout=timeout),
+            scanner.discover(timeout=timeout),
             timeout=timeout
         )
         
