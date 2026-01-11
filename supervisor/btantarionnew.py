@@ -39,6 +39,7 @@ async def find_device_with_timeout(device_name, timeout=10):
 async def main():
     address = "00:0d:18:05:53:24"  # Remplace par l'adresse BLE de ton MPPT
     notify_uuid = "f000ffc2-0451-4000-b000-000000000000"  # candidate principale
+    i = 1000
     while True:
         print("1-> Recherche device sur hci0 ")
         device = await find_device_with_timeout("Solar ", timeout=15)
