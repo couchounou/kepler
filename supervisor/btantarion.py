@@ -68,10 +68,7 @@ async def main():
                         while True:
                             await client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True)
                             await asyncio.sleep(15)
-                        print("En écoute des notifications sur handle 0x0029, 0x0025 et 0x000e... (Ctrl+C pour arrêter)")
-                    else:
-                        await client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True)
-                        await asyncio.sleep(15)  # boucle d'attente
+                            print("En écoute des notifications sur handle 0x0029, 0x0025 et 0x000e... (Ctrl+C pour arrêter)")
                 except KeyboardInterrupt:
                     print("Arrêt des notifications...")
                     await client.stop_notify(0x000e)
