@@ -78,14 +78,19 @@ async def find_device_with_timeout(device_name, timeout=10):
             BleakScanner.discover(timeout=timeout),
             timeout=timeout
         )
-        matching_devices = [d for d in devices if partial_name.lower() in (d.name or "").lower()]
+        matching_devices = []
+        for device in devices:
+            print(f"Device scanné: {device.name}")
+            if device.name and device_name.lower() in device.name.lower():
+                print(f"Device trouvé: {device.name} ({device.address})")
+                matching_devices.append(device)
         
         if matching_devices:
             for device in matching_devices:
                 print(f"Device trouvé: {device.name} ({device.address})")
             return matching_devices
         else:
-            print(f"Aucun device contenant '{partial_name}' n'a été trouvé")
+            print(f"Aucun device contenant '{device_name}' n'a été trouvé")
             return None
     except asyncio.TimeoutError:
         print("Timeout: recherche dépassée")
