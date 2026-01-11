@@ -61,7 +61,7 @@ async def main():
                     WRITE_COMMAND = bytearray([0x4F, 0x4B])
                     WRITE_UUID = "00002af1-0000-1000-8000-00805f9b34fb"
                     print("3-> Connexion établie. Souscription aux notifications...")
-                    await client.start_notify(0x000e, notification_handler_1)
+                    await client.start_notify(0x000e, parse_notification_14)
                     while i:
                         while True:
                             await client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True)
