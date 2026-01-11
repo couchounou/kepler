@@ -44,7 +44,7 @@ async def souscription_notifications(client):
             await client.start_notify(0x000e, parse_notification_14)
         except Exception as e:
             if "Notify acquired" in str(e):
-                print("Notification déjà acquise, attente de 30s avant nouvelle tentative...")
+                print("Notification déjà acquise...")
             else:
                 raise
 
@@ -77,14 +77,17 @@ async def main():
                     print("3-> Connexion établie. Souscription aux notifications...")
                     try:
                         await asyncio.wait_for(souscription_notifications(client), timeout=15)
+                        print("4-> Envoi requete et ecoute des notifications...")
+                        while True:
+                            await asyncio.wait_for(
+                                client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True),
+                                timeout=10  # par exemple 10 secondes
+                            )
+                            await asyncio.sleep(55)
+                            print("4-> En écoute des notifications sur handle 0x0029, 0x0025 et 0x000e... (Ctrl+C pour arrêter)")
                     except asyncio.TimeoutError:
                         print("Timeout global lors de la souscription aux notifications")
                         continue
-                    print("4-> Envoi requete et ecoute des notifications...")
-                    while True:
-                        await client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True)
-                        await asyncio.sleep(55)
-                        print("4-> En écoute des notifications sur handle 0x0029, 0x0025 et 0x000e... (Ctrl+C pour arrêter)")
                 except KeyboardInterrupt:
                     print("Arrêt des notifications...")
                     await client.stop_notify(0x000e)
