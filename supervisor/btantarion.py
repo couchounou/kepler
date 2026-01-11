@@ -10,13 +10,18 @@ def parse_notification(data: bytearray):
     # convertir bytes ASCII en string
     s = data.decode('ascii')
     print(f"Trame reçue: de {len(s)} caractères: {s}")
-    # extraire les valeurs en fonction de la longueur connue
-    courant = int(s[0:3])       # 0000 → 0 A
-    tension = int(s[3:7])/100    # 1280 → 12.8 V
-    capacity = int(s[7:14])     # 0051 → 51 Ah
-    energie = int(s[14:20])     # 000614 → 640 Wh
-
-    print(f"rrr - Courant: {courant} A, Tension: {tension} V, Ah: {capacity}, Wh: {energie}")
+    if data[-1] == 0x0d:  # CR à la fin
+        print(f"Trame reçue: de {len(s)} caractères: {s}")
+        # extraire les valeurs en fonction de la longueur connue
+        tension = int(s[0:3])/100
+        print(f"R2 - Tension: {tension}")
+    else:
+        # extraire les valeurs en fonction de la longueur connue
+        courant = int(s[0:3])       # 0000 → 0 A
+        tension = int(s[3:7])/100    # 1280 → 12.8 V
+        capacity = int(s[7:14])     # 0051 → 51 Ah
+        energie = int(s[14:20])     # 000614 → 640 Wh
+        print(f"R1 - Courant: {courant} A, Tension: {tension} V, Ah: {capacity}, Wh: {energie}")
 
 def decode_zone1(trame_hex):
     """
@@ -58,7 +63,7 @@ def notification_handler(handle, data):
     elif len(hex_str) == 20*2:  # Zone 2+3 (20 caractères ASCII)
         parse_notification(data)
     else:
-        print("Trame inconnue :", hex_str)
+        print("*** Trame inconnue :", hex_str)
 
 # =========================
 # Programme principal
@@ -92,34 +97,40 @@ async def main():
     while True:
         device = await find_device_with_timeout("Solar regulator")
         print("-------> Tentative de connexion au MPPT... device:", device)
-        try:
-            async with BleakClient(address) as client:
-                # Affichage des services
-                for service in client.services:
-                    print("Service:", service.uuid)
-                    for char in service.characteristics:
-                        print(f"  Char: {char.uuid}, Handle: {char.handle}, Properties: {char.properties}")
-            async with BleakClient(address) as client:
-                # Souscrire à toutes les notifications sur le handle 0x000f
-                WRITE_COMMAND = bytearray([0x4F, 0x4B])
-                WRITE_UUID = "00002af1-0000-1000-8000-00805f9b34fb"
-                print("Connexion établie. Souscription aux notifications...")
-                await client.start_notify(0x0029, notification_handler)
-                await client.start_notify(0x002d, notification_handler)
-                await client.start_notify(0x0025, notification_handler)
-                await client.start_notify(0x000e, notification_handler)
-                while True:
-                    await client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True)
-                    await asyncio.sleep(15)
-                print("En écoute des notifications sur handle 0x0029, 0x0025 et 0x000e... (Ctrl+C pour arrêter)")
-                try:
+        if device is None:
+            print("MPPT non trouvé, nouvelle tentative dans 10 secondes...")
+            await asyncio.sleep(10)
+            continue
+        else:
+            address = device.address
+            try:
+                async with BleakClient(address) as client:
+                    # Affichage des services
+                    for service in client.services:
+                        print("Service:", service.uuid)
+                        for char in service.characteristics:
+                            print(f"  Char: {char.uuid}, Handle: {char.handle}, Properties: {char.properties}")
+                async with BleakClient(address) as client:
+                    # Souscrire à toutes les notifications sur le handle 0x000f
+                    WRITE_COMMAND = bytearray([0x4F, 0x4B])
+                    WRITE_UUID = "00002af1-0000-1000-8000-00805f9b34fb"
+                    print("Connexion établie. Souscription aux notifications...")
+                    await client.start_notify(0x0029, notification_handler)
+                    await client.start_notify(0x002d, notification_handler)
+                    await client.start_notify(0x0025, notification_handler)
+                    await client.start_notify(0x000e, notification_handler)
                     while True:
-                        await asyncio.sleep(1)  # boucle d'attente
-                except KeyboardInterrupt:
-                    print("Arrêt des notifications...")
-                    await client.stop_notify(0x0029)
-        except Exception as e:
-            print(f"Erreur Bleak : {e}")
+                        await client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True)
+                        await asyncio.sleep(15)
+                    print("En écoute des notifications sur handle 0x0029, 0x0025 et 0x000e... (Ctrl+C pour arrêter)")
+                    try:
+                        while True:
+                            await asyncio.sleep(1)  # boucle d'attente
+                    except KeyboardInterrupt:
+                        print("Arrêt des notifications...")
+                        await client.stop_notify(0x0029)
+            except Exception as e:
+                print(f"Erreur Bleak : {e}")
 
 # =========================
 # Exécution
