@@ -45,8 +45,10 @@ class SiteStatus:
 
     def reset(self):
         self.status = {
-            "voltage_1": 0.0,
-            "voltage_2": 0.0,
+            "chassis_voltage": 0.0,
+            "house_voltage": 0.0,
+            "panel_voltage": 0.0,
+            "panel_power": 0.0,
             "water_level": 0.0,
             "temperature_1": 0.0,
             "temperature_2": 0.0,

@@ -64,13 +64,34 @@ def notification_handler(handle, data):
 # Programme principal
 # =========================
 
+async def find_device_with_timeout(device_name, timeout=10):
+    print(f"Recherche pendant {timeout} secondes...")
+    try:
+        devices = await asyncio.wait_for(
+            bleak.BleakScanner.discover(timeout=timeout),
+            timeout=timeout
+        )
+        
+        for device in devices:
+            if device.name == device_name:
+                print(f"Device trouvé: {device.name}")
+                return device
+        
+        print("Device non trouvé")
+        return None
+    except asyncio.TimeoutError:
+        print("Timeout: recherche dépassée")
+        return None
+
+
 
 async def main():
     address = "00:0d:18:05:53:24"  # Remplace par l'adresse BLE de ton MPPT
     address = "00:0d:18:05:53:24"  # Remplace par l'adresse BLE de ton MPPT
     notify_uuid = "f000ffc2-0451-4000-b000-000000000000"  # candidate principale
     while True:
-        print("-------> Tentative de connexion au MPPT...")
+        device = asyncio.run(find_device_with_timeout("Solar regulator"))
+        print("-------> Tentative de connexion au MPPT... device:", device)
         try:
             async with BleakClient(address) as client:
                 # Affichage des services
