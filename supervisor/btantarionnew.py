@@ -36,6 +36,17 @@ async def find_device_with_timeout(device_name, timeout=10):
     return None
 
 
+async def souscription_notifications(client):
+    print("start_notify 0x000e")
+    await client.start_notify(0x000e, parse_notification_14)
+    print("start_notify 0x0025")
+    await client.start_notify(0x0025, parse_notification_14)
+    print("start_notify 0x0029")
+    await client.start_notify(0x0029, parse_notification_14)
+    print("start_notify 0x002d")
+    await client.start_notify(0x002d, parse_notification_14)
+
+
 async def main():
     address = "00:0d:18:05:53:24"  # Remplace par l'adresse BLE de ton MPPT
     notify_uuid = "f000ffc2-0451-4000-b000-000000000000"  # candidate principale
@@ -63,9 +74,9 @@ async def main():
                     WRITE_UUID = "00002af1-0000-1000-8000-00805f9b34fb"
                     print("3-> Connexion établie. Souscription aux notifications...")
                     try:
-                        await asyncio.wait_for(client.start_notify(0x000e, parse_notification_14), timeout=10)
+                        await asyncio.wait_for(souscription_notifications(client), timeout=15)
                     except asyncio.TimeoutError:
-                        print("Timeout lors de start_notify sur 0x000e")
+                        print("Timeout global lors de la souscription aux notifications")
                         continue
                     print("4-> Envoi requete et ecoute des notifications...")
                     while True:
