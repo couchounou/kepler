@@ -38,13 +38,15 @@ async def find_device_with_timeout(device_name, timeout=10):
 
 async def souscription_notifications(client):
     print("  start_notify 0x000e")
-    await client.start_notify(0x000e, parse_notification_14)
-    print("  start_notify 0x0025")
-    await client.start_notify(0x0025, parse_notification_14)
-    print("  start_notify 0x0029")
-    await client.start_notify(0x0029, parse_notification_14)
-    print("  start_notify 0x002d")
-    await client.start_notify(0x002d, parse_notification_14)
+    for handle in [0x000e, 0x0025, 0x0029, 0x002d]:
+        try:
+            print(f"  start_notify {hex(handle)}")
+            await client.start_notify(0x000e, parse_notification_14)
+        except Exception as e:
+            if "Notify acquired" in str(e):
+                print("Notification déjà acquise, attente de 30s avant nouvelle tentative...")
+            else:
+                raise
 
 
 async def main():
