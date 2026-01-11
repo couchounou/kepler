@@ -26,14 +26,18 @@ def parse_notification_14(handle, data):
 
 
 async def find_device_with_timeout(device_name, timeout=10):
-    scanner = BleakScanner(adapter='hci0')
-    devices = await scanner.discover(timeout=10)
-    if not devices:
-        print("Aucun périphérique trouvé.")
-    for d in devices:
-        if device_name.lower() in (d.name or "").lower():
-            return d
-    return None
+    try:
+        scanner = BleakScanner(adapter='hci0')
+        devices = await scanner.discover(timeout=10)
+        if not devices:
+            print("Aucun périphérique trouvé.")
+        for d in devices:
+            if device_name.lower() in (d.name or "").lower():
+                return d
+        return None
+    except Exception as e:
+        print(f"Erreur lors du scan BLE: {e}")
+        return None
 
 
 async def souscription_notifications(client):
