@@ -7,17 +7,21 @@ from bleak import BleakClient, BleakScanner
 # =========================
 
 
-def parse_notification(data: bytearray):
+def parse_notification_14(handle, data):
     # convertir bytes ASCII en string
+    hex_str = data.hex()
     s = data.decode('ascii')
+    print(f"Notification reçue (handle: {handle}): {hex_str}")
     print(f"Trame reçue: de {len(s)} caractères: {s}")
-    if data[-1] == 0x0d:  # CR à la fin
-        print(f"Trame reçue: de {len(s)} caractères: {s}")
+    if data[-1] == 0x0a:  # LF à la fin
+        print(f"... Fin de trame")
+    elif data[-1] == 0x0d:  # CR à la fin
+        print(f"Trame reçue #1: de {len(s)} caractères: {s}")
         # extraire les valeurs en fonction de la longueur connue
         tension = int(s[0:4])/100
         print(f"R2 - Tension: {tension}")
     else:
-        # extraire les valeurs en fonction de la longueur connue
+        print(f"Trame reçue #2: de {len(s)} caractères: {s}")
         courant = int(s[0:3])       # 0000 → 0 A
         tension = int(s[3:7])/100    # 1280 → 12.8 V
         inconnu = s[7:10]            # 00
@@ -56,20 +60,11 @@ def decode_zone2_3(trame_hex):
 # Handler de notification
 # =========================
 
-def notification_handler(handle, data):
+def notification_handler_1(handle, data):
     hex_str = data.hex()
     print(f"Notification reçue (handle: {handle}): {hex_str}")
-    # Identifier la zone selon la longueur
-    if len(hex_str) == 22*2:  # Zone 1 (22 caractères ASCII)
-        parse_notification(data)
-    elif len(hex_str) == 20*2:  # Zone 2+3 (20 caractères ASCII)
-        parse_notification(data)
-    else:
-        print("*** Trame inconnue :", hex_str)
 
-# =========================
-# Programme principal
-# =========================
+
 
 async def find_device_with_timeout(device_name, timeout=10):
     print(f"Recherche pendant {timeout} secondes...")
@@ -114,7 +109,7 @@ async def main():
                 await client.start_notify(0x0029, notification_handler)
                 await client.start_notify(0x002d, notification_handler)
                 await client.start_notify(0x0025, notification_handler)
-                await client.start_notify(0x000e, notification_handler)
+                await client.start_notify(0x000e, notification_handler_1)
                 while True:
                     await client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True)
                     await asyncio.sleep(15)
