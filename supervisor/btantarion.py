@@ -1,5 +1,5 @@
 import asyncio
-from bleak import BleakClient
+from bleak import BleakClient, BleakScanner
 
 # =========================
 # Fonctions de décodage
@@ -68,7 +68,7 @@ async def find_device_with_timeout(device_name, timeout=10):
     print(f"Recherche pendant {timeout} secondes...")
     try:
         devices = await asyncio.wait_for(
-            bleak.BleakScanner.discover(timeout=timeout),
+            BleakScanner.discover(timeout=timeout),
             timeout=timeout
         )
         
