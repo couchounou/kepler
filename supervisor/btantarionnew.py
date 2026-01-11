@@ -66,6 +66,7 @@ async def main():
                     await client.start_notify(0x0025, parse_notification_14)
                     await client.start_notify(0x0029, parse_notification_14)
                     await client.start_notify(0x002d, parse_notification_14)
+                    print("4-> Envoi requete et ecoute des notifications...")
                     while True:
                         await client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True)
                         await asyncio.sleep(15)
