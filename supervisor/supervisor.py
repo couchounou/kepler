@@ -141,8 +141,8 @@ def read_all_ads1115_channels():
     ]
     print(f"channel voltages: {[ch.voltage for ch in channels]}")
     SiteStatus_instance.update(
-        =channels[0].voltage * 3.965,
-        voltage_2=channels[1].voltage * 3.98,
+        chassis_voltage=channels[0].voltage * 3.965,
+        house_voltage=channels[1].voltage * 3.98,
         water_level=channels[2].voltage * 4.59,
         temperature_1=channels[3].voltage * 4.59
     )
