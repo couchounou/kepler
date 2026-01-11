@@ -26,15 +26,15 @@ def parse_notification_14(handle, data):
 
 
 async def find_device_with_timeout(device_name, timeout=10):
-    print("Adaptateur utilisé : hci0 (par défaut sur Raspberry Pi)")
+    print("Recherche device sur hci0 ")
     scanner = BleakScanner(adapter='hci0')
     devices = await scanner.discover(timeout=10)
     if not devices:
         print("Aucun périphérique trouvé.")
-    for d in devices:
+    for d in devices:s
         if device_name.lower() in (d.name or "").lower():
             return d
-
+    return None
 
 
 async def main():
@@ -43,12 +43,10 @@ async def main():
     while True:
         device = await find_device_with_timeout("Solar ", timeout=15)
         if not device:
-            print("MPPT non trouvé, nouvelle tentative dans 10 secondes...")
             await asyncio.sleep(10)
-            continue
-        
+            continue        
         else:
-            print("-------> Tentative de connexion au MPPT... device:", device)
+            print("Tentative de connexion au MPPT... device:", device)
             try:
                 client = BleakClient(device.address)
                 await asyncio.wait_for(client.__aenter__(), timeout=10)
@@ -75,7 +73,7 @@ async def main():
                 finally:
                     await client.__aexit__(None, None, None)
             except asyncio.TimeoutError:
-                print("Timeout lors de la connexion ou de la découverte des services")
+                print("Timeout lors de la connexion au MPPT")
             except Exception as e:
                 print(f"Erreur Bleak : {e}")
 
