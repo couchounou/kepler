@@ -26,7 +26,6 @@ def parse_notification_14(handle, data):
 
 
 async def find_device_with_timeout(device_name, timeout=10):
-    print("Recherche device sur hci0 ")
     scanner = BleakScanner(adapter='hci0')
     devices = await scanner.discover(timeout=10)
     if not devices:
@@ -41,12 +40,13 @@ async def main():
     address = "00:0d:18:05:53:24"  # Remplace par l'adresse BLE de ton MPPT
     notify_uuid = "f000ffc2-0451-4000-b000-000000000000"  # candidate principale
     while True:
+        print("1) Recherche device sur hci0 ")
         device = await find_device_with_timeout("Solar ", timeout=15)
         if not device:
             await asyncio.sleep(10)
             continue        
         else:
-            print("Tentative de connexion au MPPT... device:", device)
+            print("2)  Tentative de connexion:", device)
             try:
                 client = BleakClient(device.address)
                 await asyncio.wait_for(client.__aenter__(), timeout=10)
@@ -60,13 +60,13 @@ async def main():
                     # Souscrire à toutes les notifications sur le handle 0x000f
                     WRITE_COMMAND = bytearray([0x4F, 0x4B])
                     WRITE_UUID = "00002af1-0000-1000-8000-00805f9b34fb"
-                    print("Connexion établie. Souscription aux notifications...")
+                    print("3) Connexion établie. Souscription aux notifications...")
                     await client.start_notify(0x000e, notification_handler_1)
                     while i:
                         while True:
                             await client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True)
                             await asyncio.sleep(15)
-                            print("En écoute des notifications sur handle 0x0029, 0x0025 et 0x000e... (Ctrl+C pour arrêter)")
+                            print("4) En écoute des notifications sur handle 0x0029, 0x0025 et 0x000e... (Ctrl+C pour arrêter)")
                 except KeyboardInterrupt:
                     print("Arrêt des notifications...")
                     await client.stop_notify(0x000e)
