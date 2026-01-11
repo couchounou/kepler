@@ -90,7 +90,7 @@ async def main():
     address = "00:0d:18:05:53:24"  # Remplace par l'adresse BLE de ton MPPT
     notify_uuid = "f000ffc2-0451-4000-b000-000000000000"  # candidate principale
     while True:
-        device = asyncio.run(find_device_with_timeout("Solar regulator"))
+        device = await find_device_with_timeout("Solar regulator")
         print("-------> Tentative de connexion au MPPT... device:", device)
         try:
             async with BleakClient(address) as client:
