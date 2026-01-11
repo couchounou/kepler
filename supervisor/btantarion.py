@@ -13,13 +13,14 @@ def parse_notification(data: bytearray):
     if data[-1] == 0x0d:  # CR à la fin
         print(f"Trame reçue: de {len(s)} caractères: {s}")
         # extraire les valeurs en fonction de la longueur connue
-        tension = int(s[0:3])/100
+        tension = int(s[0:4])/100
         print(f"R2 - Tension: {tension}")
     else:
         # extraire les valeurs en fonction de la longueur connue
         courant = int(s[0:3])       # 0000 → 0 A
         tension = int(s[3:7])/100    # 1280 → 12.8 V
-        capacity = int(s[7:14])     # 0051 → 51 Ah
+        inconnu = s[7:10]            # 00
+        capacity = int(s[10:14])     # 0051 → 51 Ah
         energie = int(s[14:20])     # 000614 → 640 Wh
         print(f"R1 - Courant: {courant} A, Tension: {tension} V, Ah: {capacity}, Wh: {energie}")
 
