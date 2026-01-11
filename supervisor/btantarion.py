@@ -13,7 +13,7 @@ def parse_notification(data: bytearray):
     if data[-1] == 0x0d:  # CR à la fin
         print(f"Trame reçue: de {len(s)} caractères: {s}")
         # extraire les valeurs en fonction de la longueur connue
-        tension = int(s[0:3])/100
+        tension = int(s[0:4])/100
         print(f"R2 - Tension: {tension}")
     else:
         # extraire les valeurs en fonction de la longueur connue
