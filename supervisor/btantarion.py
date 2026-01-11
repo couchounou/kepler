@@ -41,7 +41,7 @@ async def main():
     address = "00:0d:18:05:53:24"  # Remplace par l'adresse BLE de ton MPPT
     notify_uuid = "f000ffc2-0451-4000-b000-000000000000"  # candidate principale
     while True:
-        device = await find_device_with_timeout("Solar regulator")
+        device = await find_device_with_timeout("Solar regulator", timeout=15)
         if not device:
             print("MPPT non trouvé, nouvelle tentative dans 10 secondes...")
             await asyncio.sleep(10)
