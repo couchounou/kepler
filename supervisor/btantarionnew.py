@@ -1,7 +1,7 @@
 import asyncio
 from datetime import datetime
 from bleak import BleakClient, BleakScanner
-
+import subprocess
 
 def parse_notification_14(handle, data):
     # convertir bytes ASCII en string
@@ -37,7 +37,27 @@ async def find_device_with_timeout(device_name, timeout=10):
         return None
     except Exception as e:
         print(f"Erreur lors du scan BLE: {e}")
+        power_on_bluetooth()
         return None
+
+
+def power_on_bluetooth():
+    try:
+        result = subprocess.run(
+            ["bluetoothctl", "power", "off"],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        result = subprocess.run(
+            ["bluetoothctl", "power", "on"],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        print("Bluetooth activé :", result.stdout)
+    except subprocess.CalledProcessError as e:
+        print("Erreur lors de l'activation du Bluetooth :", e.stderr)
 
 
 async def souscription_notifications(client):
