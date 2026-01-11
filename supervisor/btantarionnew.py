@@ -62,10 +62,11 @@ async def main():
                     WRITE_COMMAND = bytearray([0x4F, 0x4B])
                     WRITE_UUID = "00002af1-0000-1000-8000-00805f9b34fb"
                     print("3-> Connexion établie. Souscription aux notifications...")
-                    await client.start_notify(0x000e, parse_notification_14)
-                    await client.start_notify(0x0025, parse_notification_14)
-                    await client.start_notify(0x0029, parse_notification_14)
-                    await client.start_notify(0x002d, parse_notification_14)
+                    try:
+                        await asyncio.wait_for(client.start_notify(0x000e, parse_notification_14), timeout=10)
+                    except asyncio.TimeoutError:
+                        print("Timeout lors de start_notify sur 0x000e")
+                        continue
                     print("4-> Envoi requete et ecoute des notifications...")
                     while True:
                         await client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True)
