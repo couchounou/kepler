@@ -81,7 +81,7 @@ async def main():
                     print("4-> Envoi requete et ecoute des notifications...")
                     while True:
                         await client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True)
-                        await asyncio.sleep(15)
+                        await asyncio.sleep(55)
                         print("4-> En écoute des notifications sur handle 0x0029, 0x0025 et 0x000e... (Ctrl+C pour arrêter)")
                 except KeyboardInterrupt:
                     print("Arrêt des notifications...")
