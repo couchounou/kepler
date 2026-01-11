@@ -65,9 +65,9 @@ async def main():
                 try:
                     # accès à client.services ou autres opérations
                     for service in client.services:
-                        print(" Service:", service.uuid)
+                        print("   Service:", service.uuid)
                         for char in service.characteristics:
-                            print(f"  Char: {char.uuid}, Handle: {char.handle}, Properties: {char.properties}")
+                            print(f"    Char: {char.uuid}, Handle: {char.handle}, Properties: {char.properties}")
 
                     # Souscrire à toutes les notifications sur le handle 0x000f
                     WRITE_COMMAND = bytearray([0x4F, 0x4B])
