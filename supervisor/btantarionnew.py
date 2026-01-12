@@ -87,6 +87,7 @@ async def main():
         device = await find_device_with_timeout("Solar ", timeout=15)
         if not device:
             await asyncio.sleep(10)
+            print("Device non trouvé, nouvelle tentative...")
             continue        
         else:
             print("2-> Tentative de connexion:", device)
