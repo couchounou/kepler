@@ -3,27 +3,32 @@ from datetime import datetime
 from bleak import BleakClient, BleakScanner
 import subprocess
 
-def parse_notification_14(handle, data):
-    # convertir bytes ASCII en string
-    hex_str = data.hex()
-    s = data.decode('ascii')
-    print(f"Notification reçue (handle: {handle}): {hex_str}")
-    if data[-1] == 0x0a:  # LF à la fin
-        print("... Fin de trame")
-    elif data[-1] == 0x0d:  # CR à la fin
-        print(f"Trame reçue #2: de {len(s)} caractères: {s}")
-        # extraire les valeurs en fonction de la longueur connue
-        tension = int(s[0:4])/100
-        print(f"R2 - Tension: {tension}")
-    else:
-        print(f"Trame reçue #1: de {len(s)} caractères: {s}")
-        courant = int(s[0:3])       # 0000 → 0 A
-        tension = int(s[3:7])/100    # 1280 → 12.8 V
-        inconnu = s[7:10]            # 00
-        capacity = int(s[10:14])     # 0051 → 51 Ah
-        energie = int(s[14:20])     # 000614 → 640 Wh
-        print(f"'{datetime.now()}: Courant: {courant} A, Tension: {tension} V, inconnu {inconnu} Ah: {capacity}, Wh: {energie} ")
+notif_event = asyncio.Event()
 
+
+def parse_notification_14(handle, data):
+    notif_event.set()
+    if handle == 0x000e:
+        hex_str = data.hex()
+        s = data.decode('ascii')
+        print(f"Notification reçue (handle: {handle}): {hex_str}")
+        if data[-1] == 0x0a:  # LF à la fin
+            print("... Fin de trame")
+        elif data[-1] == 0x0d:  # CR à la fin
+            print(f"Trame reçue #2: de {len(s)} caractères: {s}")
+            # extraire les valeurs en fonction de la longueur connue
+            tension = int(s[0:4])/100
+            print(f"R2 - Tension: {tension}")
+        else:
+            print(f"Trame reçue #1: de {len(s)} caractères: {s}")
+            courant = int(s[0:3])       # 0000 → 0 A
+            tension = int(s[3:7])/100    # 1280 → 12.8 V
+            inconnu = s[7:10]            # 00
+            capacity = int(s[10:14])     # 0051 → 51 Ah
+            energie = int(s[14:20])     # 000614 → 640 Wh
+            print(f"'{datetime.now()}: Courant: {courant} A, Tension: {tension} V, inconnu {inconnu} Ah: {capacity}, Wh: {energie} ")
+    else:
+        print(f"Notification reçue (handle: {handle}): {data.hex()} (non traité)")
 
 async def find_device_with_timeout(device_name, timeout=10):
     try:
@@ -103,10 +108,17 @@ async def main():
                         await asyncio.wait_for(souscription_notifications(client), timeout=15)
                         print("4-> Envoi requete et ecoute des notifications...")
                         while True:
+                            notif_event.clear()
                             await asyncio.wait_for(
                                 client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True),
                                 timeout=10
                             )
+                            try:
+                                await asyncio.wait_for(notif_event.wait(), timeout=10)
+                                print("Notification reçue dans les 10 secondes !")
+                            except asyncio.TimeoutError:
+                                print("Aucune notification reçue dans les 10 secondes après write.")
+                                continue
                             print("4-> En écoute des notifications sur handle 0x0029, 0x0025 et 0x000e... (Ctrl+C pour arrêter)")
                             await asyncio.sleep(55)
                     except asyncio.TimeoutError:
