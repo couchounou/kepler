@@ -58,7 +58,7 @@ def power_on_bluetooth():
             ["bluetoothctl", "power", "on"],
             capture_output=True,
             text=True,
-            check=True
+            c   heck=True
         )
         print("Bluetooth activé :", result.stdout)
     except subprocess.CalledProcessError as e:
@@ -69,7 +69,7 @@ async def souscription_notifications(client):
     print("  start_notify 0x000e")
     for handle in [0x000e]:    #, 0x0025, 0x0029, 0x002d
         try:
-            print(f"  start_notify {hex(handle)}")
+            print(f"  start_notify {handle}")
             await client.start_notify(handle, parse_notification_14)
         except Exception as e:
             if "Notify acquired" in str(e):
