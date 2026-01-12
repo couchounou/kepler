@@ -67,7 +67,7 @@ def power_on_bluetooth():
 
 async def souscription_notifications(client):
     print("  start_notify 0x000e")
-    for handle in [0x000e, 0x0025, 0x0029, 0x002d]:
+    for handle in [0x000e]:    #, 0x0025, 0x0029, 0x002d
         try:
             print(f"  start_notify {hex(handle)}")
             await client.start_notify(0x000e, parse_notification_14)
