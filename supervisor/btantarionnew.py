@@ -70,7 +70,7 @@ async def souscription_notifications(client):
     for handle in [0x000e]:    #, 0x0025, 0x0029, 0x002d
         try:
             print(f"  start_notify {hex(handle)}")
-            await client.start_notify(0x000e, parse_notification_14)
+            await client.start_notify(handle, parse_notification_14)
         except Exception as e:
             if "Notify acquired" in str(e):
                 print("Notification déjà acquise...")
