@@ -115,12 +115,12 @@ async def main():
                             )
                             try:
                                 await asyncio.wait_for(notif_event.wait(), timeout=10)
-                                print("Notification reçue dans les 10 secondes !")
+                                print("4-> En écoute des notifications sur handle 0x0029, 0x0025 et 0x000e... (Ctrl+C pour arrêter)")
+                                await asyncio.sleep(55)
                             except asyncio.TimeoutError:
-                                print("Aucune notification reçue dans les 10 secondes après write.")
-                                continue
-                            print("4-> En écoute des notifications sur handle 0x0029, 0x0025 et 0x000e... (Ctrl+C pour arrêter)")
-                            await asyncio.sleep(55)
+                                print("Aucune notification reçue....")
+                                await asyncio.sleep(15)
+
                     except asyncio.TimeoutError:
                         print("Timeout global lors de la souscription aux notifications")
                         continue
