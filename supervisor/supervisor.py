@@ -166,7 +166,7 @@ async def periodic_solar_read():
         await asyncio.sleep(300)  # 5 minutes
 
 
-def read_loop(interval_minutes=0.1):
+async def read_loop(interval_minutes=0.1):
     """
     Continuously reads all 4 ADS1115 channels
     every 'interval_minutes' minutes and prints the results.
@@ -198,7 +198,7 @@ def read_loop(interval_minutes=0.1):
                 print("Failed to write points to InfluxDB.")
         else:
             print("No internet connection. Points not sent.")
-        time.sleep(interval_minutes * 60)
+        await asyncio.sleep(interval_minutes * 60)  # <-- async sleep
 
 
 if __name__ == "__main__":
@@ -226,4 +226,4 @@ if __name__ == "__main__":
     )
     WRITE_API = CLIENT.write_api(write_options=SYNCHRONOUS)
     print("Starting supervisor versin 224 with InfluxDB org:%s, server:%s, bucket:%s" % (ORG, SERVER, BUCKET))
-    read_loop()
+    asyncio.run(read_loop())
