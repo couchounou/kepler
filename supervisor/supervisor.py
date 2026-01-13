@@ -47,8 +47,8 @@ class SiteStatus:
 
     def reset(self):
         self.status = {
-            "chassis_voltage": 0.0,
-            "house_voltage": 0.0,
+            "auxiliary_voltage": 0.0,
+            "principal_voltage": 0.0,
             "panel_voltage": 0.0,
             "panel_power": 0.0,
             "water_level": 0.0,
@@ -121,8 +121,8 @@ def influx_write_pts(points: list, bucket: str) -> None:
 
 def read_all_ads1115_channels_fake():
     SiteStatus_instance.update(
-        chassis_voltage=random.uniform(11.5, 13.5),
-        house_voltage=random.uniform(11.5, 13.5),
+        auxiliary_voltage=random.uniform(11.5, 13.5),
+        principal_voltage=random.uniform(11.5, 13.5),
         panel_voltage=random.uniform(0.0, 25.0),
         water_level=random.uniform(0, 100),
         temperature_1=random.uniform(-10, 50),
@@ -145,10 +145,14 @@ def read_all_ads1115_channels():
     ]
     print(f"channel voltages: {[ch.voltage for ch in channels]}")
     SiteStatus_instance.update(
-        chassis_voltage=channels[0].voltage * 3.965,
-        house_voltage=channels[1].voltage * 3.98,
-        water_level=channels[2].voltage * 4.59,
-        temperature_1=channels[3].voltage * 4.59
+        # auxiliary_voltage=channels[1].voltage * 3.965,
+        # principal_voltage=channels[0].voltage * 3.98,
+        auxiliary_voltage=random.uniform(11.5, 13.5),
+        principal_voltage=random.uniform(11.5, 13.5),
+        panel_voltage=random.uniform(0.0, 25.0),
+        water_level=round(channels[2].voltage * 4.59, 0),
+        temperature_1=round(channels[3].voltage * 4.59, 1),
+        temperature_2=round(channels[3].voltage * 4.59, 1)
     )
 
 
