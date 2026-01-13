@@ -130,7 +130,7 @@ async def get_solar_reg_data(cycles=1):
             print(f"Erreur Bleak : {e}")
         finally:
             await client.__aexit__(None, None, None)
-        return None
+            return None
 
 
 # ...existing code...
@@ -144,5 +144,3 @@ if __name__ == "__main__":
         print("Résultat:", result)
     except asyncio.TimeoutError:
         print("Timeout global atteint, arrêt du superviseur.")
-        return None
-# ...existing code...
