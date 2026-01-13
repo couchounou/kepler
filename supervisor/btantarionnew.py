@@ -8,10 +8,10 @@ notif_event = asyncio.Event()
 
 
 
-async def find_device_with_timeout(device_name, timeout=10):
+async def find_device_with_timeout(device_name, timeout=5):
     try:
         scanner = BleakScanner(adapter='hci0')
-        devices = await scanner.discover(timeout=10)
+        devices = await scanner.discover(timeout=timeout)
         if not devices:
             print("Aucun périphérique trouvé.")
         for d in devices:
