@@ -125,7 +125,7 @@ def read_all_ads1115_channels_fake():
         house_voltage=random.uniform(11.5, 13.5),
         panel_voltage=random.uniform(0.0, 25.0),
         water_level=random.uniform(0, 100),
-        temperature_1=random.uniform(-10, 50)
+        temperature_1=random.uniform(-10, 50),
         temperature_2=random.uniform(-10, 50)
     )
 
