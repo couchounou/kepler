@@ -93,9 +93,9 @@ async def get_solar_reg_data(cycles=1):
                 else:
                     raise
 
-    print("1-> Recherche device sur hci0 ")
     device = None
     while not device:
+        print("1-> Recherche device sur hci0 ")
         device = await find_device_with_timeout("Solar ", timeout=5)
         if not device:
             print("Device non trouvé.")
