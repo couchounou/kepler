@@ -144,4 +144,5 @@ if __name__ == "__main__":
         print("Résultat:", result)
     except asyncio.TimeoutError:
         print("Timeout global atteint, arrêt du superviseur.")
+        return None
 # ...existing code...
