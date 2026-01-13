@@ -138,4 +138,10 @@ async def get_solar_reg_data(cycles=1):
 
 if __name__ == "__main__":
     print("Démarrage du superviseur BT Antarion...")
-    asyncio.run(get_solar_reg_data())
+    try:
+        # Timeout global de 60 secondes (modifiable)
+        result = asyncio.run(asyncio.wait_for(get_solar_reg_data(), timeout=60))
+        print("Résultat:", result)
+    except asyncio.TimeoutError:
+        print("Timeout global atteint, arrêt du superviseur.")
+# ...existing code...

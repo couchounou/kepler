@@ -9,7 +9,9 @@ from datetime import datetime, UTC
 import random
 import configparser
 import os
-
+import asyncio
+import sys
+from btantarionnew import get_solar_reg_data
 try:
     import board
     import busio
@@ -148,11 +150,29 @@ def read_all_ads1115_channels():
     )
 
 
+async def periodic_solar_read():
+    while True:
+        try:
+            result = await asyncio.wait_for(get_solar_reg_data(), timeout=60)
+            print("Résultat périodique:", result)
+            if result:
+                # Mettre à jour SiteStatus_instance avec les données reçues
+                SiteStatus_instance.update(
+                    panel_voltage=result.get("panel_voltage", 0.0),
+                    panel_power=result.get("panel_power", 0.0)
+                )
+        except asyncio.TimeoutError:
+            print("Timeout global atteint, arrêt de la lecture périodique.")
+        await asyncio.sleep(300)  # 5 minutes
+
+
 def read_loop(interval_minutes=0.1):
     """
     Continuously reads all 4 ADS1115 channels
     every 'interval_minutes' minutes and prints the results.
     """
+    solar_task = asyncio.create_task(periodic_solar_read())
+
     while True:
         print("try Reading ADS1115 channels...")
         if ADAFRUIT_AVAILABLE:
