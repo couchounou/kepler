@@ -98,7 +98,7 @@ async def get_solar_reg_data(cycles=1):
         print("1-> Recherche device sur hci0 ")
         device = await find_device_with_timeout("Solar ", timeout=5)
         if not device:
-            print("Device non trouvé.")
+            print("    Device non trouvé.")
             await asyncio.sleep(5)
     print("2-> Tentative de connexion:", device)
     while True:
