@@ -1,5 +1,6 @@
 import asyncio
 from datetime import datetime
+from os import system
 from bleak import BleakClient, BleakScanner
 import subprocess
 
@@ -54,7 +55,7 @@ def power_on_bluetooth():
             text=True,
             check=True
         )
-        await asyncio.sleep(2)  # Attendre un peu avant de rallumer
+        system.sleep(2)  # Attendre un peu avant de rallumer
         result = subprocess.run(
             ["bluetoothctl", "power", "on"],
             capture_output=True,
