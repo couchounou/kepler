@@ -107,13 +107,16 @@ async def main():
                     print("3-> Connexion établie. Souscription aux notifications...")
                     try:
                         await client.start_notify(0x000e, parse_notification_14)
-                        print("4-> Envoi requete et ecoute des notifications...")
+                    except Exception as e:
+                        print(f"Erreur lors de la souscription aux notifications: {e}")
+                        if "Notify acquired" in str(e):
+                            print("Notification déjà acquise...")
+                    try:
+                        print("4-> Envoi commande WRITE_COMMAND au MPPT...")
                         await client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True),
-                        await asyncio.sleep(15)
-                        
-                    except asyncio.TimeoutError:
-                        print("Timeout global lors de la souscription aux notifications")
-                        continue
+                        await asyncio.sleep(2)
+                    except Exception as e:
+                        print(f"Erreur lors de l'envoi de la commande au MPPT: {e}")
                 except KeyboardInterrupt:
                     print("Arrêt des notifications...")
                     await client.stop_notify(0x000e)
