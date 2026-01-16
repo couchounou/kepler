@@ -109,7 +109,7 @@ async def main():
                         await client.start_notify(0x000e, parse_notification_14)
                         print("4-> Envoi requete et ecoute des notifications...")
                         await client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True),
-                        asyncio.sleep(15)
+                        await asyncio.sleep(15)
                         
                     except asyncio.TimeoutError:
                         print("Timeout global lors de la souscription aux notifications")
