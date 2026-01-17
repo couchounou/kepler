@@ -54,7 +54,7 @@ class SiteStatus:
             "water_level": 0.0,
             "temperature_1": 0.0,
             "temperature_2": 0.0,
-            "lte_signal": True
+            "lte_signal": False
         }
 
     def update(self, **kwargs):

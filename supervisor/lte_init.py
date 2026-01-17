@@ -53,14 +53,15 @@ def test_ping(num: int = 2, target: str = "8.8.8.8", timeout: int = 2) -> bool:
     result = subprocess.run(
         ["ping", "-I", "eth0", "-w", str(timeout * 1000), "-c", str(num), target],
         capture_output=True,
-        text=True  # Pour avoir du texte au lieu de bytes
+        text=True,
+        check=True
     )
-    
+
     if result.returncode == 0:
         print("  LTE Internet OK")
         return True
     else:
-        print(f"  LTE Internet KO: {result.stderr}")
+        print(f"  LTE Internet KO: {result.stderr}".strip())
         return False
 
 
@@ -76,7 +77,7 @@ def wlan0_has_internet(timeout=1) -> bool:
         return False
 
 
-def ready_or_connect(force=True):
+def ready_or_connect(force=False) -> tuple[bool, bool]:
     if wlan0_has_internet():
         print("  WLAN0 already connected to internet.")
         return True, False
