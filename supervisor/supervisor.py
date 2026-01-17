@@ -54,7 +54,7 @@ class SiteStatus:
             "water_level": 0.0,
             "temperature_1": 0.0,
             "temperature_2": 0.0,
-            "lte_signal": 0
+            "lte_signal": True
         }
 
     def update(self, **kwargs):
@@ -187,19 +187,25 @@ async def read_loop(interval_minutes=0.1):
             print("Using fake ADS1115 readings.")
             read_all_ads1115_channels_fake()
         print(SiteStatus_instance)
-        POINTS.append(SiteStatus_instance.to_point())
-        SiteStatus_instance.reset()
 
         connected = False
+        lte_signal = False
         if not test_ping(1):
-            connected, _ = ready_or_connect(force=False)
+            connected, lte_signal = ready_or_connect(force=False)
         else:
             connected = True
+
+        SiteStatus_instance.update(lte_signal=lte_signal)
+        POINTS.append(SiteStatus_instance.to_point())
+        SiteStatus_instance.reset()
 
         if connected:
             if influx_write_pts(POINTS, BUCKET):
                 POINTS.clear()
-                print("Points successfully written to InfluxDB.")
+                print(
+                    "Points successfully written to InfluxDB through ",
+                    "LTE" if lte_signal else "WLAN0"
+                )
             else:
                 print("Failed to write points to InfluxDB.")
         else:
