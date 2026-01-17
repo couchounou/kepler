@@ -172,7 +172,7 @@ async def periodic_solar_read():
         await asyncio.sleep(300)  # 5 minutes
 
 
-async def read_loop(interval_minutes=0.1):
+async def read_loop(interval_minutes=0.5):
     """
     Continuously reads all 4 ADS1115 channels
     every 'interval_minutes' minutes and prints the results.
