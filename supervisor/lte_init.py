@@ -49,25 +49,18 @@ def is_reg(ser):
 
 
 def test_ping(num: int = 2, target: str = "8.8.8.8", timeout: int = 2) -> bool:
-    """Tester connectivité Internet"""
     print(f"  Test ping to {target}...")
-    try:
-        subprocess.check_call(
-            [
-                "ping",
-                "-I",
-                "eth0",
-                "-w",
-                str(timeout),
-                "-c",
-                str(num),
-                target
-            ]
-        )
+    result = subprocess.run(
+        ["ping", "-I", "eth0", "-w", str(timeout * 1000), "-c", str(num), target],
+        capture_output=True,
+        text=True  # Pour avoir du texte au lieu de bytes
+    )
+    
+    if result.returncode == 0:
         print("  LTE Internet OK")
         return True
-    except subprocess.CalledProcessError:
-        print("  LTE Internet KO")
+    else:
+        print(f"  LTE Internet KO: {result.stderr}")
         return False
 
 

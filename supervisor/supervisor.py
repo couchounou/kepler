@@ -182,12 +182,12 @@ async def read_loop(interval_minutes=0.1):
     while True:
         print("try Reading ADS1115 channels...")
         if ADAFRUIT_AVAILABLE:
+            print("Using real ADS1115 readings.")
             read_all_ads1115_channels()
         else:
             print("Using fake ADS1115 readings.")
             read_all_ads1115_channels_fake()
         print(SiteStatus_instance)
-
         connected = False
         lte_signal = False
         if not test_ping(1):
