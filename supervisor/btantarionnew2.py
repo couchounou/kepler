@@ -117,14 +117,12 @@ async def main():
                     try:
                         print("4-> Envoi commande WRITE_COMMAND au MPPT...")
                         await client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True),
-                        await asyncio.sleep(2)
+                        await asyncio.sleep(5)
                     except Exception as e:
                         print(f"Erreur lors de l'envoi de la commande au MPPT: {e}")
                 except KeyboardInterrupt:
                     print("Arrêt des notifications...")
                     await client.stop_notify(0x000e)
-                    await client.stop_notify(0x0025)
-                    await client.stop_notify(0x0029)
                 except Exception as e:
                     print(f"Erreur durant la communication avec le MPPT: {e}")
                 finally:

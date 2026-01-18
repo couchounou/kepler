@@ -51,7 +51,16 @@ def is_reg(ser):
 def test_ping(num: int = 2, target: str = "8.8.8.8", timeout: int = 2) -> bool:
     print(f"  Test ping to {target}...")
     result = subprocess.run(
-        ["ping", "-I", "eth0", "-w", str(timeout * 1000), "-c", str(num), target],
+        [
+            "ping",
+            "-I",
+            "eth0",
+            "-w",
+            str(timeout * 1000),
+            "-c",
+            str(num),
+            target
+        ],
         capture_output=True,
         text=True,
         check=False
