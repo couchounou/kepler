@@ -110,11 +110,12 @@ async def main():
                     WRITE_UUID = "00002af1-0000-1000-8000-00805f9b34fb"
                     print("3-> Connexion établie. Souscription aux notifications...")
                     try:
-                        await client.stop_notify(0x000e)
                         print("Arrêt des notifications existantes...")
+                        await client.stop_notify(0x000e)
                     except Exception as e:
                         print(f"Aucune notification à arrêter: {e}")
                     try:
+                        print("Démarrage des notifications...")
                         await client.start_notify(0x000e, parse_notification_14)
                         await asyncio.sleep(10)
                     except Exception as e:
