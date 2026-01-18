@@ -126,7 +126,9 @@ async def get_solar_reg_data(cycles=1):
                     # Dès qu'on a reçu une notification, on sort et on retourne les données
                     return live_data
                 except asyncio.TimeoutError:
-                    print("[BT SOLAR] Aucune notification reçue....")
+                    print("[BT SOLAR] Aucune notification reçue")
+        except asyncio.TimeoutError:
+            print("[BT SOLAR] Impossible de se connecter dans le délai imparti")
         except Exception as e:
             print(f"Erreur Bleak : {e}")
         return None
