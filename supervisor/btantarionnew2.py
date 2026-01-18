@@ -93,58 +93,61 @@ async def main():
             continue        
         else:
             print("2-> Tentative de connexion:", device)
-            try:
-                client = BleakClient(device.address)
-                await asyncio.wait_for(client.__aenter__(), timeout=30)
+            async with BleakClient(address, timeout=30.0) as client:
+                if not client.is_connected:
+                    print("Erreur : périphérique non connecté")
+                    return
                 try:
-                    # accès à client.services ou autres opérations
-                    await client.get_services()
-                    print("Services disponibles sur le MPPT:")
-                    for service in client.services:
-                        print("   Service:", service.uuid)
-                        for char in service.characteristics:
-                            print(f"    Char: {char.uuid}, Handle: {char.handle}, Properties: {char.properties}")
+                    if not client.is_connected:
+                        print("Erreur : périphérique non connecté")
+                        return
+                    try:
+                        print("Services disponibles sur le MPPT:")
+                        for service in client.services:
+                            print("   Service:", service.uuid)
+                            for char in service.characteristics:
+                                print(f"    Char: {char.uuid}, Handle: {char.handle}, Properties: {char.properties}")
 
-                    # Souscrire à toutes les notifications sur le handle 0x000f
-                    WRITE_COMMAND = bytearray([0x4F, 0x4B])
-                    WRITE_UUID = "00002af1-0000-1000-8000-00805f9b34fb"
-                    print("3-> Connexion établie. Souscription aux notifications...")
-                    try:
-                        await client.stop_notify(0x000e)
-                        print("Arrêt des notifications existantes...")
-                    except Exception as e:
-                        print(f"Aucune notification à arrêter: {e}")
-                    try:
-                        await client.start_notify(0x000e, parse_notification_14)
-                        await asyncio.sleep(10)
-                    except Exception as e:
-                        print(f"Erreur lors de la souscription aux notifications: {e}")
-                        if "Notify acquired" in str(e):
-                            print("Notification déjà acquise...")
+                        # Souscrire à toutes les notifications sur le handle 0x000f
+                        WRITE_COMMAND = bytearray([0x4F, 0x4B])
+                        WRITE_UUID = "00002af1-0000-1000-8000-00805f9b34fb"
+                        print("3-> Connexion établie. Souscription aux notifications...")
+                        try:
                             await client.stop_notify(0x000e)
-                    try:
-                        print("4-> Envoi commande WRITE_COMMAND au MPPT...")
-                        await client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True),
-                        await asyncio.sleep(10)
+                            print("Arrêt des notifications existantes...")
+                        except Exception as e:
+                            print(f"Aucune notification à arrêter: {e}")
+                        try:
+                            await client.start_notify(0x000e, parse_notification_14)
+                            await asyncio.sleep(10)
+                        except Exception as e:
+                            print(f"Erreur lors de la souscription aux notifications: {e}")
+                            if "Notify acquired" in str(e):
+                                print("Notification déjà acquise...")
+                                await client.stop_notify(0x000e)
+                        try:
+                            print("4-> Envoi commande WRITE_COMMAND au MPPT...")
+                            await client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True),
+                            await asyncio.sleep(10)
+                        except Exception as e:
+                            print(f"Erreur lors de l'envoi de la commande au MPPT: {e}")
+                    except KeyboardInterrupt:
+                        print("Arrêt des notifications...")
+                        await client.stop_notify(0x000e)
                     except Exception as e:
-                        print(f"Erreur lors de l'envoi de la commande au MPPT: {e}")
-                except KeyboardInterrupt:
-                    print("Arrêt des notifications...")
-                    await client.stop_notify(0x000e)
+                        print(f"Erreur durant la communication avec le MPPT: {e}")
+                    finally:
+                        await client.stop_notify(0x000e)
+                        await client.__aexit__(None, None, None)
+                except asyncio.TimeoutError:
+                    print("Timeout lors de la connexion au MPPT")
                 except Exception as e:
-                    print(f"Erreur durant la communication avec le MPPT: {e}")
+                    print(f"Erreur Bleak : {e}")
+                    if "Notify acquired" in str(e):
+                        print("Attente de 10 secondes avant nouvelle tentative...")
+                        await asyncio.sleep(10)
                 finally:
-                    await client.stop_notify(0x000e)
                     await client.__aexit__(None, None, None)
-            except asyncio.TimeoutError:
-                print("Timeout lors de la connexion au MPPT")
-            except Exception as e:
-                print(f"Erreur Bleak : {e}")
-                if "Notify acquired" in str(e):
-                    print("Attente de 10 secondes avant nouvelle tentative...")
-                    await asyncio.sleep(10)
-            finally:
-                await client.__aexit__(None, None, None)
 
 if __name__ == "__main__":
     print("Démarrage du superviseur BT Antarion...")
