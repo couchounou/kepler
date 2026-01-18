@@ -99,6 +99,7 @@ async def main():
                 try:
                     # accès à client.services ou autres opérations
                     await client.get_services()
+                    print("Services disponibles sur le MPPT:")
                     for service in client.services:
                         print("   Service:", service.uuid)
                         for char in service.characteristics:
