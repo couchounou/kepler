@@ -104,7 +104,7 @@ async def get_solar_reg_data(cycles=1):
     print("[BT SOLAR] 2-> Tentative de connexion:", device)
     while True:
         try:
-            async with BleakClient(address, timeout=10.0) as client:
+            async with BleakClient(address, timeout=20.0) as client:
                 for service in client.services:
                     print("[BT SOLAR]    Service:", service.uuid)
                     for char in service.characteristics:
