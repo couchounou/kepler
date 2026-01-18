@@ -108,8 +108,8 @@ async def main():
                     WRITE_UUID = "00002af1-0000-1000-8000-00805f9b34fb"
                     print("3-> Connexion établie. Souscription aux notifications...")
                     try:
-                        await client.start_notify(0x000e, parse_notification_14)
-                        await asyncio.sleep(5)
+                        await client.start_notify(0x000e, parse_notification_1, )
+                        await asyncio.sleep(10)
                     except Exception as e:
                         print(f"Erreur lors de la souscription aux notifications: {e}")
                         if "Notify acquired" in str(e):
@@ -117,7 +117,7 @@ async def main():
                     try:
                         print("4-> Envoi commande WRITE_COMMAND au MPPT...")
                         await client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True),
-                        await asyncio.sleep(5)
+                        await asyncio.sleep(10)
                     except Exception as e:
                         print(f"Erreur lors de l'envoi de la commande au MPPT: {e}")
                 except KeyboardInterrupt:
@@ -126,6 +126,7 @@ async def main():
                 except Exception as e:
                     print(f"Erreur durant la communication avec le MPPT: {e}")
                 finally:
+                    await client.stop_notify(0x000e)
                     await client.__aexit__(None, None, None)
             except asyncio.TimeoutError:
                 print("Timeout lors de la connexion au MPPT")
