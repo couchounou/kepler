@@ -91,7 +91,7 @@ async def get_solar_reg_data(cycles=1):
                         handle,
                         parse_notification_14
                     ),
-                    timeout=15
+                    timeout=10
                 )
             except asyncio.TimeoutError:
                 print("[BT SOLAR] Impossible de souscrire délai imparti")
