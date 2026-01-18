@@ -135,6 +135,8 @@ async def main():
                 if "Notify acquired" in str(e):
                     print("Attente de 10 secondes avant nouvelle tentative...")
                     await asyncio.sleep(10)
+            finally:
+                await client.__aexit__(None, None, None)
 
 if __name__ == "__main__":
     print("Démarrage du superviseur BT Antarion...")
