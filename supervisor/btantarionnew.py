@@ -86,7 +86,15 @@ async def get_solar_reg_data(cycles=1):
         for handle in [0x000e]:
             try:
                 print(f"      Try start notify -> {handle}")
-                await client.start_notify(handle, parse_notification_14)
+                await asyncio.wait_for(
+                    client.start_notify(
+                        handle,
+                        parse_notification_14
+                    ),
+                    timeout=15
+                )
+            except asyncio.TimeoutError:
+                print("[BT SOLAR] Impossible de souscrire délai imparti")
             except Exception as e:
                 if "Notify acquired" in str(e):
                     print("[BT SOLAR] Notification déjà acquise...")
