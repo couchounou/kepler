@@ -129,9 +129,7 @@ async def get_solar_reg_data(cycles=1):
                     print("[BT SOLAR] Aucune notification reçue....")
         except Exception as e:
             print(f"Erreur Bleak : {e}")
-        finally:
-            await client.__aexit__(None, None, None)
-            return None
+        return None
 
 
 # ...existing code...
