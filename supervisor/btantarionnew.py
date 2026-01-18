@@ -112,21 +112,21 @@ async def get_solar_reg_data(cycles=1):
 
                 WRITE_COMMAND = bytearray([0x4F, 0x4B])
                 WRITE_UUID = "00002af1-0000-1000-8000-00805f9b34fb"
-                print("[BT SOLAR] 3-> Connexion établie. Souscription aux notifications...")
+                print("[BT SOLAR] 3-> Souscription aux notifications...")
+                
                 await asyncio.wait_for(souscription_notifications(client), timeout=15)
-                print("[BT SOLAR] 4-> Envoi requete et attente notification...")
                 notif_event.clear()
                 data_event.clear()
+
                 await asyncio.wait_for(
+                    print("[BT SOLAR] 4-> Envoi requete et attente notification...")
                     client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True),
                     timeout=10
                 )
-                try:
-                    await asyncio.wait_for(data_event.wait(), timeout=10)
-                    # Dès qu'on a reçu une notification, on sort et on retourne les données
-                    return live_data
-                except asyncio.TimeoutError:
-                    print("[BT SOLAR] Aucune notification reçue")
+
+                await asyncio.wait_for(data_event.wait(), timeout=10)
+                # Dès qu'on a reçu une notification, on sort et on retourne les données
+                return live_data
         except asyncio.TimeoutError:
             print("[BT SOLAR] Impossible de se connecter dans le délai imparti")
         except Exception as e:
