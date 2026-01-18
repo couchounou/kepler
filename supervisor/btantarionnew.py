@@ -141,7 +141,7 @@ async def get_solar_reg_data(cycles=1):
             print("[BT SOLAR] Impossible de se connecter dans le délai imparti")
         except Exception as e:
             print(f"Erreur Bleak : {e}")
-        return None
+    return None
 
 
 # ...existing code...
