@@ -93,7 +93,7 @@ async def main():
             continue        
         else:
             print("2-> Tentative de connexion:", device)
-            async with BleakClient(address, timeout=30.0) as client:
+            async with BleakClient(address, timeout=5.0) as client:
                 if not client.is_connected:
                     print("Erreur : périphérique non connecté")
                     return
@@ -109,24 +109,37 @@ async def main():
                     WRITE_COMMAND = bytearray([0x4F, 0x4B])
                     WRITE_UUID = "00002af1-0000-1000-8000-00805f9b34fb"
                     print("3-> Connexion établie. Souscription aux notifications...")
+                    
                     try:
                         print("Arrêt des notifications existantes...")
-                        await client.stop_notify(0x000e)
+                        await asyncio.wait_for(client.stop_notify(0x000e), timeout=5)
+                    except asyncio.TimeoutError:
+                        print("Timeout: arrêt des notifications trop long")
                     except Exception as e:
                         print(f"Aucune notification à arrêter: {e}")
+
                     try:
                         print("Démarrage des notifications...")
-                        await client.start_notify(0x000e, parse_notification_14)
-                        await asyncio.sleep(10)
+                        await asyncio.wait_for(client.start_notify(0x000e, parse_notification_14), timeout=5)
+                        # écouter notifications 10 sec après start_notify
+                        await asyncio.wait_for(asyncio.sleep(10), timeout=5)
+                    except asyncio.TimeoutError:
+                        print("Timeout: démarrage des notifications trop long")
                     except Exception as e:
                         print(f"Erreur lors de la souscription aux notifications: {e}")
                         if "Notify acquired" in str(e):
                             print("Notification déjà acquise...")
-                            await client.stop_notify(0x000e)
+                            try:
+                                await asyncio.wait_for(client.stop_notify(0x000e), timeout=5)
+                            except Exception as e2:
+                                print(f"Impossible d'arrêter la notification existante: {e2}")
+
                     try:
                         print("4-> Envoi commande WRITE_COMMAND au MPPT...")
-                        await client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True),
-                        await asyncio.sleep(10)
+                        await asyncio.wait_for(client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True), timeout=5)
+                        await asyncio.sleep(10) # attendre les notifications
+                    except asyncio.TimeoutError:
+                        print("Timeout: envoi de la commande au MPPT trop long")
                     except Exception as e:
                         print(f"Erreur lors de l'envoi de la commande au MPPT: {e}")
                 except KeyboardInterrupt:
