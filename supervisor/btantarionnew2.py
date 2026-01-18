@@ -98,6 +98,7 @@ async def main():
                 await asyncio.wait_for(client.__aenter__(), timeout=30)
                 try:
                     # accès à client.services ou autres opérations
+                    await client.get_services()
                     for service in client.services:
                         print("   Service:", service.uuid)
                         for char in service.characteristics:
@@ -109,6 +110,10 @@ async def main():
                     print("3-> Connexion établie. Souscription aux notifications...")
                     try:
                         await client.stop_notify(0x000e)
+                        print("Arrêt des notifications existantes...")
+                    except Exception as e:
+                        print(f"Aucune notification à arrêter: {e}")
+                    try:
                         await client.start_notify(0x000e, parse_notification_14)
                         await asyncio.sleep(10)
                     except Exception as e:
