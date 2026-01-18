@@ -100,13 +100,13 @@ async def main():
         try:
             device = await find_device_with_timeout("Solar regulator")
             print("-------> Tentative de connexion au MPPT... device:", device)
-            async with BleakClient(address) as client:
+            async with BleakClient(address, timeout=15.0) as client:
                 # Affichage des services
                 for service in client.services:
                     print("Service:", service.uuid)
                     for char in service.characteristics:
                         print(f"  Char: {char.uuid}, Handle: {char.handle}, Properties: {char.properties}")
-            async with BleakClient(address) as client:
+            async with BleakClient(address, timeout=15.0) as client:
                 # Souscrire à toutes les notifications sur le handle 0x000f
                 WRITE_COMMAND = bytearray([0x4F, 0x4B])
                 WRITE_UUID = "00002af1-0000-1000-8000-00805f9b34fb"
