@@ -93,7 +93,7 @@ async def main():
             continue
         else:
             print("2-> Tentative de connexion:", device)
-            async with BleakClient(address, timeout=5.0) as client:
+            async with BleakClient(address, timeout=10.0) as client:
                 # Vérification explicite de la connexion
                 if not client.is_connected:
                     print("Erreur : périphérique non connecté (après tentative de connexion)")
