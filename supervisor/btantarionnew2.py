@@ -90,12 +90,14 @@ async def main():
         if not device:
             await asyncio.sleep(10)
             print("Device non trouvé, nouvelle tentative...")
-            continue        
+            continue
         else:
             print("2-> Tentative de connexion:", device)
             async with BleakClient(address, timeout=5.0) as client:
+                # Vérification explicite de la connexion
+                await client.connect()
                 if not client.is_connected:
-                    print("Erreur : périphérique non connecté")
+                    print("Erreur : périphérique non connecté (après tentative de connexion)")
                     return
                 print("Connecté au MPPT:", client)
                 try:
@@ -109,7 +111,11 @@ async def main():
                     WRITE_COMMAND = bytearray([0x4F, 0x4B])
                     WRITE_UUID = "00002af1-0000-1000-8000-00805f9b34fb"
                     print("3-> Connexion établie. Souscription aux notifications...")
-                    
+
+                    # Vérification connexion avant souscription
+                    if not client.is_connected:
+                        print("Erreur : tentative de souscription alors que le périphérique n'est plus connecté !")
+                        return
                     try:
                         print("Arrêt des notifications existantes...")
                         await asyncio.wait_for(client.stop_notify(0x000e), timeout=5)
@@ -118,6 +124,10 @@ async def main():
                     except Exception as e:
                         print(f"Aucune notification à arrêter: {e}")
 
+                    # Vérification connexion juste avant start_notify
+                    if not client.is_connected:
+                        print("Erreur : tentative de start_notify alors que le périphérique n'est plus connecté !")
+                        return
                     try:
                         print("Démarrage des notifications...")
                         await asyncio.wait_for(client.start_notify(0x000e, parse_notification_14), timeout=5)
@@ -134,6 +144,10 @@ async def main():
                             except Exception as e2:
                                 print(f"Impossible d'arrêter la notification existante: {e2}")
 
+                    # Vérification connexion avant écriture
+                    if not client.is_connected:
+                        print("Erreur : tentative d'écriture alors que le périphérique n'est plus connecté !")
+                        return
                     try:
                         print("4-> Envoi commande WRITE_COMMAND au MPPT...")
                         await asyncio.wait_for(client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True), timeout=5)
