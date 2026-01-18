@@ -85,14 +85,14 @@ async def get_solar_reg_data(cycles=1):
         print("[BT SOLAR]   start_notify 0x000e")
         for handle in [0x000e]:
             try:
-                print(f"    start_notify -> {handle}")
+                print(f"      Try start notify -> {handle}")
                 await client.start_notify(handle, parse_notification_14)
             except Exception as e:
                 if "Notify acquired" in str(e):
                     print("[BT SOLAR] Notification déjà acquise...")
                     await client.stop_notify(handle)
                 else:
-                    raise
+                    print(f"[BT SOLAR] Erreur lors de la souscription aux notifications: {e}")
 
     device = None
     while not device:
