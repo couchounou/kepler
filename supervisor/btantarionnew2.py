@@ -109,7 +109,7 @@ async def main():
                     print("3-> Connexion établie. Souscription aux notifications...")
                     try:
                         await client.stop_notify(0x000e)
-                        await client.start_notify(0x000e, parse_notification_14, )
+                        await client.start_notify(0x000e, parse_notification_14)
                         await asyncio.sleep(10)
                     except Exception as e:
                         print(f"Erreur lors de la souscription aux notifications: {e}")
