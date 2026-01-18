@@ -110,18 +110,24 @@ async def main():
                 # Souscrire à toutes les notifications sur le handle 0x000f
                 WRITE_COMMAND = bytearray([0x4F, 0x4B])
                 WRITE_UUID = "00002af1-0000-1000-8000-00805f9b34fb"
-                print("Connexion établie. nettoyage des notifications existantes...")
-                await client.stop_notify(0x000e)
-                print("Connexion établie. Souscription aux notifications...")
-                await client.start_notify(0x000e, notification_handler)
-                await client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True)
-                print("En écoute des notifications sur handle 0x0029, 0x0025 et 0x000e... (Ctrl+C pour arrêter)")
                 try:
-                    while True:
-                        await asyncio.sleep(1)  # boucle d'attente
-                except KeyboardInterrupt:
-                    print("Arrêt des notifications...")
+                    print("Nettoyage des notifications existantes...")
                     await client.stop_notify(0x000e)
+                except Exception as e:
+                    print(f"Erreur lors de l'arrêt des notifications existantes: {e}")
+                
+                try:
+                    print("Souscription aux notifications...")
+                    await client.start_notify(0x000e, notification_handler)
+                except Exception as e:
+                    print(f"Erreur lors de la souscription aux notifications: {e}")
+
+                try:
+                    print("Envoi requete et attente notification...")
+                    await client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True)
+                except Exception as e:
+                    print(f"Erreur lors de l'envoi de la requête: {e}")
+                print("En écoute des notifications sur handle 0x0029, 0x0025 et 0x000e... (Ctrl+C pour arrêter)")
                 await asyncio.sleep(15)
         except Exception as e:
             print(f"Erreur Bleak : {e}")

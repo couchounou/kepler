@@ -90,6 +90,7 @@ async def get_solar_reg_data(cycles=1):
             except Exception as e:
                 if "Notify acquired" in str(e):
                     print("[BT SOLAR] Notification déjà acquise...")
+                    await client.stop_notify(handle)
                 else:
                     raise
 
