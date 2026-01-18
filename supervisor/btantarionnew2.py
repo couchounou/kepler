@@ -114,6 +114,7 @@ async def main():
                         print(f"Erreur lors de la souscription aux notifications: {e}")
                         if "Notify acquired" in str(e):
                             print("Notification déjà acquise...")
+                            await client.stop_notify(0x000e)
                     try:
                         print("4-> Envoi commande WRITE_COMMAND au MPPT...")
                         await client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True),
