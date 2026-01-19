@@ -1,8 +1,7 @@
 import asyncio
 from datetime import datetime
 from bleak import BleakClient, BleakScanner
-import subprocess
-import time
+
 # =========================
 # Fonctions de décodage
 # =========================
@@ -27,50 +26,63 @@ def parse_notification(data: bytearray):
         print(f"'{datetime.now()}: Courant: {courant} A, Tension: {tension} V, inconnu {inconnu} Ah: {capacity}, Wh: {energie} ")
 
 
-class NotificationParser:
-    def __init__(self):
-        self.dataframe = ""
+def notification_handler(handle, data):
+    hex_str = data.hex()
+    print(f"Notification reçue (handle: {handle}): {hex_str}")
+    # Identifier la zone selon la longueur
+    parse_notification_14(handle, data)
 
-    def parse_notification_14(self, handle, data):
-        print(f"[BTS] 6-> Notification (handle: {handle}): {data.decode('ascii')}, {data.hex()}")
-        if "00002af0-0000-1000-8000-00805f9b34fb" in str(handle):
-            if data[-1] == 0x0a:
-                print(f"[BTS] 6-> Fin de trame , on a {len(self.dataframe)} chars")
-                if len(self.dataframe) >= 20:
-                    print(f"dataframe complet: {str(self.dataframe)}")
-                    self.dataframe = ""
-            elif data[-1] == 0x0d:
-                s = data[:-1].decode('ascii')
-                print(f"[BTS] 6->      Trame reçue #2: de {len(s)} caractères: {s}")
-                self.dataframe += s
-            else:
-                s = data[1:].decode('ascii')
-                print(f"[BTS] 6->      Trame reçue #1: de {len(s)} caractères: {s}")
-                self.dataframe = s + self.dataframe
+
+dataframe = ""
+def parse_notification_14(handle, data):
+    print(f"[BTS] 6-> Notification (handle: {handle}): {data.decode('ascii')}, {data.hex()}")
+    if "00002af0-0000-1000-8000-00805f9b34fb" in str(handle):
+        if data[-1] == 0x0a:
+            print(f"[BTS] 6-> Fin de trame , on a {len(dataframe)} chars")
+            if len(dataframe) >= 20:
+                #s_full = dataframe.decode('ascii')
+                # courant = int(s_full[0:3])
+                # tension = int(s_full[3:7])/100
+                # inconnu = s_full[7:10]
+                # capacity = int(s_full[10:14])
+                # energie = int(s_full[14:20])
+                print(f"dataframe complet: {str(dataframe)}")
+                # print(f"[BTS] 6->    {datetime.now()}: Courant: {courant} A, Tension: {tension} V, inconnu {inconnu} Ah: {capacity}, Wh: {energie} ")
+                dataframe = ""  # Reset pour la prochaine trame
+        elif data[-1] == 0x0d:
+            s = data[:-1].decode('ascii')
+            print(f"[BTS] 6->      Trame reçue #2: de {len(s)} caractères: {s}")
+            dataframe = dataframe + s  # Ignorer le dernier octet CR
         else:
-            print(f" 6->    Notification reçue (handle: {handle}): {data.hex()} (non traité)")
+            s = data[1:].decode('ascii')
+            print(f"[BTS] 6->      Trame reçue #1: de {len(s)} caractères: {s}")
+            dataframe = s + dataframe  # Ignorer le premier octet
+    else:
+        print(f" 6->    Notification reçue (handle: {handle}): {data.hex()} (non traité)")
 
 
-async def find_device_with_timeout(device_name, timeout=15):
+# =========================
+# Programme principal
+# =========================
+
+
+async def find_device_with_timeout(device_name, timeout=10):
     print(f"Recherche pendant {timeout} secondes...")
-    device_name = device_name.lower()
     try:
-        devices = await BleakScanner.discover(timeout=timeout)
+        devices = await asyncio.wait_for(
+            BleakScanner.discover(timeout=timeout),
+            timeout=timeout
+        )
         
         for device in devices:
-            if device.name:
-                print(f"  Device trouvé: {device.name}, adresse: {device.address}")
-                if device_name in device.name.lower():
-                    print(f"Device trouvé: {device.name}")
-                    return device
+            if device.name == device_name:
+                print(f"Device trouvé: {device.name}")
+                return device
         
         print("Device non trouvé")
         return None
     except asyncio.TimeoutError:
         print("Timeout: recherche dépassée")
-        return None
-    except Exception as e:
-        print(f"Erreur lors du scan BLE: {e}")
         return None
 
 
@@ -78,9 +90,9 @@ async def main():
     address = "00:0d:18:05:53:24"  # Remplace par l'adresse BLE de ton MPPT
     address = "00:0d:18:05:53:24"  # Remplace par l'adresse BLE de ton MPPT
     notify_uuid = "f000ffc2-0451-4000-b000-000000000000"  # candidate principale
-    device = await find_device_with_timeout("Solar", timeout=5)
     while True:
         try:
+            device = await find_device_with_timeout("Solar regulator")
             print("-------> Tentative de connexion au MPPT... device:", device)
             async with BleakClient(address, timeout=15.0) as client:
                 # Affichage des services
@@ -99,8 +111,7 @@ async def main():
                 
                 try:
                     print("Souscription aux notifications...")
-                    parser = NotificationParser()
-                    await client.start_notify(0x000e, parser.parse_notification_14)
+                    await client.start_notify(0x000e, notification_handler)
                 except Exception as e:
                     print(f"Erreur lors de la souscription aux notifications: {e}")
 
@@ -113,45 +124,10 @@ async def main():
                 await asyncio.sleep(15)
         except Exception as e:
             print(f"Erreur Bleak : {e}")
-        restart_bluetooth()
 
-
-def restart_bluetooth():
-    """Restart Bluetooth and HCI UART module"""
-    commands = [
-        ("Turning Bluetooth power off", ["bluetoothctl", "power", "off"]),
-        ("Stopping bluetooth service", ["sudo", "systemctl", "stop", "bluetooth"]),
-        ("Unloading hci_uart module", ["sudo", "rmmod", "hci_uart"]),
-        ("Waiting 2 seconds", None),
-        ("Loading hci_uart module", ["sudo", "modprobe", "hci_uart"]),
-        ("Waiting 1 seconds", None),
-        ("Starting bluetooth service", ["sudo", "systemctl", "start", "bluetooth"]),
-        ("Waiting 1 seconds", None),
-        ("Turning Bluetooth power on", ["bluetoothctl", "power", "on"]),
-        ("Waiting 2 seconds", None),
-    ]
-
-    for step_name, cmd in commands:
-        try:
-            print(f"[*] {step_name}...")
-
-            if cmd is None:  # Sleep step
-                time.sleep(2)
-            else:
-                result = subprocess.run(cmd, check=True, capture_output=True, text=True)
-                if result.stdout:
-                    print(f"    {result.stdout.strip()}")
-
-            print(f"[✓] {step_name} done")
-
-        except subprocess.CalledProcessError as e:
-            print(f"[✗] Error during {step_name}: {e.stderr}")
-        except Exception as e:
-            print(f"[✗] Unexpected error: {e}")
-
-    print("[✓] Bluetooth restart completed successfully")
-    return True    
-
+# =========================
+# Exécution
+# =========================
 
 if __name__ == "__main__":
     print("Démarrage du superviseur BT Antarion...")
