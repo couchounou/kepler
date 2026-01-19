@@ -97,7 +97,7 @@ async def main():
                 try:
                     print("Souscription aux notifications...")
                     parser = NotificationParser()
-                    await client.start_notify(0x000e, parser.parse_notification_14)
+                    await client.start_notify(0x000e, parser.parse_notification_14, timeout=5)
                 except Exception as e:
                     print(f"Erreur lors de la souscription aux notifications: {e}")
 
