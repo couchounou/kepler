@@ -2,6 +2,7 @@ import asyncio
 from datetime import datetime
 from bleak import BleakClient, BleakScanner
 import subprocess
+import time
 
 notif_event = asyncio.Event()
 
@@ -27,8 +28,10 @@ Device 00:0D:18:05:53:24 (public)
         Battery Percentage: 0x00 (0)
 """
 
+
 def print_red(text):
     print(f"\033[91m{text}\033[0m")
+
 
 async def find_device_with_timeout(device_name, timeout=5):
     try:
@@ -100,12 +103,7 @@ def restart_bluetooth():
     return True
 
 
-
-# ...existing code...
-
 dataframe = []
-
-
 
 
 async def get_solar_reg_data(cycles=1):
