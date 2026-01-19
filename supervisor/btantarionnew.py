@@ -27,6 +27,9 @@ Device 00:0D:18:05:53:24 (public)
         Battery Percentage: 0x00 (0)
 """
 
+def print_red(text):
+    print(f"\033[91m{text}\033[0m")
+
 async def find_device_with_timeout(device_name, timeout=5):
     try:
         scanner = BleakScanner(adapter='hci0')
@@ -38,7 +41,7 @@ async def find_device_with_timeout(device_name, timeout=5):
                 return d
         return None
     except Exception as e:
-        print(f"Erreur lors du scan BLE: {e}")
+        print_red(f"Erreur lors du scan BLE: {e}")
         restart_bluetooth()
         return None
 
@@ -60,7 +63,7 @@ def restart_bluetooth():
         )
         print("[BT SOLAR] Bluetooth activé :", result.stdout)
     except subprocess.CalledProcessError as e:
-        print("[BT SOLAR] Erreur lors de l'activation du Bluetooth :", e.stderr)
+        print_red(f"[BT SOLAR] Erreur lors de l'activation du Bluetooth : {e.stderr}")
 
     commands = [
         ("Turning Bluetooth power off", ["bluetoothctl", "power", "off"]),
@@ -87,10 +90,10 @@ def restart_bluetooth():
             print(f"[✓] {step_name} done")
 
         except subprocess.CalledProcessError as e:
-            print(f"[✗] Error during {step_name}: {e.stderr}", file=sys.stderr)
+            print_red(f"[✗] Error during {step_name}: {e.stderr}")
             return False
         except Exception as e:
-            print(f"[✗] Unexpected error: {e}", file=sys.stderr)
+            print_red(f"[✗] Unexpected error: {e}")
             return False
 
     print("[✓] Bluetooth restart completed successfully")
@@ -172,9 +175,9 @@ async def get_solar_reg_data(cycles=1):
         try:
             async with BleakClient(address, timeout=10.0) as client:
                 for service in client.services:
-                    print("[BT SOLAR] Service:", service.uuid)
+                    print("[BT SOLAR]    Service:", service.uuid)
                     for char in service.characteristics:
-                        print(f"[BT SOLAR]   Char: {char.uuid}, Handle: {char.handle}, Properties: {char.properties}")
+                        print(f"[BT SOLAR]     Char: {char.uuid}, Handle: {char.handle}, Properties: {char.properties}")
 
                 WRITE_COMMAND = bytearray([0x4F, 0x4B])
                 WRITE_UUID = "00002af1-0000-1000-8000-00805f9b34fb"
@@ -214,7 +217,7 @@ async def get_solar_reg_data(cycles=1):
                     # Dès qu'on a reçu une notification, on sort et on retourne les données
                     return live_data
         except asyncio.TimeoutError:
-            print("[BT SOLAR] Impossible de se connecter dans le délai imparti")
+            print_red("[BT SOLAR] Impossible de se connecter dans le délai imparti")
         except Exception as e:
             print(f"Erreur Bleak : {e}")
     return None
@@ -230,4 +233,4 @@ if __name__ == "__main__":
         result = asyncio.run(asyncio.wait_for(get_solar_reg_data(), timeout=60))
         print("[BT SOLAR] Résultat:", result)
     except asyncio.TimeoutError:
-        print("[BT SOLAR] Timeout global atteint, arrêt du superviseur.")
+        print_red("[BT SOLAR] Timeout global atteint, arrêt du superviseur.")
