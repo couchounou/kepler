@@ -84,7 +84,9 @@ async def main():
             print("-------> Tentative de connexion au MPPT... device:", device)
             async with BleakClient(address, timeout=15.0) as client:
                 # Affichage des services
-                for service in client.services:
+                services = await client.get_services()
+                print("Services découverts:")
+                for service in services:
                     print("Service:", service.uuid)
                     for char in service.characteristics:
                         print(f"  Char: {char.uuid}, Handle: {char.handle}, Properties: {char.properties}")
