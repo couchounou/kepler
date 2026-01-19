@@ -33,7 +33,7 @@ def notification_handler(handle, data):
     parse_notification_14(handle, data)
 
 
-dataframe = []
+dataframe = ""
 def parse_notification_14(handle, data):
     print(f"[BTS] 6-> Notification (handle: {handle}): {data.decode('ascii')}, {data.hex()}")
     if "00002af0-0000-1000-8000-00805f9b34fb" in str(handle):
@@ -48,14 +48,15 @@ def parse_notification_14(handle, data):
                 # energie = int(s_full[14:20])
                 print(f"dataframe complet: {str(dataframe)}")
                 # print(f"[BTS] 6->    {datetime.now()}: Courant: {courant} A, Tension: {tension} V, inconnu {inconnu} Ah: {capacity}, Wh: {energie} ")
+                dataframe = ""  # Reset pour la prochaine trame
         elif data[-1] == 0x0d:
             s = data[:-1].decode('ascii')
             print(f"[BTS] 6->      Trame reçue #2: de {len(s)} caractères: {s}")
-            dataframe.extend(s)  # Ignorer le dernier octet CR
+            dataframe = dataframe + s  # Ignorer le dernier octet CR
         else:
             s = data[1:].decode('ascii')
             print(f"[BTS] 6->      Trame reçue #1: de {len(s)} caractères: {s}")
-            dataframe[:0] = s  # Ignorer le premier octet
+            dataframe = s + dataframe  # Ignorer le premier octet
     else:
         print(f" 6->    Notification reçue (handle: {handle}): {data.hex()} (non traité)")
 
