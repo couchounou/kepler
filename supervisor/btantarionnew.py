@@ -58,33 +58,17 @@ async def find_device_with_timeout(device_name, timeout=5):
 
 def restart_bluetooth():
     """Restart Bluetooth and HCI UART module"""
-    try:
-        result = subprocess.run(
-            ["bluetoothctl", "power", "off"],
-            capture_output=True,
-            text=True,
-            check=True
-        )
-        result = subprocess.run(
-            ["bluetoothctl", "power", "on"],
-            capture_output=True,
-            text=True,
-            check=True
-        )
-        printt("[BTS] Bluetooth activé :", result.stdout)
-    except subprocess.CalledProcessError as e:
-        print_red(f"[BTS] Erreur lors de l'activation du Bluetooth : {e.stderr}")
-
     commands = [
-        ("Turning Bluetooth power off", ["bluetoothctl", "power", "off"]),
-        ("Turning Bluetooth power on", ["bluetoothctl", "power", "on"]),
-        ("Waiting 2 seconds", None),  # Special case for sleep
+    ("Turning Bluetooth power off", ["bluetoothctl", "power", "off"]),
         ("Stopping bluetooth service", ["sudo", "systemctl", "stop", "bluetooth"]),
         ("Unloading hci_uart module", ["sudo", "rmmod", "hci_uart"]),
-        ("Waiting 2 seconds", None),  # Special case for sleep
+        ("Waiting 2 seconds", None),
         ("Loading hci_uart module", ["sudo", "modprobe", "hci_uart"]),
+        ("Waiting 1 seconds", None),
         ("Starting bluetooth service", ["sudo", "systemctl", "start", "bluetooth"]),
-        ("Waiting 2 seconds", None),  # Special case for sleep
+        ("Waiting 1 seconds", None),
+        ("Turning Bluetooth power on", ["bluetoothctl", "power", "on"]),
+        ("Waiting 2 seconds", None),
     ]
 
     for step_name, cmd in commands:
