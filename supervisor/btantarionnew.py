@@ -156,23 +156,12 @@ async def get_solar_reg_data(cycles=1):
     async def souscription_notifications(client):
         for handle in ["00002af0-0000-1000-8000-00805f9b34fb"]:
             try:
-                try:
-                    printt(f"[BTS]     Try (turn {turn}) start notify for {handle}")
-                    await client.start_notify(handle, parse_notification_14)
-                    printt(f"[BTS]     end Try (turn {turn}) start notify for {handle}")
-                except Exception:
-                    pass  # Ignore errors when stopping notifications
-                return True
-            except asyncio.TimeoutError:
-                print_red("[BTS]     Timeout: Impossible de souscrire")
-            except Exception as e:
-                if "notify acquired" in str(e).lower():
-                    print_orange("[BTS]     Notification déjà acquise...")
-                    await client.stop_notify(handle)
-                    await client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, b'\x00\x00')
-                    return False
-                else:
-                    print_red(f"[BTS]      Erreur lors de la souscription aux notifications: {e}")
+                printt(f"[BTS]     Try (turn {turn}) start notify for {handle}")
+                await client.start_notify(handle, parse_notification_14)
+                printt(f"[BTS]     end Try (turn {turn}) start notify for {handle}")
+            except Exception:
+                pass  # Ignore errors when stopping notifications
+            return True
         return False
 
     device = None
@@ -200,10 +189,8 @@ async def get_solar_reg_data(cycles=1):
                 while not subscribed and turn < 3:
                     await asyncio.sleep(2)
                     printt("[BTS] 3-> Souscription aux notifications...")
-                    subscribed = await asyncio.wait_for(
-                        souscription_notifications(client),
-                        timeout=30
-                    )
+                    subscribed = await souscription_notifications(client)
+                    printt(f"[BTS]     Souscription {subscribed}.")
                     if not subscribed:
                         turn += 1
 
