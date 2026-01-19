@@ -162,14 +162,14 @@ async def get_solar_reg_data(cycles=1):
                 )
                 return True
             except asyncio.TimeoutError:
-                print("[BT SOLAR] Impossible de souscrire délai imparti")
+                print("[BT SOLAR]      Impossible de souscrire délai imparti")
             except Exception as e:
                 if "notify acquired" in str(e).lower():
-                    print_orange("[BT SOLAR] Notification déjà acquise...")
+                    print_orange("[BT SOLAR]      Notification déjà acquise...")
                     # await client.stop_notify(handle)
                     return True
                 else:
-                    print_red(f"[BT SOLAR] Erreur lors de la souscription aux notifications: {e}")
+                    print_red(f"[BT SOLAR]      Erreur lors de la souscription aux notifications: {e}")
         return False
 
     device = None
@@ -187,7 +187,7 @@ async def get_solar_reg_data(cycles=1):
                 for service in client.services:
                     print("[BT SOLAR]    Service:", service.uuid)
                     for char in service.characteristics:
-                        print(f"[BT SOLAR]     Char: {char.uuid}, Handle: {char.handle}, Properties: {char.properties}")
+                        print(f"[BT SOLAR]         Char: {char.uuid}, Handle: {char.handle}, Properties: {char.properties}")
 
                 WRITE_COMMAND = bytearray([0x4F, 0x4B])
                 WRITE_UUID = "00002af1-0000-1000-8000-00805f9b34fb"
@@ -242,7 +242,7 @@ if __name__ == "__main__":
     restart_bluetooth() 
     try:
         # Timeout global de 60 secondes (modifiable)
-        result = asyncio.run(asyncio.wait_for(get_solar_reg_data(), timeout=60))
+        result = asyncio.run(asyncio.wait_for(get_solar_reg_data(), timeout=120))
         print("[BT SOLAR] Résultat:", result)
     except asyncio.TimeoutError:
         print_red("[BT SOLAR] Timeout global atteint, arrêt du superviseur.")
