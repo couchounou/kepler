@@ -169,7 +169,7 @@ async def get_solar_reg_data(cycles=1):
                     # await client.stop_notify(handle)
                     return True
                 else:
-                    print(f"[BT SOLAR] Erreur lors de la souscription aux notifications: {e}")
+                    print_red(f"[BT SOLAR] Erreur lors de la souscription aux notifications: {e}")
         return False
 
     device = None
@@ -210,27 +210,27 @@ async def get_solar_reg_data(cycles=1):
 
                     print("[BT SOLAR] 4-> Envoi requete et attente notification...")
                     turn = 3
+                    while turn > 0:
+                        try:
+                            await asyncio.wait_for(
+                                client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True),
+                                timeout=3
+                            )
+                        except asyncio.TimeoutError:
+                            print_red("[BT SOLAR] 4-> Impossible d'envoyer la commande dans le délai imparti")
+                            continue
+                        except Exception as e:
+                            print_red(f"[BT SOLAR] 4-> Erreur lors de l'envoi de la commande: {e}")
+                            continue
 
-                    try:
-                        await asyncio.wait_for(
-                            client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True),
-                            timeout=3
-                        )
-                    except asyncio.TimeoutError:
-                        print("[BT SOLAR] Impossible d'envoyer la commande dans le délai imparti")
-                        continue
-                    except Exception as e:
-                        print(f"[BT SOLAR] Erreur lors de l'envoi de la commande: {e}")
-                        continue
-
-                    print("[BT SOLAR] 5-> Attente des données...")
-                    await asyncio.wait_for(data_event.wait(), timeout=10)
-                    # Dès qu'on a reçu une notification, on sort et on retourne les données
+                        print("[BT SOLAR] 5-> Attente des données...")
+                        await asyncio.wait_for(data_event.wait(), timeout=3)
+                        turn -= 1
                     return live_data
         except asyncio.TimeoutError:
             print_red("[BT SOLAR] Impossible de se connecter dans le délai imparti")
         except Exception as e:
-            print(f"Erreur Bleak : {e}")
+            print_red(f"[BT SOLAR] Erreur Bleak : {e}")
     return None
 
 
