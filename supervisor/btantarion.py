@@ -26,39 +26,52 @@ def parse_notification(data: bytearray):
         print(f"'{datetime.now()}: Courant: {courant} A, Tension: {tension} V, inconnu {inconnu} Ah: {capacity}, Wh: {energie} ")
 
 
+def decode_zone1(trame_hex):
+    """
+    Zone 1: Batterie / Charge
+    trame_hex : chaîne hex ASCII
+    Renvoie : courant (A), tension (V), capacité (Ah), énergie (Wh)
+    """
+    ascii_str = bytes.fromhex(trame_hex).decode('ascii')
+    courant = int(ascii_str[0:6])
+    tension = int(ascii_str[6:10]) * 0.1
+    capacite = int(ascii_str[10:16])
+    energie = int(ascii_str[16:22])
+    return courant, tension, capacite, energie
+
+
+def decode_zone2_3(trame_hex):
+    """
+    Zone 2+3: Panneau / Sortie
+    Renvoie : puissance_panneau (W), tension_panneau (V),
+              courant_sortie (A), tension_sortie (V), puissance_sortie (W)
+    """
+    ascii_str = bytes.fromhex(trame_hex).decode('ascii')
+    puissance_panneau = int(ascii_str[0:4])
+    tension_panneau = int(ascii_str[4:8]) * 0.1
+    courant_sortie = int(ascii_str[8:12])
+    tension_sortie = int(ascii_str[12:16]) * 0.1
+    puissance_sortie = int(ascii_str[16:20])
+    return puissance_panneau, tension_panneau, courant_sortie, tension_sortie, puissance_sortie
+
+
+# =========================
+# Handler de notification
+# =========================
+
+
 def notification_handler(handle, data):
     hex_str = data.hex()
     print(f"Notification reçue (handle: {handle}): {hex_str}")
     # Identifier la zone selon la longueur
-    parse_notification_14(handle, data)
-
-
-dataframe = ""
-def parse_notification_14(handle, data):
-    print(f"[BTS] 6-> Notification (handle: {handle}): {data.decode('ascii')}, {data.hex()}")
-    if "00002af0-0000-1000-8000-00805f9b34fb" in str(handle):
-        if data[-1] == 0x0a:
-            print(f"[BTS] 6-> Fin de trame , on a {len(dataframe)} chars")
-            if len(dataframe) >= 20:
-                #s_full = dataframe.decode('ascii')
-                # courant = int(s_full[0:3])
-                # tension = int(s_full[3:7])/100
-                # inconnu = s_full[7:10]
-                # capacity = int(s_full[10:14])
-                # energie = int(s_full[14:20])
-                print(f"dataframe complet: {str(dataframe)}")
-                # print(f"[BTS] 6->    {datetime.now()}: Courant: {courant} A, Tension: {tension} V, inconnu {inconnu} Ah: {capacity}, Wh: {energie} ")
-                dataframe = ""  # Reset pour la prochaine trame
-        elif data[-1] == 0x0d:
-            s = data[:-1].decode('ascii')
-            print(f"[BTS] 6->      Trame reçue #2: de {len(s)} caractères: {s}")
-            dataframe = dataframe + s  # Ignorer le dernier octet CR
-        else:
-            s = data[1:].decode('ascii')
-            print(f"[BTS] 6->      Trame reçue #1: de {len(s)} caractères: {s}")
-            dataframe = s + dataframe  # Ignorer le premier octet
+    if len(hex_str) == 22*2:  # Zone 1 (22 caractères ASCII)
+        parse_notification(data)
+    elif len(hex_str) == 20*2:  # Zone 2+3 (20 caractères ASCII)
+        parse_notification(data)
     else:
-        print(f" 6->    Notification reçue (handle: {handle}): {data.hex()} (non traité)")
+        print("*** Trame inconnue :", hex_str)
+
+
 
 
 # =========================
@@ -90,9 +103,9 @@ async def main():
     address = "00:0d:18:05:53:24"  # Remplace par l'adresse BLE de ton MPPT
     address = "00:0d:18:05:53:24"  # Remplace par l'adresse BLE de ton MPPT
     notify_uuid = "f000ffc2-0451-4000-b000-000000000000"  # candidate principale
-    device = await find_device_with_timeout("Solar regulator", timeout=3)
     while True:
         try:
+            device = await find_device_with_timeout("Solar regulator")
             print("-------> Tentative de connexion au MPPT... device:", device)
             async with BleakClient(address, timeout=15.0) as client:
                 # Affichage des services
@@ -100,6 +113,7 @@ async def main():
                     print("Service:", service.uuid)
                     for char in service.characteristics:
                         print(f"  Char: {char.uuid}, Handle: {char.handle}, Properties: {char.properties}")
+            async with BleakClient(address, timeout=15.0) as client:
                 # Souscrire à toutes les notifications sur le handle 0x000f
                 WRITE_COMMAND = bytearray([0x4F, 0x4B])
                 WRITE_UUID = "00002af1-0000-1000-8000-00805f9b34fb"
@@ -124,7 +138,6 @@ async def main():
                 await asyncio.sleep(15)
         except Exception as e:
             print(f"Erreur Bleak : {e}")
-        await asyncio.sleep(5)
 
 # =========================
 # Exécution
