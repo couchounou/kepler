@@ -25,6 +25,7 @@ def parse_notification(data: bytearray):
         energie = int(s[14:20])     # 000614 → 640 Wh
         print(f"'{datetime.now()}: Courant: {courant} A, Tension: {tension} V, inconnu {inconnu} Ah: {capacity}, Wh: {energie} ")
 
+
 def decode_zone1(trame_hex):
     """
     Zone 1: Batterie / Charge
@@ -37,6 +38,7 @@ def decode_zone1(trame_hex):
     capacite = int(ascii_str[10:16])
     energie = int(ascii_str[16:22])
     return courant, tension, capacite, energie
+
 
 def decode_zone2_3(trame_hex):
     """
@@ -52,9 +54,11 @@ def decode_zone2_3(trame_hex):
     puissance_sortie = int(ascii_str[16:20])
     return puissance_panneau, tension_panneau, courant_sortie, tension_sortie, puissance_sortie
 
+
 # =========================
 # Handler de notification
 # =========================
+
 
 def notification_handler(handle, data):
     hex_str = data.hex()
@@ -67,9 +71,11 @@ def notification_handler(handle, data):
     else:
         print("*** Trame inconnue :", hex_str)
 
+
 # =========================
 # Programme principal
 # =========================
+
 
 async def find_device_with_timeout(device_name, timeout=10):
     print(f"Recherche pendant {timeout} secondes...")
@@ -89,7 +95,6 @@ async def find_device_with_timeout(device_name, timeout=10):
     except asyncio.TimeoutError:
         print("Timeout: recherche dépassée")
         return None
-
 
 
 async def main():

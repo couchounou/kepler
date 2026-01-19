@@ -103,6 +103,11 @@ def restart_bluetooth():
 
 # ...existing code...
 
+dataframe = []
+
+
+
+
 async def get_solar_reg_data(cycles=1):
     address = "00:0d:18:05:53:24"
 
@@ -110,34 +115,37 @@ async def get_solar_reg_data(cycles=1):
     data_event = asyncio.Event()
 
     def parse_notification_14(handle, data):
-        if handle == "00002af0-0000-1000-8000-00805f9b34fb":
-            hex_str = data.hex()
-            s = data.decode('ascii')
-            print(f"Notification reçue (handle: {handle}): {hex_str}")
+        print(f"[BT SOLAR] 6-> handle: {handle}")
+        if "00002af0-0000-1000-8000-00805f9b34fb" in str(handle):
+            print(f"[BT SOLAR] 6-> Notification reçue (handle: {handle}): {data.decode('ascii')}")
             if data[-1] == 0x0a:
-                print("[BT SOLAR] ... Fin de trame")
+                print(f"[BT SOLAR] 6-> Fin de trame , on a {len(dataframe)} chars")
+                if len(dataframe) >= 20:
+                    s_full = data.decode('ascii')
+                    courant = int(s_full[0:3])
+                    tension = int(s_full[3:7])/100
+                    inconnu = s_full[7:10]
+                    capacity = int(s_full[10:14])
+                    energie = int(s_full[14:20])
+                    live_data.update({
+                        "courant": courant,
+                        "tension": tension,
+                        "inconnu": inconnu,
+                        "capacity": capacity,
+                        "energie": energie
+                    })
+                    data_event.set()  # Signale qu'on a reçu des données
+                    print(f"[BT SOLAR] 6->    {datetime.now()}: Courant: {courant} A, Tension: {tension} V, inconnu {inconnu} Ah: {capacity}, Wh: {energie} ")
             elif data[-1] == 0x0d:
-                print(f"Trame reçue #2: de {len(s)} caractères: {s}")
-                tension = int(s[0:4])/100
-                print(f"R2 - Tension: {tension}")
-            else:
-                print(f"Trame reçue #1: de {len(s)} caractères: {s}")
-                courant = int(s[0:3])
-                tension = int(s[3:7])/100
-                inconnu = s[7:10]
-                capacity = int(s[10:14])
-                energie = int(s[14:20])
-                live_data.update({
-                    "courant": courant,
-                    "tension": tension,
-                    "inconnu": inconnu,
-                    "capacity": capacity,
-                    "energie": energie
-                })
-                data_event.set()  # Signale qu'on a reçu des données
-                print(f"'{datetime.now()}: Courant: {courant} A, Tension: {tension} V, inconnu {inconnu} Ah: {capacity}, Wh: {energie} ")
+                s = data[:-1].decode('ascii')
+                print(f"[BT SOLAR] 6->      Trame reçue #2: de {len(s)} caractères: {s}")
+                dataframe.extend(data[:-1])  # Ignorer le dernier octet CR
+            elif data[0] == 0x03:  # '0' ASCII
+                s = data[1:].decode('ascii')
+                print(f"[BT SOLAR] 6->      Trame reçue #1: de {len(s)} caractères: {s}")
+                dataframe[:0] = data[1:]  # Ignorer le premier octet
         else:
-            print(f"Notification reçue (handle: {handle}): {data.hex()} (non traité)")
+            print(f" 6->    Notification reçue (handle: {handle}): {data.hex()} (non traité)")
 
     async def souscription_notifications(client):
         for handle in ["00002af0-0000-1000-8000-00805f9b34fb"]:
