@@ -137,7 +137,7 @@ async def main():
                         print(f"Erreur lors de l'envoi de la requête: {e}")
                         break
                     print("En écoute des notifications sur handle 0x0029, 0x0025 et 0x000e... (Ctrl+C pour arrêter)")
-                    await asyncio.sleep(2)
+                    await asyncio.sleep(60)
         except Exception as e:
             print(f"Erreur Bleak : {e}")
 
