@@ -204,13 +204,13 @@ async def get_solar_reg_data(cycles=1):
                 subscribed = False
                 turn = 0
                 while not subscribed and turn < 3:
+                    await asyncio.sleep(2)
                     printt("[BTS] 3-> Souscription aux notifications...")
                     subscribed = await asyncio.wait_for(
                         souscription_notifications(client),
                         timeout=15
                     )
                     if not subscribed:
-                        await asyncio.sleep(2)
                         turn += 1
 
                 if subscribed:
