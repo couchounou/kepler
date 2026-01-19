@@ -138,7 +138,7 @@ async def get_solar_reg_data(cycles=1):
 
     async def souscription_notifications(client):
         print("[BT SOLAR]   start_notify 0x000e")
-        for handle in [0x000e]:
+        for handle in ["00002af0-0000-1000-8000-00805f9b34fb"]:
             try:
                 print(f"      Try start notify -> {handle}")
                 await asyncio.wait_for(
