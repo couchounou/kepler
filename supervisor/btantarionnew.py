@@ -175,6 +175,7 @@ async def get_solar_reg_data(cycles=1):
                 if "notify acquired" in str(e).lower():
                     print_orange("[BTS]     Notification déjà acquise...")
                     await client.stop_notify(handle)
+                    await client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, b'\x00\x00')
                     return False
                 else:
                     print_red(f"[BTS]      Erreur lors de la souscription aux notifications: {e}")
@@ -221,7 +222,7 @@ async def get_solar_reg_data(cycles=1):
                     while turn > 0:
                         try:
                             await asyncio.wait_for(
-                                client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=False),
+                                client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True),
                                 timeout=3
                             )
                         except asyncio.TimeoutError:
@@ -241,10 +242,7 @@ async def get_solar_reg_data(cycles=1):
             print_red(f"[BTS] Erreur Bleak : {e}")
         try:
             printt("[BTS] Déconnexion du client BLE.")
-            char = client.get_characteristic_by_uuid("00002af0-0000-1000-8000-00805f9b34fb")
-            for desc in char.descriptors:
-                if desc.uuid == "00002902-0000-1000-8000-00805f9b34fb":
-                    await client.write_gatt_descriptor(desc.handle, b'\x00\x00')
+            await client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, b'\x00\x00')
             await client.disconnect()
             await asyncio.sleep(5)
         except Exception as e:
