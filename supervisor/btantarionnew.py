@@ -29,11 +29,15 @@ Device 00:0D:18:05:53:24 (public)
 """
 
 
+def printt(text):
+    time_str = datetime.now().strftime("%M:%S:%f")[:-3]
+    print(time_str + " | " + text)
+
 def print_red(text):
-    print(f"\033[91m{text}\033[0m")
+    printt(f"\033[91m{text}\033[0m")
 
 def print_orange(text):
-    print(f"\033[93m{text}\033[0m")
+    printt(f"\033[93m{text}\033[0m")
 
 
 async def find_device_with_timeout(device_name, timeout=5):
@@ -41,7 +45,7 @@ async def find_device_with_timeout(device_name, timeout=5):
         scanner = BleakScanner(adapter='hci0')
         devices = await scanner.discover(timeout=timeout)
         if not devices:
-            print("[BT SOLAR] Aucun périphérique trouvé.")
+            printt("[BT SOLAR] Aucun périphérique trouvé.")
         for d in devices:
             if device_name.lower() in (d.name or "").lower():
                 return d
@@ -67,7 +71,7 @@ def restart_bluetooth():
             text=True,
             check=True
         )
-        print("[BT SOLAR] Bluetooth activé :", result.stdout)
+        printt("[BT SOLAR] Bluetooth activé :", result.stdout)
     except subprocess.CalledProcessError as e:
         print_red(f"[BT SOLAR] Erreur lors de l'activation du Bluetooth : {e.stderr}")
 
@@ -85,16 +89,16 @@ def restart_bluetooth():
 
     for step_name, cmd in commands:
         try:
-            print(f"[*] {step_name}...")
+            printt(f"[*] {step_name}...")
 
             if cmd is None:  # Sleep step
                 time.sleep(2)
             else:
                 result = subprocess.run(cmd, check=True, capture_output=True, text=True)
                 if result.stdout:
-                    print(f"    {result.stdout.strip()}")
+                    printt(f"    {result.stdout.strip()}")
 
-            print(f"[✓] {step_name} done")
+            printt(f"[✓] {step_name} done")
 
         except subprocess.CalledProcessError as e:
             print_red(f"[✗] Error during {step_name}: {e.stderr}")
@@ -103,7 +107,7 @@ def restart_bluetooth():
             print_red(f"[✗] Unexpected error: {e}")
             return False
 
-    print("[✓] Bluetooth restart completed successfully")
+    printt("[✓] Bluetooth restart completed successfully")
     return True
 
 
@@ -117,11 +121,11 @@ async def get_solar_reg_data(cycles=1):
     data_event = asyncio.Event()
 
     def parse_notification_14(handle, data):
-        print(f"[BT SOLAR] 6-> handle: {handle}")
+        printt(f"[BT SOLAR] 6-> handle: {handle}")
         if "00002af0-0000-1000-8000-00805f9b34fb" in str(handle):
-            print(f"[BT SOLAR] 6-> Notification reçue (handle: {handle}): {data.decode('ascii')}, {data.hex()}")
+            printt(f"[BT SOLAR] 6-> Notification reçue (handle: {handle}): {data.decode('ascii')}, {data.hex()}")
             if data[-1] == 0x0a:
-                print(f"[BT SOLAR] 6-> Fin de trame , on a {len(dataframe)} chars")
+                printt(f"[BT SOLAR] 6-> Fin de trame , on a {len(dataframe)} chars")
                 if len(dataframe) >= 20:
                     s_full = data.decode('ascii')
                     courant = int(s_full[0:3])
@@ -137,22 +141,22 @@ async def get_solar_reg_data(cycles=1):
                         "energie": energie
                     })
                     data_event.set()  # Signale qu'on a reçu des données
-                    print(f"[BT SOLAR] 6->    {datetime.now()}: Courant: {courant} A, Tension: {tension} V, inconnu {inconnu} Ah: {capacity}, Wh: {energie} ")
+                    printt(f"[BT SOLAR] 6->    {datetime.now()}: Courant: {courant} A, Tension: {tension} V, inconnu {inconnu} Ah: {capacity}, Wh: {energie} ")
             elif data[-1] == 0x0d:
                 s = data[:-1].decode('ascii')
-                print(f"[BT SOLAR] 6->      Trame reçue #2: de {len(s)} caractères: {s}")
+                printt(f"[BT SOLAR] 6->      Trame reçue #2: de {len(s)} caractères: {s}")
                 dataframe.extend(data[:-1])  # Ignorer le dernier octet CR
             elif data[0] == 0x03:  # STX au début
                 s = data[1:].decode('ascii')
-                print(f"[BT SOLAR] 6->      Trame reçue #1: de {len(s)} caractères: {s}")
+                printt(f"[BT SOLAR] 6->      Trame reçue #1: de {len(s)} caractères: {s}")
                 dataframe[:0] = data[1:]  # Ignorer le premier octet
         else:
-            print(f" 6->    Notification reçue (handle: {handle}): {data.hex()} (non traité)")
+            printt(f" 6->    Notification reçue (handle: {handle}): {data.hex()} (non traité)")
 
     async def souscription_notifications(client):
         for handle in ["00002af0-0000-1000-8000-00805f9b34fb"]:
             try:
-                print(f"[BT SOLAR]     Try (turn {turn}) start notify -> {handle}")
+                printt(f"[BT SOLAR]     Try (turn {turn}) start notify -> {handle}")
                 await asyncio.wait_for(
                     client.start_notify(
                         handle,
@@ -174,20 +178,20 @@ async def get_solar_reg_data(cycles=1):
 
     device = None
     while not device:
-        print("[BT SOLAR] 1-> Recherche device sur hci0 ")
+        printt("[BT SOLAR] 1-> Recherche device sur hci0 ")
         device = await find_device_with_timeout("Solar ", timeout=5)
         if not device:
-            print("[BT SOLAR]     Device non trouvé.")
+            printt("[BT SOLAR]     Device non trouvé.")
             await asyncio.sleep(5)
 
     while True:
-        print("[BT SOLAR] 2-> Tentative de connexion:", device)
+        printt("[BT SOLAR] 2-> Tentative de connexion:", device)
         try:
             async with BleakClient(address, timeout=10.0) as client:
                 for service in client.services:
-                    print("[BT SOLAR]    Service:", service.uuid)
+                    printt("[BT SOLAR]    Service:", service.uuid)
                     for char in service.characteristics:
-                        print(f"[BT SOLAR]         Char: {char.uuid}, Handle: {char.handle}, Properties: {char.properties}")
+                        printt(f"[BT SOLAR]         Char: {char.uuid}, Handle: {char.handle}, Properties: {char.properties}")
 
                 WRITE_COMMAND = bytearray([0x4F, 0x4B])
                 WRITE_UUID = "00002af1-0000-1000-8000-00805f9b34fb"
@@ -195,7 +199,7 @@ async def get_solar_reg_data(cycles=1):
                 subscribed = False
                 turn = 0
                 while not subscribed and turn < 3:
-                    print("[BT SOLAR] 3-> Souscription aux notifications...")
+                    printt("[BT SOLAR] 3-> Souscription aux notifications...")
                     subscribed = await asyncio.wait_for(
                         souscription_notifications(client),
                         timeout=15
@@ -208,7 +212,7 @@ async def get_solar_reg_data(cycles=1):
                     notif_event.clear()
                     data_event.clear()
 
-                    print("[BT SOLAR] 4-> Envoi requete et attente notification...")
+                    printt("[BT SOLAR] 4-> Envoi requete et attente notification...")
                     turn = 3
                     while turn > 0:
                         try:
@@ -224,7 +228,7 @@ async def get_solar_reg_data(cycles=1):
                             print_red(f"[BT SOLAR]     Erreur lors de l'envoi de la commande: {e}")
                             turn -= 1
                             continue
-                        print("[BT SOLAR] 5-> Attente des données...")
+                        printt("[BT SOLAR] 5-> Attente des données...")
                         await asyncio.wait_for(data_event.wait(), timeout=3)
                     return live_data
         except asyncio.TimeoutError:
@@ -238,11 +242,11 @@ async def get_solar_reg_data(cycles=1):
 
 
 if __name__ == "__main__":
-    print("[BT SOLAR] Démarrage du superviseur BT Antarion...")
+    printt("[BT SOLAR] Démarrage du superviseur BT Antarion...")
     restart_bluetooth() 
     try:
         # Timeout global de 60 secondes (modifiable)
         result = asyncio.run(asyncio.wait_for(get_solar_reg_data(), timeout=120))
-        print("[BT SOLAR] Résultat:", result)
+        printt("[BT SOLAR] Résultat:", result)
     except asyncio.TimeoutError:
         print_red("[BT SOLAR] Timeout global atteint, arrêt du superviseur.")
