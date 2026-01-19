@@ -172,9 +172,9 @@ async def get_solar_reg_data(cycles=1):
         try:
             async with BleakClient(address, timeout=10.0) as client:
                 for service in client.services:
-                    print("[BT SOLAR]    Service:", service.uuid)
+                    print("[BT SOLAR] Service:", service.uuid)
                     for char in service.characteristics:
-                        print(f"    Char: {char.uuid}, Handle: {char.handle}, Properties: {char.properties}")
+                        print(f"[BT SOLAR]   Char: {char.uuid}, Handle: {char.handle}, Properties: {char.properties}")
 
                 WRITE_COMMAND = bytearray([0x4F, 0x4B])
                 WRITE_UUID = "00002af1-0000-1000-8000-00805f9b34fb"
