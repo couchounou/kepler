@@ -162,7 +162,7 @@ async def get_solar_reg_data(cycles=1):
                 )
                 return True
             except asyncio.TimeoutError:
-                print("[BT SOLAR]      Impossible de souscrire délai imparti")
+                print_red("[BT SOLAR]     Timeout: Impossible de souscrire")
             except Exception as e:
                 if "notify acquired" in str(e).lower():
                     print_orange("[BT SOLAR]      Notification déjà acquise...")
@@ -217,11 +217,11 @@ async def get_solar_reg_data(cycles=1):
                                 timeout=3
                             )
                         except asyncio.TimeoutError:
-                            print_red("[BT SOLAR] 4-> Impossible d'envoyer la commande dans le délai imparti")
+                            print_red("[BT SOLAR]     Impossible d'envoyer la commande dans le délai imparti")
                             turn -= 1
                             continue
                         except Exception as e:
-                            print_red(f"[BT SOLAR] 4-> Erreur lors de l'envoi de la commande: {e}")
+                            print_red(f"[BT SOLAR]     Erreur lors de l'envoi de la commande: {e}")
                             turn -= 1
                             continue
                         print("[BT SOLAR] 5-> Attente des données...")
