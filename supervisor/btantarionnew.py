@@ -232,7 +232,7 @@ async def get_solar_reg_data(cycles=1):
 
 if __name__ == "__main__":
     printt("[BTS] Démarrage du superviseur BT Antarion...")
-    restart_bluetooth() 
+    # restart_bluetooth() 
     try:
         # Timeout global de 60 secondes (modifiable)
         result = asyncio.run(asyncio.wait_for(get_solar_reg_data(), timeout=120))
