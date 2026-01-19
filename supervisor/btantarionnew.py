@@ -156,6 +156,10 @@ async def get_solar_reg_data(cycles=1):
     async def souscription_notifications(client):
         for handle in ["00002af0-0000-1000-8000-00805f9b34fb"]:
             try:
+                try:
+                    await client.stop_notify(handle)
+                except Exception:
+                    pass  # Ignore errors when stopping notifications
                 printt(f"[BTS]     Try (turn {turn}) start notify -> {handle}")
                 await asyncio.wait_for(
                     client.start_notify(
