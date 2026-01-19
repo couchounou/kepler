@@ -31,7 +31,7 @@ Device 00:0D:18:05:53:24 (public)
 
 def printt(*text):
     time_str = datetime.now().strftime("%M:%S:%f")[:-3]
-    print(time_str + " | " + " ".join(text))
+    print(time_str + " | " + " ".join(str(text) for text in text))
 
 def print_red(text):
     printt(f"\033[91m{text}\033[0m")
