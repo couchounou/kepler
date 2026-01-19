@@ -26,39 +26,28 @@ def parse_notification(data: bytearray):
         print(f"'{datetime.now()}: Courant: {courant} A, Tension: {tension} V, inconnu {inconnu} Ah: {capacity}, Wh: {energie} ")
 
 
-def notification_handler(handle, data):
-    hex_str = data.hex()
-    print(f"Notification reçue (handle: {handle}): {hex_str}")
-    # Identifier la zone selon la longueur
-    parse_notification_14(handle, data)
+class NotificationParser:
+    def __init__(self):
+        self.dataframe = ""
 
-
-dataframe = ""
-def parse_notification_14(handle, data):
-    print(f"[BTS] 6-> Notification (handle: {handle}): {data.decode('ascii')}, {data.hex()}")
-    if "00002af0-0000-1000-8000-00805f9b34fb" in str(handle):
-        if data[-1] == 0x0a:
-            print(f"[BTS] 6-> Fin de trame , on a {len(dataframe)} chars")
-            if len(dataframe) >= 20:
-                #s_full = dataframe.decode('ascii')
-                # courant = int(s_full[0:3])
-                # tension = int(s_full[3:7])/100
-                # inconnu = s_full[7:10]
-                # capacity = int(s_full[10:14])
-                # energie = int(s_full[14:20])
-                print(f"dataframe complet: {str(dataframe)}")
-                # print(f"[BTS] 6->    {datetime.now()}: Courant: {courant} A, Tension: {tension} V, inconnu {inconnu} Ah: {capacity}, Wh: {energie} ")
-                dataframe = ""  # Reset pour la prochaine trame
-        elif data[-1] == 0x0d:
-            s = data[:-1].decode('ascii')
-            print(f"[BTS] 6->      Trame reçue #2: de {len(s)} caractères: {s}")
-            dataframe = dataframe + s  # Ignorer le dernier octet CR
+    def parse_notification_14(self, handle, data):
+        print(f"[BTS] 6-> Notification (handle: {handle}): {data.decode('ascii')}, {data.hex()}")
+        if "00002af0-0000-1000-8000-00805f9b34fb" in str(handle):
+            if data[-1] == 0x0a:
+                print(f"[BTS] 6-> Fin de trame , on a {len(self.dataframe)} chars")
+                if len(self.dataframe) >= 20:
+                    print(f"dataframe complet: {str(self.dataframe)}")
+                    self.dataframe = ""
+            elif data[-1] == 0x0d:
+                s = data[:-1].decode('ascii')
+                print(f"[BTS] 6->      Trame reçue #2: de {len(s)} caractères: {s}")
+                self.dataframe += s
+            else:
+                s = data[1:].decode('ascii')
+                print(f"[BTS] 6->      Trame reçue #1: de {len(s)} caractères: {s}")
+                self.dataframe = s + self.dataframe
         else:
-            s = data[1:].decode('ascii')
-            print(f"[BTS] 6->      Trame reçue #1: de {len(s)} caractères: {s}")
-            dataframe = s + dataframe  # Ignorer le premier octet
-    else:
-        print(f" 6->    Notification reçue (handle: {handle}): {data.hex()} (non traité)")
+            print(f" 6->    Notification reçue (handle: {handle}): {data.hex()} (non traité)")
 
 
 # =========================
@@ -111,7 +100,8 @@ async def main():
                 
                 try:
                     print("Souscription aux notifications...")
-                    await client.start_notify(0x000e, notification_handler)
+                    parser = NotificationParser()
+                    await client.start_notify(0x000e, parser.parse_notification_14)
                 except Exception as e:
                     print(f"Erreur lors de la souscription aux notifications: {e}")
 
