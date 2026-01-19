@@ -242,6 +242,7 @@ async def get_solar_reg_data(cycles=1):
         finally:
             await client.disconnect()
         printt("[BTS] Déconnexion du client BLE.")
+        await client.disconnect()
         await asyncio.sleep(5)
     return None
 
