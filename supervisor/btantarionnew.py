@@ -239,12 +239,18 @@ async def get_solar_reg_data(cycles=1):
             print_red("[BTS] Impossible de se connecter dans le délai imparti")
         except Exception as e:
             print_red(f"[BTS] Erreur Bleak : {e}")
-        finally:
+        try:
+            printt("[BTS] Déconnexion du client BLE.")
+            char = client.get_characteristic_by_uuid("00002af0-0000-1000-8000-00805f9b34fb")
+            for desc in char.descriptors:
+                if desc.uuid == "00002902-0000-1000-8000-00805f9b34fb":
+                    await client.write_gatt_descriptor(desc.handle, b'\x00\x00')
             await client.disconnect()
-        printt("[BTS] Déconnexion du client BLE.")
-        await client.disconnect()
-        await asyncio.sleep(5)
-    return None
+            await asyncio.sleep(5)
+        except Exception as e:
+            pass
+        
+     return None
 
 
 # ...existing code...
