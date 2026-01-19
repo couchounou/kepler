@@ -213,19 +213,19 @@ async def get_solar_reg_data(cycles=1):
                     while turn > 0:
                         try:
                             await asyncio.wait_for(
-                                client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True),
+                                client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=False),
                                 timeout=3
                             )
                         except asyncio.TimeoutError:
                             print_red("[BT SOLAR] 4-> Impossible d'envoyer la commande dans le délai imparti")
+                            turn -= 1
                             continue
                         except Exception as e:
                             print_red(f"[BT SOLAR] 4-> Erreur lors de l'envoi de la commande: {e}")
+                            turn -= 1
                             continue
-
                         print("[BT SOLAR] 5-> Attente des données...")
                         await asyncio.wait_for(data_event.wait(), timeout=3)
-                        turn -= 1
                     return live_data
         except asyncio.TimeoutError:
             print_red("[BT SOLAR] Impossible de se connecter dans le délai imparti")
