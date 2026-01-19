@@ -165,7 +165,7 @@ async def get_solar_reg_data(cycles=1):
                 print_red("[BT SOLAR]     Timeout: Impossible de souscrire")
             except Exception as e:
                 if "notify acquired" in str(e).lower():
-                    print_orange("[BT SOLAR]      Notification déjà acquise...")
+                    print_orange("[BT SOLAR]     Notification déjà acquise...")
                     # await client.stop_notify(handle)
                     return True
                 else:
