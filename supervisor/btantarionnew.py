@@ -159,9 +159,9 @@ async def get_solar_reg_data(cycles=1):
                 printt(f"[BTS]     Try (turn {turn}) start notify for {handle}")
                 await client.start_notify(handle, parse_notification_14)
                 printt(f"[BTS]     end Try (turn {turn}) start notify for {handle}")
-            except Exception:
-                pass  # Ignore errors when stopping notifications
-            return True
+                return True
+            except Exception as e:
+                print_red(f"[BTS]     Erreur lors de la souscription aux notifications: {e}")
         return False
 
     device = None
