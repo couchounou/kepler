@@ -208,7 +208,7 @@ async def get_solar_reg_data(cycles=1):
                     printt("[BTS] 3-> Souscription aux notifications...")
                     subscribed = await asyncio.wait_for(
                         souscription_notifications(client),
-                        timeout=20
+                        timeout=15
                     )
                     if not subscribed:
                         turn += 1
@@ -240,13 +240,9 @@ async def get_solar_reg_data(cycles=1):
             print_red("[BTS] Impossible de se connecter dans le délai imparti")
         except Exception as e:
             print_red(f"[BTS] Erreur Bleak : {e}")
-        try:
-            printt("[BTS] Déconnexion du client BLE.")
-            await client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, b'\x00\x00')
-            await client.disconnect()
-            await asyncio.sleep(5)
-        except Exception as e:
-            pass
+        finally:
+            print_red("[BTS] Redémarrage du Bluetooth avant nouvelle tentative...")
+            restart_bluetooth()
     return None
 
 
