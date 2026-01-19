@@ -157,17 +157,11 @@ async def get_solar_reg_data(cycles=1):
         for handle in ["00002af0-0000-1000-8000-00805f9b34fb"]:
             try:
                 try:
+                    printt(f"[BTS]     Try (turn {turn}) start notify for {handle}")
                     await client.stop_notify(handle)
+                    await client.start_notify(handle, parse_notification_14)
                 except Exception:
                     pass  # Ignore errors when stopping notifications
-                printt(f"[BTS]     Try (turn {turn}) start notify -> {handle}")
-                await asyncio.wait_for(
-                    client.start_notify(
-                        handle,
-                        parse_notification_14
-                    ),
-                    timeout=15
-                )
                 return True
             except asyncio.TimeoutError:
                 print_red("[BTS]     Timeout: Impossible de souscrire")
