@@ -71,7 +71,7 @@ async def get_solar_reg_data(cycles=1):
     data_event = asyncio.Event()
 
     def parse_notification_14(handle, data):
-        if handle == 0x000e:
+        if handle == "00002af0-0000-1000-8000-00805f9b34fb":
             hex_str = data.hex()
             s = data.decode('ascii')
             print(f"Notification reçue (handle: {handle}): {hex_str}")
