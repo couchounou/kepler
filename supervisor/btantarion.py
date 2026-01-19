@@ -129,14 +129,15 @@ async def main():
                     await client.start_notify(0x000e, notification_handler)
                 except Exception as e:
                     print(f"Erreur lors de la souscription aux notifications: {e}")
-
-                try:
-                    print("Envoi requete et attente notification...")
-                    await client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True)
-                except Exception as e:
-                    print(f"Erreur lors de l'envoi de la requête: {e}")
-                print("En écoute des notifications sur handle 0x0029, 0x0025 et 0x000e... (Ctrl+C pour arrêter)")
-                await asyncio.sleep(15)
+                while true:
+                    try:
+                        print("Envoi requete et attente notification...")
+                        await client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True)
+                    except Exception as e:
+                        print(f"Erreur lors de l'envoi de la requête: {e}")
+                        break
+                    print("En écoute des notifications sur handle 0x0029, 0x0025 et 0x000e... (Ctrl+C pour arrêter)")
+                    await asyncio.sleep(2)
         except Exception as e:
             print(f"Erreur Bleak : {e}")
 
