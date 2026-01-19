@@ -75,11 +75,11 @@ def parse_notification_14(handle, data):
             print(f"[BTS] 6-> Fin de trame , on a {len(dataframe)} chars")
             if len(dataframe) >= 20:
                 s_full = data.decode('ascii')
-                courant = int(s_full[0:3])
-                tension = int(s_full[3:7])/100
-                inconnu = s_full[7:10]
-                capacity = int(s_full[10:14])
-                energie = int(s_full[14:20])
+                # courant = int(s_full[0:3])
+                # tension = int(s_full[3:7])/100
+                # inconnu = s_full[7:10]
+                # capacity = int(s_full[10:14])
+                # energie = int(s_full[14:20])
                 print(f"dataframe complet: {dataframe}")
                 print(f"dataframe.hex(): {dataframe.hex()} ")
                 # print(f"[BTS] 6->    {datetime.now()}: Courant: {courant} A, Tension: {tension} V, inconnu {inconnu} Ah: {capacity}, Wh: {energie} ")
