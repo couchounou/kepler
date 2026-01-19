@@ -152,9 +152,10 @@ async def get_solar_reg_data(cycles=1):
             except asyncio.TimeoutError:
                 print("[BT SOLAR] Impossible de souscrire délai imparti")
             except Exception as e:
-                if "Notify acquired" in str(e):
+                if "notify acquired" in str(e).lower():
                     print("[BT SOLAR] Notification déjà acquise...")
                     await client.stop_notify(handle)
+                    return True
                 else:
                     print(f"[BT SOLAR] Erreur lors de la souscription aux notifications: {e}")
         return False
@@ -181,8 +182,15 @@ async def get_solar_reg_data(cycles=1):
 
                 print("[BT SOLAR] 3-> Souscription aux notifications...")
                 subscribed = False
-                while not subscribed:
-                    subscribed = await asyncio.wait_for(souscription_notifications(client), timeout=15)
+                turn = 0
+                while not subscribed or turn < 3:
+                    subscribed = await asyncio.wait_for(
+                        souscription_notifications(client),
+                        timeout=15
+                    )
+                    if not subscribed:
+                        await asyncio.sleep(2)
+                        turn += 1
 
                 if subscribed:
                     notif_event.clear()
