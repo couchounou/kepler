@@ -148,11 +148,18 @@ async def get_solar_reg_data(cycles=1):
                 data_event.clear()
                 
                 print("[BT SOLAR] 4-> Envoi requete et attente notification...")
-                await asyncio.wait_for(
-                    client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True),
-                    timeout=10
-                )
 
+                try:
+                    await asyncio.wait_for(
+                        client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True),
+                        timeout=5
+                    )
+                except asyncio.TimeoutError:
+                    print("[BT SOLAR] Impossible d'envoyer la commande dans le délai imparti")
+                    continue
+                except Exception as e:
+                    print(f"[BT SOLAR] Erreur lors de l'envoi de la commande: {e}")
+                    continue
                 print("[BT SOLAR] 5-> Attente des données...")
                 await asyncio.wait_for(data_event.wait(), timeout=10)
                 # Dès qu'on a reçu une notification, on sort et on retourne les données
