@@ -116,7 +116,7 @@ async def get_solar_reg_data(cycles=1):
     def parse_notification_14(handle, data):
         print(f"[BT SOLAR] 6-> handle: {handle}")
         if "00002af0-0000-1000-8000-00805f9b34fb" in str(handle):
-            print(f"[BT SOLAR] 6-> Notification reçue (handle: {handle}): {data.decode('ascii')}")
+            print(f"[BT SOLAR] 6-> Notification reçue (handle: {handle}): {data.decode('ascii')}, {data.hex()}")
             if data[-1] == 0x0a:
                 print(f"[BT SOLAR] 6-> Fin de trame , on a {len(dataframe)} chars")
                 if len(dataframe) >= 20:
@@ -139,7 +139,7 @@ async def get_solar_reg_data(cycles=1):
                 s = data[:-1].decode('ascii')
                 print(f"[BT SOLAR] 6->      Trame reçue #2: de {len(s)} caractères: {s}")
                 dataframe.extend(data[:-1])  # Ignorer le dernier octet CR
-            elif data[0] == 0x03:  # '0' ASCII
+            elif data[0] == 0x03:  # STX au début
                 s = data[1:].decode('ascii')
                 print(f"[BT SOLAR] 6->      Trame reçue #1: de {len(s)} caractères: {s}")
                 dataframe[:0] = data[1:]  # Ignorer le premier octet
