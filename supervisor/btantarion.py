@@ -129,7 +129,7 @@ async def main():
                     await client.start_notify(0x000e, notification_handler)
                 except Exception as e:
                     print(f"Erreur lors de la souscription aux notifications: {e}")
-                while true:
+                while True:
                     try:
                         print("Envoi requete et attente notification...")
                         await client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True)
