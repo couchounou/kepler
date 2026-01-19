@@ -249,8 +249,7 @@ async def get_solar_reg_data(cycles=1):
             await asyncio.sleep(5)
         except Exception as e:
             pass
-        
-     return None
+    return None
 
 
 # ...existing code...
