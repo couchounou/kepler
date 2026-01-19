@@ -50,10 +50,6 @@ class NotificationParser:
             print(f" 6->    Notification reçue (handle: {handle}): {data.hex()} (non traité)")
 
 
-# =========================
-# Programme principal
-# =========================
-
 
 async def find_device_with_timeout(device_name, timeout=10):
     print(f"Recherche pendant {timeout} secondes...")
@@ -115,9 +111,6 @@ async def main():
         except Exception as e:
             print(f"Erreur Bleak : {e}")
 
-# =========================
-# Exécution
-# =========================
 
 if __name__ == "__main__":
     print("Démarrage du superviseur BT Antarion...")
