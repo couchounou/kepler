@@ -61,7 +61,8 @@ async def find_device_with_timeout(device_name, timeout=10):
         )
         
         for device in devices:
-            if  device_name in device.name.lower():
+            print(f"  Device trouvé: {device.name}, adresse: {device.address}")
+            if device_name in device.name.lower():
                 print(f"Device trouvé: {device.name}")
                 return device
         
@@ -101,7 +102,7 @@ async def main():
                 try:
                     print("Souscription aux notifications...")
                     parser = NotificationParser()
-                    await client.start_notify(0x000e, parser.parse_notification_14, timeout=5)
+                    await client.start_notify(0x000e, parser.parse_notification_14)
                 except Exception as e:
                     print(f"Erreur lors de la souscription aux notifications: {e}")
 
