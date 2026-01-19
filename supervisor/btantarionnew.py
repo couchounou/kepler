@@ -53,6 +53,7 @@ async def find_device_with_timeout(device_name, timeout=5):
     except Exception as e:
         print_red(f"Erreur lors du scan BLE: {e}")
         restart_bluetooth()
+        
         return None
 
 
