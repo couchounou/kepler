@@ -80,7 +80,7 @@ def parse_notification_14(handle, data):
                 # inconnu = s_full[7:10]
                 # capacity = int(s_full[10:14])
                 # energie = int(s_full[14:20])
-                print(f"dataframe complet: {dataframe}")
+                print(f"dataframe complet: {str(dataframe)}")
                 # print(f"[BTS] 6->    {datetime.now()}: Courant: {courant} A, Tension: {tension} V, inconnu {inconnu} Ah: {capacity}, Wh: {energie} ")
         elif data[-1] == 0x0d:
             s = data[:-1].decode('ascii')
