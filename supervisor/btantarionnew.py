@@ -137,10 +137,9 @@ async def get_solar_reg_data(cycles=1):
             print(f"Notification reçue (handle: {handle}): {data.hex()} (non traité)")
 
     async def souscription_notifications(client):
-        print("[BT SOLAR]   start_notify 0x000e")
-        for handle in ["00002af0-0000-1000-8000-00805f9b34fb"]:
+        for handle in ["0x000e"]:
             try:
-                print(f"      Try start notify -> {handle}")
+                print(f"[BT SOLAR]   Try start notify -> {handle}")
                 await asyncio.wait_for(
                     client.start_notify(
                         handle,
@@ -180,10 +179,10 @@ async def get_solar_reg_data(cycles=1):
                 WRITE_COMMAND = bytearray([0x4F, 0x4B])
                 WRITE_UUID = "00002af1-0000-1000-8000-00805f9b34fb"
 
-                print("[BT SOLAR] 3-> Souscription aux notifications...")
                 subscribed = False
                 turn = 0
-                while not subscribed or turn < 3:
+                while not subscribed and turn < 3:
+                    print("[BT SOLAR] 3-> Souscription aux notifications...")
                     subscribed = await asyncio.wait_for(
                         souscription_notifications(client),
                         timeout=15
