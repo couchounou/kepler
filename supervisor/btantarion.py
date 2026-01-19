@@ -53,6 +53,7 @@ class NotificationParser:
 
 async def find_device_with_timeout(device_name, timeout=10):
     print(f"Recherche pendant {timeout} secondes...")
+    device_name = device_name.lower()
     try:
         devices = await asyncio.wait_for(
             BleakScanner.discover(timeout=timeout),
@@ -60,7 +61,7 @@ async def find_device_with_timeout(device_name, timeout=10):
         )
         
         for device in devices:
-            if device.name == device_name:
+            if  device_name in device.name.lower():
                 print(f"Device trouvé: {device.name}")
                 return device
         
@@ -68,6 +69,9 @@ async def find_device_with_timeout(device_name, timeout=10):
         return None
     except asyncio.TimeoutError:
         print("Timeout: recherche dépassée")
+        return None
+    except Exception as e:
+        print(f"Erreur lors du scan BLE: {e}")
         return None
 
 
@@ -77,7 +81,7 @@ async def main():
     notify_uuid = "f000ffc2-0451-4000-b000-000000000000"  # candidate principale
     while True:
         try:
-            device = await find_device_with_timeout("Solar regulator")
+            device = await find_device_with_timeout("Solar", timeout=10)
             print("-------> Tentative de connexion au MPPT... device:", device)
             async with BleakClient(address, timeout=15.0) as client:
                 # Affichage des services
