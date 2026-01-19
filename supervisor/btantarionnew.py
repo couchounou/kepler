@@ -239,6 +239,10 @@ async def get_solar_reg_data(cycles=1):
             print_red("[BTS] Impossible de se connecter dans le délai imparti")
         except Exception as e:
             print_red(f"[BTS] Erreur Bleak : {e}")
+        finally:
+            await client.disconnect()
+        printt("[BTS] Déconnexion du client BLE.")
+        await asyncio.sleep(5)
     return None
 
 
