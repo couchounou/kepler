@@ -205,11 +205,12 @@ async def get_solar_reg_data(cycles=1):
                     data_event.clear()
 
                     print("[BT SOLAR] 4-> Envoi requete et attente notification...")
+                    turn = 3
 
                     try:
                         await asyncio.wait_for(
                             client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True),
-                            timeout=5
+                            timeout=3
                         )
                     except asyncio.TimeoutError:
                         print("[BT SOLAR] Impossible d'envoyer la commande dans le délai imparti")
@@ -234,6 +235,7 @@ async def get_solar_reg_data(cycles=1):
 
 if __name__ == "__main__":
     print("[BT SOLAR] Démarrage du superviseur BT Antarion...")
+    restart_bluetooth() 
     try:
         # Timeout global de 60 secondes (modifiable)
         result = asyncio.run(asyncio.wait_for(get_solar_reg_data(), timeout=60))
