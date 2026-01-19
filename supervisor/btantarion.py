@@ -69,9 +69,8 @@ def notification_handler(handle, data):
 
 dataframe = []
 def parse_notification_14(handle, data):
-    print(f"[BTS] 6-> handle: {handle}")
+    print(f"[BTS] 6-> Notification (handle: {handle}): {data.decode('ascii')}, {data.hex()}")
     if "00002af0-0000-1000-8000-00805f9b34fb" in str(handle):
-        print(f"[BTS] 6-> Notification reçue (handle: {handle}): {data.decode('ascii')}, {data.hex()}")
         if data[-1] == 0x0a:
             print(f"[BTS] 6-> Fin de trame , on a {len(dataframe)} chars")
             if len(dataframe) >= 20:
@@ -81,8 +80,9 @@ def parse_notification_14(handle, data):
                 inconnu = s_full[7:10]
                 capacity = int(s_full[10:14])
                 energie = int(s_full[14:20])
-                print(f"dataframe complet: {dataframe}, dataframe.hex(): {dataframe.hex()} ")
-                print(f"[BTS] 6->    {datetime.now()}: Courant: {courant} A, Tension: {tension} V, inconnu {inconnu} Ah: {capacity}, Wh: {energie} ")
+                print(f"dataframe complet: {dataframe}"
+                print(f"dataframe.hex(): {dataframe.hex()} ")
+                # print(f"[BTS] 6->    {datetime.now()}: Courant: {courant} A, Tension: {tension} V, inconnu {inconnu} Ah: {capacity}, Wh: {energie} ")
         elif data[-1] == 0x0d:
             s = data[:-1].decode('ascii')
             print(f"[BTS] 6->      Trame reçue #2: de {len(s)} caractères: {s}")
