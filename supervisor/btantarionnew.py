@@ -39,11 +39,12 @@ async def find_device_with_timeout(device_name, timeout=5):
         return None
     except Exception as e:
         print(f"Erreur lors du scan BLE: {e}")
-        power_on_bluetooth()
+        restart_bluetooth()
         return None
 
 
-def power_on_bluetooth():
+def restart_bluetooth():
+    """Restart Bluetooth and HCI UART module"""
     try:
         result = subprocess.run(
             ["bluetoothctl", "power", "off"],
@@ -60,6 +61,41 @@ def power_on_bluetooth():
         print("[BT SOLAR] Bluetooth activé :", result.stdout)
     except subprocess.CalledProcessError as e:
         print("[BT SOLAR] Erreur lors de l'activation du Bluetooth :", e.stderr)
+
+    commands = [
+        ("Turning Bluetooth power off", ["bluetoothctl", "power", "off"]),
+        ("Turning Bluetooth power on", ["bluetoothctl", "power", "on"]),
+        ("Waiting 2 seconds", None),  # Special case for sleep
+        ("Stopping bluetooth service", ["sudo", "systemctl", "stop", "bluetooth"]),
+        ("Unloading hci_uart module", ["sudo", "rmmod", "hci_uart"]),
+        ("Waiting 2 seconds", None),  # Special case for sleep
+        ("Loading hci_uart module", ["sudo", "modprobe", "hci_uart"]),
+        ("Starting bluetooth service", ["sudo", "systemctl", "start", "bluetooth"]),
+    ]
+
+    for step_name, cmd in commands:
+        try:
+            print(f"[*] {step_name}...")
+
+            if cmd is None:  # Sleep step
+                time.sleep(2)
+            else:
+                result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+                if result.stdout:
+                    print(f"    {result.stdout.strip()}")
+
+            print(f"[✓] {step_name} done")
+
+        except subprocess.CalledProcessError as e:
+            print(f"[✗] Error during {step_name}: {e.stderr}", file=sys.stderr)
+            return False
+        except Exception as e:
+            print(f"[✗] Unexpected error: {e}", file=sys.stderr)
+            return False
+
+    print("[✓] Bluetooth restart completed successfully")
+    return True
+
 
 
 # ...existing code...
@@ -112,6 +148,7 @@ async def get_solar_reg_data(cycles=1):
                     ),
                     timeout=10
                 )
+                return True
             except asyncio.TimeoutError:
                 print("[BT SOLAR] Impossible de souscrire délai imparti")
             except Exception as e:
@@ -120,6 +157,7 @@ async def get_solar_reg_data(cycles=1):
                     await client.stop_notify(handle)
                 else:
                     print(f"[BT SOLAR] Erreur lors de la souscription aux notifications: {e}")
+        return False
 
     device = None
     while not device:
@@ -128,7 +166,7 @@ async def get_solar_reg_data(cycles=1):
         if not device:
             print("[BT SOLAR]     Device non trouvé.")
             await asyncio.sleep(5)
-    
+
     while True:
         print("[BT SOLAR] 2-> Tentative de connexion:", device)
         try:
@@ -140,30 +178,34 @@ async def get_solar_reg_data(cycles=1):
 
                 WRITE_COMMAND = bytearray([0x4F, 0x4B])
                 WRITE_UUID = "00002af1-0000-1000-8000-00805f9b34fb"
-                
-                print("[BT SOLAR] 3-> Souscription aux notifications...")
-                await asyncio.wait_for(souscription_notifications(client), timeout=15)
-                
-                notif_event.clear()
-                data_event.clear()
-                
-                print("[BT SOLAR] 4-> Envoi requete et attente notification...")
 
-                try:
-                    await asyncio.wait_for(
-                        client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True),
-                        timeout=5
-                    )
-                except asyncio.TimeoutError:
-                    print("[BT SOLAR] Impossible d'envoyer la commande dans le délai imparti")
-                    continue
-                except Exception as e:
-                    print(f"[BT SOLAR] Erreur lors de l'envoi de la commande: {e}")
-                    continue
-                print("[BT SOLAR] 5-> Attente des données...")
-                await asyncio.wait_for(data_event.wait(), timeout=10)
-                # Dès qu'on a reçu une notification, on sort et on retourne les données
-                return live_data
+                print("[BT SOLAR] 3-> Souscription aux notifications...")
+                subscribed = False
+                while not subscribed:
+                    subscribed = await asyncio.wait_for(souscription_notifications(client), timeout=15)
+
+                if subscribed:
+                    notif_event.clear()
+                    data_event.clear()
+
+                    print("[BT SOLAR] 4-> Envoi requete et attente notification...")
+
+                    try:
+                        await asyncio.wait_for(
+                            client.write_gatt_char(WRITE_UUID, WRITE_COMMAND, response=True),
+                            timeout=5
+                        )
+                    except asyncio.TimeoutError:
+                        print("[BT SOLAR] Impossible d'envoyer la commande dans le délai imparti")
+                        continue
+                    except Exception as e:
+                        print(f"[BT SOLAR] Erreur lors de l'envoi de la commande: {e}")
+                        continue
+
+                    print("[BT SOLAR] 5-> Attente des données...")
+                    await asyncio.wait_for(data_event.wait(), timeout=10)
+                    # Dès qu'on a reçu une notification, on sort et on retourne les données
+                    return live_data
         except asyncio.TimeoutError:
             print("[BT SOLAR] Impossible de se connecter dans le délai imparti")
         except Exception as e:
