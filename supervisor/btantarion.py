@@ -124,6 +124,7 @@ async def main():
                 await asyncio.sleep(15)
         except Exception as e:
             print(f"Erreur Bleak : {e}")
+        await asyncio.sleep(5)
 
 # =========================
 # Exécution
