@@ -166,7 +166,7 @@ async def get_solar_reg_data(cycles=1):
                         handle,
                         parse_notification_14
                     ),
-                    timeout=10
+                    timeout=20
                 )
                 return True
             except asyncio.TimeoutError:
@@ -208,7 +208,7 @@ async def get_solar_reg_data(cycles=1):
                     printt("[BTS] 3-> Souscription aux notifications...")
                     subscribed = await asyncio.wait_for(
                         souscription_notifications(client),
-                        timeout=15
+                        timeout=20
                     )
                     if not subscribed:
                         turn += 1
