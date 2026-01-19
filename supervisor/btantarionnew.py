@@ -53,14 +53,14 @@ async def find_device_with_timeout(device_name, timeout=5):
     except Exception as e:
         print_red(f"Erreur lors du scan BLE: {e}")
         restart_bluetooth()
-        
+
         return None
 
 
 def restart_bluetooth():
     """Restart Bluetooth and HCI UART module"""
     commands = [
-    ("Turning Bluetooth power off", ["bluetoothctl", "power", "off"]),
+        ("Turning Bluetooth power off", ["bluetoothctl", "power", "off"]),
         ("Stopping bluetooth service", ["sudo", "systemctl", "stop", "bluetooth"]),
         ("Unloading hci_uart module", ["sudo", "rmmod", "hci_uart"]),
         ("Waiting 2 seconds", None),
@@ -87,10 +87,9 @@ def restart_bluetooth():
 
         except subprocess.CalledProcessError as e:
             print_red(f"[✗] Error during {step_name}: {e.stderr}")
-            return False
         except Exception as e:
             print_red(f"[✗] Unexpected error: {e}")
-            return False
+
 
     printt("[✓] Bluetooth restart completed successfully")
     return True
