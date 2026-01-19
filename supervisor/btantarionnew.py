@@ -77,6 +77,7 @@ def restart_bluetooth():
         ("Waiting 2 seconds", None),  # Special case for sleep
         ("Loading hci_uart module", ["sudo", "modprobe", "hci_uart"]),
         ("Starting bluetooth service", ["sudo", "systemctl", "start", "bluetooth"]),
+        ("Waiting 2 seconds", None),  # Special case for sleep
     ]
 
     for step_name, cmd in commands:
