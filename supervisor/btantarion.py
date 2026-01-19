@@ -64,12 +64,35 @@ def notification_handler(handle, data):
     hex_str = data.hex()
     print(f"Notification reçue (handle: {handle}): {hex_str}")
     # Identifier la zone selon la longueur
-    if len(hex_str) == 22*2:  # Zone 1 (22 caractères ASCII)
-        parse_notification(data)
-    elif len(hex_str) == 20*2:  # Zone 2+3 (20 caractères ASCII)
-        parse_notification(data)
+    parse_notification_14(handle, data)
+
+
+dataframe = []
+def parse_notification_14(handle, data):
+    print(f"[BTS] 6-> handle: {handle}")
+    if "00002af0-0000-1000-8000-00805f9b34fb" in str(handle):
+        print(f"[BTS] 6-> Notification reçue (handle: {handle}): {data.decode('ascii')}, {data.hex()}")
+        if data[-1] == 0x0a:
+            print(f"[BTS] 6-> Fin de trame , on a {len(dataframe)} chars")
+            if len(dataframe) >= 20:
+                s_full = data.decode('ascii')
+                courant = int(s_full[0:3])
+                tension = int(s_full[3:7])/100
+                inconnu = s_full[7:10]
+                capacity = int(s_full[10:14])
+                energie = int(s_full[14:20])
+                print(f"dataframe complet: {dataframe}, dataframe.hex(): {dataframe.hex()} ")
+                print(f"[BTS] 6->    {datetime.now()}: Courant: {courant} A, Tension: {tension} V, inconnu {inconnu} Ah: {capacity}, Wh: {energie} ")
+        elif data[-1] == 0x0d:
+            s = data[:-1].decode('ascii')
+            print(f"[BTS] 6->      Trame reçue #2: de {len(s)} caractères: {s}")
+            dataframe.extend(data[:-1])  # Ignorer le dernier octet CR
+        else:
+            s = data[1:].decode('ascii')
+            print(f"[BTS] 6->      Trame reçue #1: de {len(s)} caractères: {s}")
+            dataframe[:0] = data[1:]  # Ignorer le premier octet
     else:
-        print("*** Trame inconnue :", hex_str)
+        print(f" 6->    Notification reçue (handle: {handle}): {data.hex()} (non traité)")
 
 
 # =========================
