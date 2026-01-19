@@ -5,8 +5,27 @@ import subprocess
 
 notif_event = asyncio.Event()
 
-
-
+"""[Solar regulator]> info
+Device 00:0D:18:05:53:24 (public)
+        Name: Solar regulator
+        Alias: Solar regulator
+        Paired: no
+        Bonded: no
+        Trusted: no
+        Blocked: no
+        Connected: yes
+        LegacyPairing: no
+        UUID: Generic Access Profile    (00001800-0000-1000-8000-00805f9b34fb)
+        UUID: Generic Attribute Profile (00001801-0000-1000-8000-00805f9b34fb)
+        UUID: Device Information        (0000180a-0000-1000-8000-00805f9b34fb)
+        UUID: Battery Service           (0000180f-0000-1000-8000-00805f9b34fb)
+        UUID: Unknown                   (000018f0-0000-1000-8000-00805f9b34fb)
+        UUID: Vendor specific           (f000ffc0-0451-4000-b000-000000000000)
+        Modalias: usb:v045Ep0040d0300
+        AdvertisingFlags:
+  06                                               .
+        Battery Percentage: 0x00 (0)
+"""
 
 async def find_device_with_timeout(device_name, timeout=5):
     try:
@@ -109,10 +128,11 @@ async def get_solar_reg_data(cycles=1):
         if not device:
             print("[BT SOLAR]     Device non trouvé.")
             await asyncio.sleep(5)
-    print("[BT SOLAR] 2-> Tentative de connexion:", device)
+    
     while True:
+        print("[BT SOLAR] 2-> Tentative de connexion:", device)
         try:
-            async with BleakClient(address, timeout=20.0) as client:
+            async with BleakClient(address, timeout=10.0) as client:
                 for service in client.services:
                     print("[BT SOLAR]    Service:", service.uuid)
                     for char in service.characteristics:
