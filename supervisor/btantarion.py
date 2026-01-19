@@ -74,7 +74,7 @@ def parse_notification_14(handle, data):
         if data[-1] == 0x0a:
             print(f"[BTS] 6-> Fin de trame , on a {len(dataframe)} chars")
             if len(dataframe) >= 20:
-                s_full = dataframe.decode('ascii')
+                #s_full = dataframe.decode('ascii')
                 # courant = int(s_full[0:3])
                 # tension = int(s_full[3:7])/100
                 # inconnu = s_full[7:10]
