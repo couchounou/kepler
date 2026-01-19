@@ -32,6 +32,9 @@ Device 00:0D:18:05:53:24 (public)
 def print_red(text):
     print(f"\033[91m{text}\033[0m")
 
+def print_orange(text):
+    print(f"\033[93m{text}\033[0m")
+
 
 async def find_device_with_timeout(device_name, timeout=5):
     try:
@@ -162,7 +165,7 @@ async def get_solar_reg_data(cycles=1):
                 print("[BT SOLAR] Impossible de souscrire délai imparti")
             except Exception as e:
                 if "notify acquired" in str(e).lower():
-                    print("[BT SOLAR] Notification déjà acquise...")
+                    print_orange("[BT SOLAR] Notification déjà acquise...")
                     # await client.stop_notify(handle)
                     return True
                 else:
