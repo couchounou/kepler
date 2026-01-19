@@ -78,7 +78,7 @@ async def main():
     address = "00:0d:18:05:53:24"  # Remplace par l'adresse BLE de ton MPPT
     address = "00:0d:18:05:53:24"  # Remplace par l'adresse BLE de ton MPPT
     notify_uuid = "f000ffc2-0451-4000-b000-000000000000"  # candidate principale
-    device = await find_device_with_timeout("Solar", timeout=10)
+    device = await find_device_with_timeout("Solar", timeout=5)
     while True:
         try:
             print("-------> Tentative de connexion au MPPT... device:", device)
