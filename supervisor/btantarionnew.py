@@ -139,7 +139,7 @@ async def get_solar_reg_data(cycles=1):
     async def souscription_notifications(client):
         for handle in [0x000e]:
             try:
-                print(f"[BT SOLAR]   Try (turn {turn}) start notify -> {handle}")
+                print(f"[BT SOLAR]     Try (turn {turn}) start notify -> {handle}")
                 await asyncio.wait_for(
                     client.start_notify(
                         handle,
@@ -153,7 +153,7 @@ async def get_solar_reg_data(cycles=1):
             except Exception as e:
                 if "notify acquired" in str(e).lower():
                     print("[BT SOLAR] Notification déjà acquise...")
-                    await client.stop_notify(handle)
+                    # await client.stop_notify(handle)
                     return True
                 else:
                     print(f"[BT SOLAR] Erreur lors de la souscription aux notifications: {e}")
