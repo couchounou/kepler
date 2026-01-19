@@ -7,23 +7,30 @@ from bleak import BleakClient, BleakScanner
 # =========================
 
 
+notif_14 = ""
+
 def parse_notification(data: bytearray):
+    global notif_14
     # convertir bytes ASCII en string
     s = data.decode('ascii')
     print(f"Trame reçue: de {len(s)} caractères: {s}")
     if data[-1] == 0x0d:  # CR à la fin
-        print(f"Trame reçue: de {len(s)} caractères: {s}")
-        # extraire les valeurs en fonction de la longueur connue
-        tension = int(s[0:4])/100
-        print(f"R2 - Tension: {tension}")
+        s = data[:-1].decode('ascii')
+        notif_14 += s
+        print(f"... trame #2: {notif_14}")
+    elif len(data) == 1 and data[-1] == 0x0a:
+        print(f"... Fin de trame : {notif_14}")
+        notif_14 = ""
     else:
+        s = data.decode('ascii')
+        notif_14 = s + notif_14
         # extraire les valeurs en fonction de la longueur connue
-        courant = int(s[0:3])       # 0000 → 0 A
-        tension = int(s[3:7])/100    # 1280 → 12.8 V
-        inconnu = s[7:10]            # 00
-        capacity = int(s[10:14])     # 0051 → 51 Ah
-        energie = int(s[14:20])     # 000614 → 640 Wh
-        print(f"'{datetime.now()}: Courant: {courant} A, Tension: {tension} V, inconnu {inconnu} Ah: {capacity}, Wh: {energie} ")
+        # courant = int(s[0:3])       # 0000 → 0 A
+        # tension = int(s[3:7])/100    # 1280 → 12.8 V
+        # inconnu = s[7:10]            # 00
+        # capacity = int(s[10:14])     # 0051 → 51 Ah
+        # energie = int(s[14:20])     # 000614 → 640 Wh
+        #print(f"'{datetime.now()}: Courant: {courant} A, Tension: {tension} V, inconnu {inconnu} Ah: {capacity}, Wh: {energie} ")
 
 
 def decode_zone1(trame_hex):
@@ -105,8 +112,7 @@ async def main():
     notify_uuid = "f000ffc2-0451-4000-b000-000000000000"  # candidate principale
     device = await find_device_with_timeout("Solar regulator", 3)
     while True:
-        try:
-            
+        try: 
             print("-------> Tentative de connexion au MPPT... device:", device)
             async with BleakClient(address, timeout=15.0) as client:
                 # Affichage des services
