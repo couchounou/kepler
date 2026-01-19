@@ -29,7 +29,7 @@ Device 00:0D:18:05:53:24 (public)
 """
 
 
-def printt(text):
+def printt(*text):
     time_str = datetime.now().strftime("%M:%S:%f")[:-3]
     print(time_str + " | " + text)
 
