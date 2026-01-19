@@ -51,7 +51,7 @@ class NotificationParser:
             print(f" 6->    Notification reçue (handle: {handle}): {data.hex()} (non traité)")
 
 
-async def find_device_with_timeout(device_name, timeout=10):
+async def find_device_with_timeout(device_name, timeout=15):
     print(f"Recherche pendant {timeout} secondes...")
     device_name = device_name.lower()
     try:
@@ -78,9 +78,9 @@ async def main():
     address = "00:0d:18:05:53:24"  # Remplace par l'adresse BLE de ton MPPT
     address = "00:0d:18:05:53:24"  # Remplace par l'adresse BLE de ton MPPT
     notify_uuid = "f000ffc2-0451-4000-b000-000000000000"  # candidate principale
+    device = await find_device_with_timeout("Solar", timeout=10)
     while True:
         try:
-            device = await find_device_with_timeout("Solar", timeout=10)
             print("-------> Tentative de connexion au MPPT... device:", device)
             async with BleakClient(address, timeout=15.0) as client:
                 # Affichage des services
