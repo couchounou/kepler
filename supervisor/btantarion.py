@@ -23,7 +23,13 @@ class btantarion:
         """Restart Bluetooth and HCI UART module"""
         commands = [
             ("Turning Bluetooth power off", ["bluetoothctl", "power", "off"]),
-            ("Stopping bluetooth service", ["sudo", "systemctl", "stop", "bluetooth"]),
+            ("Stopping bluetooth service", [
+                "sudo",
+                "systemctl",
+                "stop",
+                "bluetooth"
+                ]
+            ),
             ("Unloading hci_uart module", ["sudo", "rmmod", "hci_uart"]),
             ("Waiting 2 seconds", None),
             ("Loading hci_uart module", ["sudo", "modprobe", "hci_uart"]),
