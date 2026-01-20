@@ -19,8 +19,12 @@ def parse_notification(data: bytearray):
         tension_batterie = round(int(notif_14[3:7])/100, 2)    # 1280 → 12.8 V
         tension_panneau = round(int(notif_14[20:24])/100, 2)  # 1280 → 12.8 V
         print(f"'{datetime.now()}: Courant: {courant}A, Tension batterie: {tension_batterie}V, Tension panneau: {tension_panneau}V ")
-        notif_14 = f"\033[92m{notif_14[0:3]}\033[0m" + notif_14[3:7] + notif_14[7:20] + f"\033[92m{notif_14[20:24]}\033[0m"
-        print(f"Trame complète: {notif_14}")
+        out = ""
+        out += f"\033[92m{notif_14[0:3]}\033[0m"
+        out += f"\033[92m{notif_14[3:7]}\033[0m"
+        out += notif_14[7:20]
+        out += f"\033[92m{notif_14[20:24]}\033[0m" + notif_14[24:]
+        print(f"Trame complète: {out}")
         notif_14 = ""
     else:
         s = data.decode('ascii')
