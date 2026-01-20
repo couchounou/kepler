@@ -64,7 +64,7 @@ class btantarion:
         return True
 
     async def run(self, loop=90):
-        device = self.find_device_with_timeout("regulator", timeout=10)
+        device = await self.find_device_with_timeout("regulator", timeout=10)
         if device is None:
             print("[BTS] Device 'regulator' non trouvé")
         else:
