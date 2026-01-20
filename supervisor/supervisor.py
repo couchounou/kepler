@@ -190,7 +190,7 @@ async def read_loop(interval_minutes=0.5):
                 energy_daily=btstate.get("energy_daily", 0.0)
             )
 
-        aux_volt = btstate.get("auxiliary_voltage", 0.0)
+        aux_volt = btstate.get("battery_voltage", 0.0)
         if aux_volt > 0.0:
             SiteStatus_instance.update(
                 auxiliary_voltage=aux_volt
