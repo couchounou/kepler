@@ -18,12 +18,6 @@ class btantarion:
         self.notif_14_buffer = ""
         self.restart_bluetooth()
         self.address = "00:0d:18:05:53:24"
-        device = self.find_device_with_timeout("regulator", timeout=10)
-        if device is None:
-            print("[BTS] Device 'Solar regulator' non trouvé après redémarrage Bluetooth.")
-        else:
-            print(f"[BTS] Device trouvé après redémarrage Bluetooth: {device.address}")
-            self.address = device.address
         self.WRITE_COMMAND = bytearray([0x4F, 0x4B])
         self.WRITE_UUID = "00002af1-0000-1000-8000-00805f9b34fb"
 
@@ -70,6 +64,12 @@ class btantarion:
         return True
 
     async def run(self, loop=90):
+        device = self.find_device_with_timeout("regulator", timeout=10)
+        if device is None:
+            print("[BTS] Device 'regulator' non trouvé")
+        else:
+            print(f"[BTS] Device trouvé: {device.address}")
+            self.address = device.address
         while True:
             try:
                 print(
