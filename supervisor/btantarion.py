@@ -33,57 +33,9 @@ def parse_notification(data: bytearray):
         #print(f"'{datetime.now()}: Courant: {courant} A, Tension: {tension} V, inconnu {inconnu} Ah: {capacity}, Wh: {energie} ")
 
 
-def decode_zone1(trame_hex):
-    """
-    Zone 1: Batterie / Charge
-    trame_hex : chaîne hex ASCII
-    Renvoie : courant (A), tension (V), capacité (Ah), énergie (Wh)
-    """
-    ascii_str = bytes.fromhex(trame_hex).decode('ascii')
-    courant = int(ascii_str[0:6])
-    tension = int(ascii_str[6:10]) * 0.1
-    capacite = int(ascii_str[10:16])
-    energie = int(ascii_str[16:22])
-    return courant, tension, capacite, energie
-
-
-def decode_zone2_3(trame_hex):
-    """
-    Zone 2+3: Panneau / Sortie
-    Renvoie : puissance_panneau (W), tension_panneau (V),
-              courant_sortie (A), tension_sortie (V), puissance_sortie (W)
-    """
-    ascii_str = bytes.fromhex(trame_hex).decode('ascii')
-    puissance_panneau = int(ascii_str[0:4])
-    tension_panneau = int(ascii_str[4:8]) * 0.1
-    courant_sortie = int(ascii_str[8:12])
-    tension_sortie = int(ascii_str[12:16]) * 0.1
-    puissance_sortie = int(ascii_str[16:20])
-    return puissance_panneau, tension_panneau, courant_sortie, tension_sortie, puissance_sortie
-
-
-# =========================
-# Handler de notification
-# =========================
-
-
 def notification_handler(handle, data):
     hex_str = data.hex()
     print(f"Notification reçue (handle: {handle}): {hex_str}")
-    # Identifier la zone selon la longueur
-    if len(hex_str) == 22*2:  # Zone 1 (22 caractères ASCII)
-        parse_notification(data)
-    elif len(hex_str) == 20*2:  # Zone 2+3 (20 caractères ASCII)
-        parse_notification(data)
-    else:
-        print("*** Trame inconnue :", hex_str)
-
-
-
-
-# =========================
-# Programme principal
-# =========================
 
 
 async def find_device_with_timeout(device_name, timeout=10):
