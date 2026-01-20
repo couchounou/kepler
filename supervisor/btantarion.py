@@ -1,4 +1,7 @@
 import asyncio
+import subprocess
+import random
+import time
 from datetime import datetime
 from bleak import BleakClient, BleakScanner
 
@@ -14,6 +17,43 @@ class btantarion:
             "last_update": None
         }
         self.notif_14_buffer = ""
+        
+
+    def restart_bluetooth():
+        """Restart Bluetooth and HCI UART module"""
+        commands = [
+            ("Turning Bluetooth power off", ["bluetoothctl", "power", "off"]),
+            ("Stopping bluetooth service", ["sudo", "systemctl", "stop", "bluetooth"]),
+            ("Unloading hci_uart module", ["sudo", "rmmod", "hci_uart"]),
+            ("Waiting 2 seconds", None),
+            ("Loading hci_uart module", ["sudo", "modprobe", "hci_uart"]),
+            ("Waiting 1 seconds", None),
+            ("Starting bluetooth service", ["sudo", "systemctl", "start", "bluetooth"]),
+            ("Waiting 1 seconds", None),
+            ("Turning Bluetooth power on", ["bluetoothctl", "power", "on"]),
+            ("Waiting 2 seconds", None),
+        ]
+
+        for step_name, cmd in commands:
+            try:
+                print(f"[BTS] [*] {step_name}...")
+
+                if cmd is None:  # Sleep step
+                    time.sleep(2)
+                else:
+                    result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+                    if result.stdout:
+                        print(f"    {result.stdout.strip()}")
+
+                print(f"[BTS] [✓] {step_name} done")
+
+            except subprocess.CalledProcessError as e:
+                print(f"[BTS] [✗] Error during {step_name}: {e.stderr}")
+            except Exception as e:
+                print(f"[BTS] [✗] Unexpected error: {e}")
+                continue
+        print("[BTS] [✓] Bluetooth restart completed successfully")
+        return True
 
     async def run(self):
         address = "00:0d:18:05:53:24"
