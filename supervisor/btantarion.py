@@ -17,7 +17,7 @@ class btantarion:
             "last_update": None
         }
         self.notif_14_buffer = ""
-        
+        self.restart_bluetooth()
 
     def restart_bluetooth():
         """Restart Bluetooth and HCI UART module"""
