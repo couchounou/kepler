@@ -72,7 +72,7 @@ class btantarion:
         elif len(data) == 1 and data[-1] == 0x0a:
             self.state["charging_current"] = int(
                 self.notif_14_buffer[0:3]
-            )
+            )  # 001 → 1 A
             self.state["battery_voltage"] = round(
                 int(self.notif_14_buffer[3:7])/100, 2
             )  # 1280 → 12.8 V
