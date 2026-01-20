@@ -36,6 +36,7 @@ def parse_notification(data: bytearray):
 def notification_handler(handle, data):
     hex_str = data.hex()
     print(f"Notification reçue (handle: {handle}): {hex_str}")
+    parse_notification(data)
 
 
 async def find_device_with_timeout(device_name, timeout=10):
