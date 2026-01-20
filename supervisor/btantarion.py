@@ -17,13 +17,14 @@ def parse_notification(data: bytearray):
     if data[-1] == 0x0d:  # CR à la fin
         s = data[:-1].decode('ascii')
         notif_14 += s
-        print(f"... trame #2: {notif_14}")
+        print(f"... trame #2: {s}")
     elif len(data) == 1 and data[-1] == 0x0a:
         print(f"... Fin de trame : {notif_14}")
         notif_14 = ""
     else:
         s = data.decode('ascii')
         notif_14 = s + notif_14
+        print(f"... trame #1: {s}")
         # extraire les valeurs en fonction de la longueur connue
         # courant = int(s[0:3])       # 0000 → 0 A
         # tension = int(s[3:7])/100    # 1280 → 12.8 V
