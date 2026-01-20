@@ -34,46 +34,44 @@ WRITE_API = None
 
 def lead_soc(voltage, temperature_c):
     """
-    Estime le SOC (%) d'une batterie plomb ouverte 12V
-    :param voltage: tension mesurée (V)
-    :param temperature_c: température batterie (°C)
+    Estime le SOC (%) d'une batterie plomb 12V
+    :param voltage: tension mesurée (V) batterie au repos
+    :param temperature_c: température en °C
     :return: SOC en %
     """
 
-    # Table de référence plomb ouvert à 25°C (tension à vide)
+    # Table SOC vs tension à 25°C (batterie plomb ouverte)
     soc_table = [
-        (12.70, 100),
-        (12.60, 90),
-        (12.50, 80),
-        (12.40, 70),
-        (12.30, 60),
-        (12.20, 50),
-        (12.10, 40),
-        (12.00, 30),
-        (11.90, 20),
-        (11.80, 10),
-        (11.60, 0),
+        (100, 12.70),
+        (90, 12.60),
+        (80, 12.50),
+        (70, 12.40),
+        (60, 12.30),
+        (50, 12.20),
+        (40, 12.10),
+        (30, 12.00),
+        (20, 11.90),
+        (10, 11.80),
+        (0, 11.70),
     ]
 
-    # Compensation température
-    # Plomb ouvert ≈ -0.020V / 10°C
-    temp_coeff = -0.020 / 10  # V par °C
-    delta_v = (temperature_c - 25) * temp_coeff
-    compensated_voltage = voltage - delta_v
+    # Correction température vers 25 °C
+    # Coefficient plomb ≈ 18 mV / °C pour une batterie 12 V
+    corrected_voltage = voltage + (25 - temperature_c) * 0.018
 
     # Bornes
-    if compensated_voltage >= soc_table[0][0]:
+    if corrected_voltage >= soc_table[0][1]:
         return 100.0
-    if compensated_voltage <= soc_table[-1][0]:
+    if corrected_voltage <= soc_table[-1][1]:
         return 0.0
 
     # Interpolation linéaire
     for i in range(len(soc_table) - 1):
-        v1, soc1 = soc_table[i]
-        v2, soc2 = soc_table[i + 1]
+        soc1, v1 = soc_table[i]
+        soc2, v2 = soc_table[i + 1]
 
-        if v1 >= compensated_voltage >= v2:
-            soc = soc1 + (soc2 - soc1) * ((v1 - compensated_voltage) / (v1 - v2))
+        if v1 >= corrected_voltage >= v2:
+            soc = soc1 + (soc2 - soc1) * (v1 - corrected_voltage) / (v1 - v2)
             return round(soc, 1)
 
     return None
@@ -103,8 +101,7 @@ def agm_soc(voltage, temperature_c):
     ]
 
     # Correction température (−15 mV / °C pour une batterie 12 V)
-    temp_correction = (temperature_c - 25) * -0.015
-    corrected_voltage = voltage - temp_correction
+    corrected_voltage = voltage + (25 - temperature_c) * 0.015
 
     # Bornes
     if corrected_voltage >= soc_table[0][1]:
