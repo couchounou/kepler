@@ -19,7 +19,7 @@ class btantarion:
         self.notif_14_buffer = ""
         self.restart_bluetooth()
 
-    def restart_bluetooth():
+    def restart_bluetooth(self):
         """Restart Bluetooth and HCI UART module"""
         commands = [
             ("Turning Bluetooth power off", ["bluetoothctl", "power", "off"]),
