@@ -45,6 +45,7 @@ class SiteStatus:
             "principal_voltage": 0.0,
             "panel_voltage": 0.0,
             "panel_power": 0.0,
+            "charging_current": 0.0,
             "water_level": 0.0,
             "temperature_1": 0.0,
             "temperature_2": 0.0,
@@ -178,6 +179,22 @@ async def read_loop(interval_minutes=0.5):
 
     while True:
         print("supervisor values read ", supervisor_bt.get_state())
+        btstate = supervisor_bt.get_state()
+        if "panel_voltage" in btstate:
+            aux_volt = btstate.get("auxiliary_voltage", 0.0)
+            SiteStatus_instance.update(
+                panel_voltage=btstate.get("panel_voltage", 0.0),
+                panel_power=btstate.get("panel_power", 0.0),
+                charging_current=btstate.get("charging_current", 0.0),
+                energy_daily=btstate.get("energy_daily", 0.0)
+            )
+
+        aux_volt = btstate.get("auxiliary_voltage", 0.0)
+        if aux_volt > 0.0:
+            SiteStatus_instance.update(
+                auxiliary_voltage=aux_volt
+            )
+
         print("try Reading ADS1115 channels...")
         if ADAFRUIT_AVAILABLE:
             print("Using real ADS1115 readings.")
