@@ -32,7 +32,7 @@ CLIENT = None
 WRITE_API = None
 
 
-def lead_acid_soc(voltage, temperature_c):
+def lead_soc(voltage, temperature_c):
     """
     Estime le SOC (%) d'une batterie plomb ouverte 12V
     :param voltage: tension mesurée (V)
@@ -272,25 +272,23 @@ async def read_loop(interval_minutes=0.5):
     asyncio.create_task(supervisor_bt.run())
 
     while True:
-        print("supervisor values read ", supervisor_bt.get_state())
         btstate = supervisor_bt.get_state()
-        if "panel_voltage" in btstate:
-            aux_volt = btstate.get("auxiliary_voltage", 0.0)
-            aux_soc = None
-            if aux_volt:
-                aux_soc = agm_soc(aux_volt, btstate.get("temperature_1", 10))
+        print("supervisor values read ", btstate)
+
+        aux_volt = btstate.get("battery_voltage", 0.0)
+        if aux_volt:
+            print("Calculating auxiliary SOC with voltage:", aux_volt)
+            aux_soc = agm_soc(aux_volt, btstate.get("temperature_1", 10))
+            if aux_soc:
+                SiteStatus_instance.update(
+                    auxiliary_level=aux_soc
+                )
             SiteStatus_instance.update(
+                auxiliary_voltage=aux_volt,
                 panel_voltage=btstate.get("panel_voltage", 0.0),
                 panel_power=btstate.get("charging_power", 0.0),
                 charging_current=btstate.get("charging_current", 0.0),
                 energy_daily=btstate.get("energy_daily", 0.0),
-                auxiliary_level=aux_soc if aux_volt else 0.0
-            )
-
-        aux_volt = btstate.get("battery_voltage", 0.0)
-        if aux_volt > 0.0:
-            SiteStatus_instance.update(
-                auxiliary_voltage=aux_volt
             )
 
         print("try Reading ADS1115 channels...")
