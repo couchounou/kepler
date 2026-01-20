@@ -123,8 +123,14 @@ class btantarion:
 
 if __name__ == "__main__":
     supervisor = btantarion()
-    asyncio.create_task(supervisor.run())
 
-    # Plus tard, dans le même programme :
-    etat = supervisor.get_state()
-    print(etat)
+    async def main():
+        # Lancer la tâche principale en arrière-plan
+        asyncio.create_task(supervisor.run())
+        # Boucle de consultation d'état
+        while True:
+            etat = supervisor.get_state()
+            print("----> Test etat depuis main " + str(etat))
+            await asyncio.sleep(5)  # Affiche l'état toutes les 5 secondes
+
+    asyncio.run(main())
