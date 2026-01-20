@@ -140,6 +140,6 @@ if __name__ == "__main__":
         while True:
             etat = supervisor.get_state()
             print("----> Test etat depuis main " + str(etat))
-            await asyncio.sleep(5)  # Affiche l'état toutes les 5 secondes
+            await asyncio.sleep(30)  # Affiche l'état toutes les 5 secondes
 
     asyncio.run(main())
