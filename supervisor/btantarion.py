@@ -18,7 +18,15 @@ class btantarion:
         }
         self.notif_14_buffer = ""
         self.restart_bluetooth()
-
+        self.address = "00:0d:18:05:53:24"
+        device = await self.find_device_with_timeout("regulator", timeout=10)
+        if device is None:
+            print("[BTS] Device 'Solar regulator' non trouvé après redémarrage Bluetooth.")
+        else:
+            print(f"[BTS] Device trouvé après redémarrage Bluetooth: {device.address}")
+            self.address = device.address
+        self.WRITE_COMMAND = bytearray([0x4F, 0x4B])
+        self.WRITE_UUID = "00002af1-0000-1000-8000-00805f9b34fb"
     def restart_bluetooth(self):
         """Restart Bluetooth and HCI UART module"""
         commands = [
@@ -61,26 +69,22 @@ class btantarion:
         print("[BTS] [✓] Bluetooth restart completed successfully")
         return True
 
-    async def run(self):
-        address = "00:0d:18:05:53:24"
-        notify_uuid = "f000ffc2-0451-4000-b000-000000000000"
-        device = await self.find_device_with_timeout("Solar regulator", 3)
+    async def run(self, loop=90):
         while True:
             try:
                 print(
-                    "-------> Tentative de connexion au MPPT... device:",
-                    device
+                    "[BTS] -------> Tentative de connexion au MPPT... device:",
+                    self.address
                 )
-                async with BleakClient(address, timeout=15.0) as client:
+                async with BleakClient(self.address, timeout=15.0) as client:
                     # Affichage des services
                     for service in client.services:
                         print("[BTS] Service:", service.uuid)
                         for char in service.characteristics:
                             print(f"  Char: {char.uuid}, Handle: {char.handle}, Properties: {char.properties}")
-                async with BleakClient(address, timeout=15.0) as client:
+                async with BleakClient(self.address, timeout=15.0) as client:
                     # Souscrire à toutes les notifications sur le handle 0x000f
-                    WRITE_COMMAND = bytearray([0x4F, 0x4B])
-                    WRITE_UUID = "00002af1-0000-1000-8000-00805f9b34fb"
+
                     try:
                         print("[BTS] Nettoyage des notifications existantes...")
                         await client.stop_notify(0x000e)
@@ -99,15 +103,15 @@ class btantarion:
                         try:
                             print("[BTS] Envoi requete et attente notification...")
                             await client.write_gatt_char(
-                                WRITE_UUID,
-                                WRITE_COMMAND,
+                                self.WRITE_UUID,
+                                self.WRITE_COMMAND,
                                 response=True
                             )
                         except Exception as e:
                             print(f"Erreur lors de l'envoi de la requête: {e}")
                             break
                         print("[BTS] En écoute des notifications sur handle 0x000e...")
-                        await asyncio.sleep(60)
+                        await asyncio.sleep(loop)
             except Exception as e:
                 print(f"Erreur Bleak : {e}")
                 continue
@@ -155,7 +159,6 @@ class btantarion:
         self.parse_notification(data)
 
     async def find_device_with_timeout(self, device_name, timeout=10):
-        print(f"Recherche pendant {timeout} secondes...")
         try:
             devices = await asyncio.wait_for(
                 BleakScanner.discover(timeout=timeout),
@@ -163,8 +166,8 @@ class btantarion:
             )
 
             for device in devices:
-                if device.name == device_name:
-                    print(f"Device trouvé: {device.name}")
+                if device_name.lower() in device.name.lower():
+                    print(f"[BTS] Device trouvé: {device.name}")
                     return device
 
             print("[BTS] Device non trouvé")
