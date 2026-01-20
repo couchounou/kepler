@@ -117,9 +117,9 @@ def influx_write_pts(points: list, bucket: str) -> None:
 
 def read_all_ads1115_channels_fake():
     SiteStatus_instance.update(
-        auxiliary_voltage=random.uniform(11.5, 13.5),
+        # auxiliary_voltage=if Sitrandom.uniform(11.5, 13.5),
         principal_voltage=random.uniform(11.5, 13.5),
-        panel_voltage=random.uniform(0.0, 25.0),
+        # panel_voltage=random.uniform(0.0, 25.0),
         water_level=random.uniform(0, 100),
         temperature_1=random.uniform(-10, 50),
         temperature_2=random.uniform(-10, 50)
@@ -143,9 +143,9 @@ def read_all_ads1115_channels():
     SiteStatus_instance.update(
         # auxiliary_voltage=channels[1].voltage * 3.965,
         # principal_voltage=channels[0].voltage * 3.98,
-        auxiliary_voltage=random.uniform(11.5, 13.5),
+        # auxiliary_voltage=random.uniform(11.5, 13.5),
         principal_voltage=random.uniform(11.5, 13.5),
-        panel_voltage=random.uniform(0.0, 25.0),
+        #panel_voltage=random.uniform(0.0, 25.0),
         water_level=round(channels[2].voltage * 4.59, 0),
         temperature_1=round(channels[3].voltage * 4.59, 1),
         temperature_2=round(channels[3].voltage * 4.59, 1)
