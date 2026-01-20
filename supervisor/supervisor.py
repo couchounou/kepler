@@ -11,7 +11,7 @@ import configparser
 import os
 import asyncio
 import sys
-from btantarionnew import get_solar_reg_data
+from btantarion import btantarion
 try:
     import board
     import busio
@@ -100,6 +100,7 @@ class SiteStatus:
 
 
 SiteStatus_instance = SiteStatus(site_id="site_001")
+solar_regulator = btantarion()
 
 
 def influx_write_pts(points: list, bucket: str) -> None:
@@ -177,9 +178,12 @@ async def read_loop(interval_minutes=0.5):
     Continuously reads all 4 ADS1115 channels
     every 'interval_minutes' minutes and prints the results.
     """
-    solar_task = asyncio.create_task(periodic_solar_read())
+    # solar_task = asyncio.create_task(periodic_solar_read())
+    supervisor_bt = btantarion()
+    asyncio.create_task(supervisor_bt.run())
 
     while True:
+        print("supervisor values read ", supervisor_bt.get_state())
         print("try Reading ADS1115 channels...")
         if ADAFRUIT_AVAILABLE:
             print("Using real ADS1115 readings.")
