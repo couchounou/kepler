@@ -185,7 +185,7 @@ async def read_loop(interval_minutes=0.5):
             aux_volt = btstate.get("auxiliary_voltage", 0.0)
             SiteStatus_instance.update(
                 panel_voltage=btstate.get("panel_voltage", 0.0),
-                panel_power=btstate.get("panel_power", 0.0),
+                panel_power=btstate.get("charging_power", 0.0),
                 charging_current=btstate.get("charging_current", 0.0),
                 energy_daily=btstate.get("energy_daily", 0.0)
             )
