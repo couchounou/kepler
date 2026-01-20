@@ -1,4 +1,3 @@
-import time
 from datetime import datetime, UTC
 import random
 import configparser
@@ -78,6 +77,7 @@ def lead_acid_soc(voltage, temperature_c):
             return round(soc, 1)
 
     return None
+
 
 def agm_soc(voltage, temperature_c):
     """
