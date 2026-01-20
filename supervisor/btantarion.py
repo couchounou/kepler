@@ -124,7 +124,7 @@ class btantarion:
                 int(self.notif_14_buffer[3:7]) / 100, 2
             )  # 1280 → 12.8 V
             self.state["panel_voltage"] = round(
-                int(self.notif_14_buffer[20:24]) / 100, 2
+                int(self.notif_14_buffer[20:23]) / 100, 1
             )  # 1280 → 12.8 V
             self.state["energy_daily"] = int(
                 self.notif_14_buffer[17:20])  # 1280 → 1280 Wh
@@ -134,7 +134,7 @@ class btantarion:
             out += f"\033[92m{self.notif_14_buffer[0:3]}\033[0m"
             out += f"\033[92m{self.notif_14_buffer[3:7]}\033[0m"
             out += self.notif_14_buffer[7:20]
-            out += f"\033[92m{self.notif_14_buffer[20:24]}\033[0m" + self.notif_14_buffer[24:]
+            out += f"\033[92m{self.notif_14_buffer[20:23]}\033[0m" + self.notif_14_buffer[23:]
             print(f"Trame complète: {out}")
             self.notif_14_buffer = ""
         else:
