@@ -64,6 +64,7 @@ class btantarion:
                         await asyncio.sleep(60)
             except Exception as e:
                 print(f"Erreur Bleak : {e}")
+                continue
 
     def parse_notification(self, data: bytearray):
         # convertir bytes ASCII en string
