@@ -39,6 +39,8 @@ def print_red(text):
 def print_orange(text):
     printt(f"\033[93m{text}\033[0m")
 
+def print_grreen(text):
+    printt(f"\033[92m{text}\033[0m")
 
 async def find_device_with_timeout(device_name, timeout=5):
     try:

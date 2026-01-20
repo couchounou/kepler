@@ -14,13 +14,13 @@ def parse_notification(data: bytearray):
     if data[-1] == 0x0d:  # CR à la fin
         s = data[:-1].decode('ascii')
         notif_14 += s
-        print(f"... trame #2: {s}")
     elif len(data) == 1 and data[-1] == 0x0a:
-        print(f"... Fin de trame : {notif_14}")
         courant = int(notif_14[0:3])       # 0000 → 0 A
         tension_batterie = round(int(notif_14[3:7])/100, 2)    # 1280 → 12.8 V
         tension_panneau = round(int(notif_14[20:24])/100, 2)  # 1280 → 12.8 V
         print(f"'{datetime.now()}: Courant: {courant}A, Tension batterie: {tension_batterie}V, Tension panneau: {tension_panneau}V ")
+        notif_14 = f"\033[92m{notif_14[0:3]}\033[0m" + notif_14[3:7] + notif_14[7:20] + f"\033[92m{notif_14[20:24]}\033[0m"
+        print(f"Trame complète: {notif_14}")
         notif_14 = ""
     else:
         s = data.decode('ascii')
