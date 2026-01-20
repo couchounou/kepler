@@ -1,6 +1,5 @@
 import asyncio
 import subprocess
-import random
 import time
 from datetime import datetime
 from bleak import BleakClient, BleakScanner
@@ -19,7 +18,7 @@ class btantarion:
         self.notif_14_buffer = ""
         self.restart_bluetooth()
         self.address = "00:0d:18:05:53:24"
-        device = await self.find_device_with_timeout("regulator", timeout=10)
+        device = self.find_device_with_timeout("regulator", timeout=10)
         if device is None:
             print("[BTS] Device 'Solar regulator' non trouvé après redémarrage Bluetooth.")
         else:
@@ -27,6 +26,7 @@ class btantarion:
             self.address = device.address
         self.WRITE_COMMAND = bytearray([0x4F, 0x4B])
         self.WRITE_UUID = "00002af1-0000-1000-8000-00805f9b34fb"
+
     def restart_bluetooth(self):
         """Restart Bluetooth and HCI UART module"""
         commands = [
