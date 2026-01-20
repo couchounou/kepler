@@ -28,7 +28,7 @@ class btantarion:
                 async with BleakClient(address, timeout=15.0) as client:
                     # Affichage des services
                     for service in client.services:
-                        print("Service:", service.uuid)
+                        print("[BTS] Service:", service.uuid)
                         for char in service.characteristics:
                             print(f"  Char: {char.uuid}, Handle: {char.handle}, Properties: {char.properties}")
                 async with BleakClient(address, timeout=15.0) as client:
@@ -36,13 +36,13 @@ class btantarion:
                     WRITE_COMMAND = bytearray([0x4F, 0x4B])
                     WRITE_UUID = "00002af1-0000-1000-8000-00805f9b34fb"
                     try:
-                        print("Nettoyage des notifications existantes...")
+                        print("[BTS] Nettoyage des notifications existantes...")
                         await client.stop_notify(0x000e)
                     except Exception as e:
                         print(f"Erreur lors de l'arrêt des notifications existantes: {e}")
 
                     try:
-                        print("Souscription aux notifications...")
+                        print("[BTS] Souscription aux notifications...")
                         await client.start_notify(
                             0x000e,
                             self.notification_handler
@@ -51,7 +51,7 @@ class btantarion:
                         print(f"Erreur lors de la souscription aux notifications: {e}")
                     while True:
                         try:
-                            print("Envoi requete et attente notification...")
+                            print("[BTS] Envoi requete et attente notification...")
                             await client.write_gatt_char(
                                 WRITE_UUID,
                                 WRITE_COMMAND,
@@ -60,7 +60,7 @@ class btantarion:
                         except Exception as e:
                             print(f"Erreur lors de l'envoi de la requête: {e}")
                             break
-                        print("En écoute des notifications sur handle 0x000e...")
+                        print("[BTS] En écoute des notifications sur handle 0x000e...")
                         await asyncio.sleep(60)
             except Exception as e:
                 print(f"Erreur Bleak : {e}")
@@ -121,10 +121,10 @@ class btantarion:
                     print(f"Device trouvé: {device.name}")
                     return device
 
-            print("Device non trouvé")
+            print("[BTS] Device non trouvé")
             return None
         except asyncio.TimeoutError:
-            print("Timeout: recherche dépassée")
+            print("[BTS] Timeout: recherche dépassée")
             return None
 
     def get_state(self):
@@ -140,7 +140,7 @@ if __name__ == "__main__":
         # Boucle de consultation d'état
         while True:
             etat = supervisor.get_state()
-            print("----> Test etat depuis main " + str(etat))
+            print("[BTS] ----> Test etat depuis main " + str(etat))
             await asyncio.sleep(30)  # Affiche l'état toutes les 5 secondes
 
     asyncio.run(main())
