@@ -77,13 +77,13 @@ class btantarion:
                     "[BTS] -------> Tentative de connexion au MPPT... device:",
                     self.address
                 )
-                async with BleakClient(self.address, timeout=15.0) as client:
+                async with BleakClient(self.address, timeout=10.0) as client:
                     # Affichage des services
                     for service in client.services:
                         print("[BTS] Service:", service.uuid)
                         for char in service.characteristics:
                             print(f"  Char: {char.uuid}, Handle: {char.handle}, Properties: {char.properties}")
-                async with BleakClient(self.address, timeout=15.0) as client:
+                async with BleakClient(self.address, timeout=10.0) as client:
                     # Souscrire à toutes les notifications sur le handle 0x000f
 
                     try:
