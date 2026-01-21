@@ -302,7 +302,7 @@ async def read_loop(interval_minutes=0.5):
             connected, lte_signal = ready_or_connect(force=False)
         else:
             connected = True
-
+        print("Internet connected:", connected, " via ", "LTE" if lte_signal else "WLAN0")
         SiteStatus_instance.update(lte_signal=lte_signal)
         POINTS.append(SiteStatus_instance.to_point())
         SiteStatus_instance.reset()

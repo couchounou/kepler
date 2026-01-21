@@ -50,29 +50,32 @@ def is_reg(ser):
 
 def test_ping(num: int = 2, target: str = "8.8.8.8", timeout: int = 2) -> bool:
     print(f"  Test ping to {target}...")
-    result = subprocess.run(
-        [
-            "ping",
-            "-I",
-            "eth0",
-            "-w",
-            str(timeout * 1000),
-            "-c",
-            str(num),
-            target
-        ],
-        capture_output=True,
-        text=True,
-        check=False
-    )
+    try:
+        result = subprocess.run(
+            [
+                "ping",
+                "-I",
+                "eth0",
+                "-w",
+                str(timeout * 1000),
+                "-c",
+                str(num),
+                target
+            ],
+            capture_output=True,
+            text=True,
+            check=False
+        )
 
-    if result.returncode == 0:
-        print("  LTE Internet OK")
-        return True
-    else:
-        print(f"  LTE Internet KO: {result.stderr}".strip())
+        if result.returncode == 0:
+            print("  LTE Internet OK")
+            return True
+        else:
+            print(f"  LTE Internet KO: {result.stderr}".strip())
+            return False
+    except Exception as e:
+        print(f"  Error during ping test: {e}")
         return False
-
 
 def wlan0_has_internet(timeout=1) -> bool:
     try:
