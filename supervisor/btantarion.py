@@ -65,7 +65,7 @@ class btantarion:
         return True
 
     async def run(self, loop=90):
-        device = await self.find_device_with_timeout("regulator", timeout=10)
+        device = await self.find_device_with_timeout("regulator", timeout=15)
         if device is None:
             print("[BTS] Device 'regulator' non trouvé")
         else:
@@ -161,7 +161,7 @@ class btantarion:
         print(f"Notification reçue (handle: {handle}): {hex_str}")
         self.parse_notification(data)
 
-    async def find_device_with_timeout(self, device_name, timeout=10):
+    async def find_device_with_timeout(self, device_name, timeout=20):
         try:
             devices = await asyncio.wait_for(
                 BleakScanner.discover(timeout=timeout),
@@ -169,6 +169,7 @@ class btantarion:
             )
 
             for device in devices:
+                print(f"[BTS] Device: {device.name}")
                 if device_name.lower() in device.name.lower():
                     print(f"[BTS] Device trouvé: {device.name}")
                     return device
