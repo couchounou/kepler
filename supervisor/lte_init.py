@@ -57,7 +57,7 @@ def test_ping(num: int = 2, target: str = "8.8.8.8", timeout: int = 2) -> bool:
                 "-I",
                 "eth0",
                 "-w",
-                str(timeout * 1000),
+                str(timeout),
                 "-c",
                 str(num),
                 target
