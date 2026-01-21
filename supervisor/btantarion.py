@@ -18,7 +18,7 @@ class btantarion:
         self.notif_14_buffer = ""
         self.restart_bluetooth()
         self.address = "00:0d:18:05:53:24"
-        device = self.find_device_with_timeout("regulator", timeout=10)
+        device = await.self.find_device_with_timeout("regulator", timeout=10)
         if device is None:
             print("[BTS] Device 'Solar regulator' non trouvé après redémarrage Bluetooth.")
         else:
