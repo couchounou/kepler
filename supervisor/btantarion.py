@@ -166,8 +166,8 @@ class btantarion:
         try:
             devices = await BleakScanner.discover(timeout=timeout)
             for device in devices:
-                print(f"[BTS] Device: {device.name}")
-                if device_name.lower() in device.name.lower():
+                print(f"[BTS] Device: {device}")
+                if device.name and device_name.lower() in device.name.lower():
                     print(f"[BTS] Device trouvé: {device.name}")
                     return device
 
