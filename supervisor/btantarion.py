@@ -57,6 +57,7 @@ class btantarion:
 
             except subprocess.CalledProcessError as e:
                 print(f"[BTS] [✗] Error during {step_name}: {e.stderr}")
+                continue
             except Exception as e:
                 print(f"[BTS] [✗] Unexpected error: {e}")
                 continue
@@ -90,6 +91,7 @@ class btantarion:
                         await client.stop_notify(0x000e)
                     except Exception as e:
                         print(f"Erreur lors de l'arrêt des notifications existantes: {e}")
+                        continue
 
                     try:
                         print("[BTS] Souscription aux notifications...")
@@ -99,6 +101,7 @@ class btantarion:
                         )
                     except Exception as e:
                         print(f"Erreur lors de la souscription aux notifications: {e}")
+                        continue
                     while True:
                         try:
                             print("[BTS] Envoi requete et attente notification...")
