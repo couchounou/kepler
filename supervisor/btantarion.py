@@ -18,6 +18,12 @@ class btantarion:
         self.notif_14_buffer = ""
         self.restart_bluetooth()
         self.address = "00:0d:18:05:53:24"
+        device = self.find_device_with_timeout("regulator", timeout=10)
+        if device is None:
+            print("[BTS] Device 'Solar regulator' non trouvé après redémarrage Bluetooth.")
+        else:
+            print(f"[BTS] Device trouvé après redémarrage Bluetooth: {device.address}")
+            self.address = device.address
         self.WRITE_COMMAND = bytearray([0x4F, 0x4B])
         self.WRITE_UUID = "00002af1-0000-1000-8000-00805f9b34fb"
 
@@ -57,7 +63,6 @@ class btantarion:
 
             except subprocess.CalledProcessError as e:
                 print(f"[BTS] [✗] Error during {step_name}: {e.stderr}")
-                continue
             except Exception as e:
                 print(f"[BTS] [✗] Unexpected error: {e}")
                 continue
@@ -65,25 +70,19 @@ class btantarion:
         return True
 
     async def run(self, loop=90):
-        device = await self.find_device_with_timeout("regulator", timeout=20)
-        if device is None:
-            print("[BTS] Device 'regulator' non trouvé")
-        else:
-            print(f"[BTS] Device trouvé: {device.address}")
-            self.address = device.address
         while True:
             try:
                 print(
                     "[BTS] -------> Tentative de connexion au MPPT... device:",
                     self.address
                 )
-                async with BleakClient(self.address, timeout=10.0) as client:
+                async with BleakClient(self.address, timeout=15.0) as client:
                     # Affichage des services
                     for service in client.services:
                         print("[BTS] Service:", service.uuid)
                         for char in service.characteristics:
                             print(f"  Char: {char.uuid}, Handle: {char.handle}, Properties: {char.properties}")
-                async with BleakClient(self.address, timeout=10.0) as client:
+                async with BleakClient(self.address, timeout=15.0) as client:
                     # Souscrire à toutes les notifications sur le handle 0x000f
 
                     try:
@@ -91,7 +90,6 @@ class btantarion:
                         await client.stop_notify(0x000e)
                     except Exception as e:
                         print(f"Erreur lors de l'arrêt des notifications existantes: {e}")
-                        continue
 
                     try:
                         print("[BTS] Souscription aux notifications...")
@@ -101,7 +99,6 @@ class btantarion:
                         )
                     except Exception as e:
                         print(f"Erreur lors de la souscription aux notifications: {e}")
-                        continue
                     while True:
                         try:
                             print("[BTS] Envoi requete et attente notification...")
@@ -161,13 +158,15 @@ class btantarion:
         print(f"Notification reçue (handle: {handle}): {hex_str}")
         self.parse_notification(data)
 
-    async def find_device_with_timeout(self, device_name, timeout=20):
-        print("[BTS] Recherche devices sur hci0...")
+    async def find_device_with_timeout(self, device_name, timeout=10):
         try:
-            devices = await BleakScanner.discover(timeout=timeout)
+            devices = await asyncio.wait_for(
+                BleakScanner.discover(timeout=timeout),
+                timeout=timeout
+            )
+
             for device in devices:
-                print(f"[BTS] Device: {device}")
-                if device.name and device_name.lower() in device.name.lower():
+                if device_name.lower() in device.name.lower():
                     print(f"[BTS] Device trouvé: {device.name}")
                     return device
 
