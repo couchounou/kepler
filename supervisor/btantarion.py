@@ -162,12 +162,9 @@ class btantarion:
         self.parse_notification(data)
 
     async def find_device_with_timeout(self, device_name, timeout=20):
+        print("[BTS] Recherche devices sur hci0...")
         try:
-            devices = await asyncio.wait_for(
-                BleakScanner.discover(timeout=timeout),
-                timeout=timeout
-            )
-
+            devices = await BleakScanner.discover(timeout=timeout)
             for device in devices:
                 print(f"[BTS] Device: {device.name}")
                 if device_name.lower() in device.name.lower():
