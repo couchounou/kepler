@@ -71,12 +71,14 @@ class btantarion:
         else:
             print(f"[BTS] Device trouvé: {device.address}")
             self.address = device.address
+        errors = 0
         while True:
             try:
                 print(
                     "[BTS] -------> Tentative de connexion au MPPT... device:",
                     self.address
                 )
+
                 async with BleakClient(self.address, timeout=10.0) as client:
                     # Affichage des services
                     for service in client.services:
@@ -117,6 +119,12 @@ class btantarion:
                         await asyncio.sleep(loop)
             except Exception as e:
                 print(f"Erreur Bleak : {e}")
+                errors += 1
+                if errors >= 10:
+                    print("\033[91m[BTS] Trop d'erreurs, redémarrage du Bluetooth\033[0m")
+                    self.restart_bluetooth()
+                else:
+                    await asyncio.sleep(5)
                 continue
 
     def parse_notification(self, data: bytearray):
