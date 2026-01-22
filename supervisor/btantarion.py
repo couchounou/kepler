@@ -123,6 +123,7 @@ class btantarion:
                 if errors >= 10:
                     print("\033[91m[BTS] Trop d'erreurs, redémarrage du Bluetooth\033[0m")
                     self.restart_bluetooth()
+                    errors = 0
                 else:
                     await asyncio.sleep(5)
                 continue
