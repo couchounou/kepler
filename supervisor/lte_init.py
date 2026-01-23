@@ -68,13 +68,13 @@ def test_ping(num: int = 2, target: str = "8.8.8.8", timeout: int = 2) -> bool:
         )
 
         if result.returncode == 0:
-            print("  LTE Internet OK")
+            print("[LTE] LTE Internet OK")
             return True
         else:
-            print(f"  LTE Internet KO: {result.stderr}".strip())
+            print(f"[LTE] LTE Internet KO: {result.stderr}".strip())
             return False
     except Exception as e:
-        print(f"  Error during ping test: {e}")
+        print(f"[LTE] Error during ping test: {e}")
         return False
 
 def wlan0_has_internet(timeout=1) -> bool:
@@ -91,24 +91,24 @@ def wlan0_has_internet(timeout=1) -> bool:
 
 def ready_or_connect(force=False) -> tuple[bool, bool]:
     if wlan0_has_internet():
-        print("  WLAN0 already connected to internet.")
+        print("[LTE] WLAN0 already connected to internet.")
         return True, False
 
     if not force and test_ping("8.8.8.8"):
-        print("✅ LTE already connected")
+        print("[LTE] LTE already connected")
         return True, True
 
-    print("  LTE not connected, initializing...")
+    print("[LTE] LTE not connected, initializing...")
     try:
         ser = serial.Serial(MODEM_PORT, BAUDRATE, timeout=1)
         time.sleep(1)
     except Exception as e:
-        print(f"   Error opening serial port: {e}")
+        print(f"[LTE] Error opening serial port: {e}")
         return False, False
 
     send_at(ser, "AT")
     if not is_reg(ser) or force:
-        print("  Init modem...")
+        print("[LTE] Init modem...")
         send_at(ser, "AT+CFUN=1", 1)
         send_at(ser, f'AT+CGDCONT=1,"IP","{APN}"', 1)
 
@@ -120,7 +120,7 @@ def ready_or_connect(force=False) -> tuple[bool, bool]:
     ser.close()
 
     success = test_ping(PING_TARGET)
-    print("✅ LTE init. successful" if success else "❌ LTE init. failed")
+    print("[LTE] ✅ LTE init. successful" if success else "[LTE] ❌ LTE init. failed")
     return success, success
 
 
