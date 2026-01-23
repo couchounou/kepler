@@ -77,7 +77,7 @@ def lead_soc(voltage, temperature_c):
 
         if v1 >= corrected_voltage >= v2:
             soc = soc1 + (soc2 - soc1) * (v1 - corrected_voltage) / (v1 - v2)
-            print("Lead SOC calculated:", soc)
+            print("[main] Lead SOC calculated:", soc)
             return round(soc, 1)
 
     return None
@@ -122,7 +122,7 @@ def agm_soc(voltage, temperature_c):
 
         if v1 >= corrected_voltage >= v2:
             soc = soc1 + (soc2 - soc1) * (v1 - corrected_voltage) / (v1 - v2)
-            print("AGM SOC calculated:", soc)
+            print("[main] AGM SOC calculated:", soc)
             return round(soc, 1)
 
     return None
@@ -261,16 +261,16 @@ def read_all_ads1115_channels():
         temperature_2=round(channels[3].voltage * 4.59, 1)
     )
     if not SiteStatus_instance.status["aux_voltage"] and 10 < aux_voltage < 15.0:
-        print("Updating aux_voltage to ", aux_voltage)
+        print("[main] Updating aux_voltage to ", aux_voltage, " from ADS1115")
         SiteStatus_instance.update(
             aux_voltage=aux_voltage
         )
     if not SiteStatus_instance.status["aux_level"] and aux_level:
-        print("Updating aux_level to ", aux_level)
+        print("[main] Updating aux_level to ", aux_level, " from ADS1115")
         SiteStatus_instance.update(
             aux_level=aux_level
         )
-    print(f"Updated SiteStatus_instance: {SiteStatus_instance}")
+    print(f"[main] Updated SiteStatus_instance: {SiteStatus_instance}")
 
 
 async def periodic_solar_read():
@@ -367,7 +367,7 @@ if __name__ == "__main__":
         BUCKET = Config.get("influx", "bucket")
         ORG = Config.get("influx", "org")
     else:
-        print(f"Config file {cfgname} not found, exiting")
+        print(f"[Config] Config file {cfgname} not found, exiting")
         sys.exit(1)
     CLIENT = InfluxDBClient(
         url=SERVER,
@@ -375,5 +375,5 @@ if __name__ == "__main__":
         org=ORG
     )
     WRITE_API = CLIENT.write_api(write_options=SYNCHRONOUS)
-    print("Starting supervisor versin 224 with InfluxDB org:%s, server:%s, bucket:%s" % (ORG, SERVER, BUCKET))
+    print(f"[main] Starting supervisor version 224 with InfluxDB org:{ORG}, server:{SERVER}, bucket:{BUCKET}")
     asyncio.run(read_loop())
