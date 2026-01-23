@@ -128,9 +128,10 @@ class SiteStatus:
 
     def reset(self):
         self.status = {
-            "auxiliary_voltage": 0.0,
-            "auxiliary_level": 0.0,
-            "principal_voltage": 0.0,
+            "aux_voltage": 0.0,
+            "aux_level": 0.0,
+            "main_voltage": 0.0,
+            "main_level": 0.0,
             "panel_voltage": 0.0,
             "panel_power": 0.0,
             "charging_current": 0.0,
@@ -231,14 +232,29 @@ def read_all_ads1115_channels():
         AnalogIn(ads, 3)
     ]
     print(f"channel voltages: {[ch.voltage for ch in channels]}")
+    aux_voltage = channels[0].voltage * 3.965  # facteur de division
+    main_voltage = channels[1].voltage * 3.98  # facteur de division
+    main_level = lead_soc(main_voltage, 25) 
+    aux_level = agm_soc(aux_voltage, 25)
     SiteStatus_instance.update(
-        auxiliary_voltage=channels[1].voltage * 3.965,
-        principal_voltage=channels[0].voltage * 3.98,
+        main_voltage=main_voltage if 10 < main_voltage < 15.0 else 0.0,
+        main_level=main_level if main_level is not None else 0.0,
         water_level=round(channels[2].voltage * 4.59, 0),
         temperature_1=round(channels[3].voltage * 4.59, 1),
         temperature_2=round(channels[3].voltage * 4.59, 1)
     )
+    if not SiteStatus_instance.status["aux_voltage"] and 10 < aux_voltage < 15.0:
+        print("Updating aux_voltage to ", aux_voltage)
+        SiteStatus_instance.update(
+            aux_voltage=aux_voltage
+        )
+    if not SiteStatus_instance.status["aux_level"] and aux_level:
+        print("Updating aux_level to ", aux_level)
+        SiteStatus_instance.update(
+            aux_level=aux_level
+        )
     print(f"Updated SiteStatus_instance: {SiteStatus_instance}")
+
 
 async def periodic_solar_read():
     while True:
@@ -272,13 +288,13 @@ async def read_loop(interval_minutes=0.5):
         aux_volt = btstate.get("battery_voltage", 0.0)
         if aux_volt:
             print("Calculating auxiliary SOC with voltage:", aux_volt)
-            aux_soc = agm_soc(aux_volt, btstate.get("temperature_1", 10))
-            if aux_soc:
+            aux_level = agm_soc(aux_volt, btstate.get("temperature_1", 10))
+            if aux_level:
                 SiteStatus_instance.update(
-                    auxiliary_level=aux_soc
+                    aux_level=aux_level
                 )
             SiteStatus_instance.update(
-                auxiliary_voltage=aux_volt,
+                aux_voltage=aux_volt,
                 panel_voltage=btstate.get("panel_voltage", 0.0),
                 panel_power=btstate.get("charging_power", 0.0),
                 charging_current=btstate.get("charging_current", 0.0),
