@@ -300,7 +300,7 @@ async def read_loop(interval_minutes=0.5):
                 energy_daily=btstate.get("energy_daily", 0.0),
             )
 
-        print("try Reading ADS1115 channels...")
+        print("[main] try Reading ADS1115 channels...")
         if ADAFRUIT_AVAILABLE:
             print("[main] Using real ADS1115 readings.")
             read_all_ads1115_channels()
@@ -327,9 +327,9 @@ async def read_loop(interval_minutes=0.5):
                     "LTE" if lte_signal else "WLAN0"
                 )
             else:
-                print("Failed to write points to InfluxDB.")
+                print("[main] Failed to write points to InfluxDB.")
         else:
-            print("No internet connection. Points not sent.")
+            print("[main] No internet connection. Points not sent.")
         await asyncio.sleep(interval_minutes * 60)  # <-- async sleep
 
 
