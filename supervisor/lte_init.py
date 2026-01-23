@@ -51,13 +51,11 @@ def is_reg(ser):
 
 
 def test_ping(num: int = 2, target: str = "8.8.8.8", timeout: int = 2) -> bool:
-    logging.info(f"  Test ping to {target}...")
+    logging.info(f"[LTE] Test ping to {target}...")
     try:
         result = subprocess.run(
             [
                 "ping",
-                "-I",
-                "eth0",
                 "-w",
                 str(timeout),
                 "-c",
@@ -70,10 +68,9 @@ def test_ping(num: int = 2, target: str = "8.8.8.8", timeout: int = 2) -> bool:
         )
 
         if result.returncode == 0:
-            logging.info("[LTE] LTE Internet OK")
-            return True
+            logging.info("[LTE] Internet OK")
         else:
-            logging.info(f"[LTE] LTE Internet KO: {result.stderr}".strip())
+            logging.info(f"[LTE] Internet KO: {result.stderr}".strip())
             return False
     except Exception as e:
         logging.info(f"[LTE] Error during ping test: {e}")
