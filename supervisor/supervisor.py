@@ -4,6 +4,7 @@ import configparser
 import os
 import asyncio
 import sys
+import math
 try:
     import board
     import busio
@@ -30,7 +31,11 @@ SERVER = None
 INTERVAL = 30  # seconds
 CLIENT = None
 WRITE_API = None
-
+VCC = 3.3               # Alimentation
+R_FIXED = 10000.0       # Résistance fixe (ohms)
+R0 = 10000.0            # NTC à 25°C
+BETA = 3950.0           # Coefficient Beta
+T0 = 298.15             # 25°C en Kelvi
 
 def lead_soc(voltage, temperature_c):
     """
@@ -72,6 +77,7 @@ def lead_soc(voltage, temperature_c):
 
         if v1 >= corrected_voltage >= v2:
             soc = soc1 + (soc2 - soc1) * (v1 - corrected_voltage) / (v1 - v2)
+            print("Lead SOC calculated:", soc)
             return round(soc, 1)
 
     return None
@@ -116,6 +122,7 @@ def agm_soc(voltage, temperature_c):
 
         if v1 >= corrected_voltage >= v2:
             soc = soc1 + (soc2 - soc1) * (v1 - corrected_voltage) / (v1 - v2)
+            print("AGM SOC calculated:", soc)
             return round(soc, 1)
 
     return None
@@ -218,13 +225,23 @@ def read_all_ads1115_channels_fake():
     )
 
 
+def ntc_temperature(voltage):
+    if voltage <= 0 or voltage >= VCC:
+        return None
+
+    r_ntc = R_FIXED * (voltage / (VCC - voltage))
+    temp_k = 1.0 / ((1.0 / T0) + (1.0 / BETA) * math.log(r_ntc / R0))
+    return temp_k - 273.15
+
 def read_all_ads1115_channels():
     """
     Reads all 4 channels from the ADS1115 ADC
     and returns their values as a list.
     """
+
     i2c = busio.I2C(board.SCL, board.SDA)
     ads = ADS.ADS1115(i2c)
+    ads.gain = 1  # +/-4.096V
     channels = [
         AnalogIn(ads, 0),
         AnalogIn(ads, 1),
@@ -238,7 +255,7 @@ def read_all_ads1115_channels():
     aux_level = agm_soc(aux_voltage, 25)
     SiteStatus_instance.update(
         main_voltage=main_voltage if 10 < main_voltage < 15.0 else 0.0,
-        main_level=main_level if main_level is not None else 0.0,
+        main_level=main_level or 0.0,
         water_level=round(channels[2].voltage * 4.59, 0),
         temperature_1=round(channels[3].voltage * 4.59, 1),
         temperature_2=round(channels[3].voltage * 4.59, 1)
