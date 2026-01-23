@@ -5,6 +5,7 @@ import os
 import asyncio
 import sys
 import math
+import logging
 try:
     import board
     import busio
@@ -20,6 +21,16 @@ from influxdb_client.client.write_api import SYNCHRONOUS
 from influxdb_client.client.exceptions import InfluxDBError
 from lte_init import test_ping, ready_or_connect
 from btantarion import btantarion
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[
+        logging.StreamHandler(sys.stdout),
+        logging.FileHandler("kepler.log")
+    ]
+)
+logging.info("Service démarré")
 
 SHELLY_MAC = "30:30:F9:E7:07:76"
 SHELLY_MAC_2 = "7C:C6:B6:57:53:BA"

@@ -4,26 +4,7 @@ import time
 from datetime import datetime
 from bleak import BleakClient, BleakScanner
 import logging
-import sys
 
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[
-        logging.StreamHandler(sys.stdout),
-        logging.FileHandler("kepler.log")
-    ]
-)
-logging.info("Service démarré")
-import logging, sys
-
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[
-        logging.StreamHandler(sys.stdout),
-        logging.FileHandler("kepler.log")
-    ]
-)
-logging.info("Service démarré")
 
 class btantarion:
     def __init__(self):

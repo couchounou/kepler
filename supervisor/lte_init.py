@@ -3,15 +3,7 @@ import time
 import subprocess
 import socket
 import logging
-import sys
 
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[
-        logging.StreamHandler(sys.stdout),
-        logging.FileHandler("kepler.log")
-    ]
-)
 
 MODEM_PORT = "/dev/ttyACM0"
 BAUDRATE = 115200
