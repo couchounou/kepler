@@ -185,6 +185,9 @@ class btantarion:
         except asyncio.TimeoutError:
             print("[BTS] Timeout: recherche dépassée")
             return None
+        except Exception as e:
+            print(f"[BTS] Erreur lors de la recherche des devices: {e}")
+            return None
 
     def get_state(self):
         return self.state
