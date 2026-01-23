@@ -77,7 +77,7 @@ def lead_soc(voltage, temperature_c):
 
         if v1 >= corrected_voltage >= v2:
             soc = soc1 + (soc2 - soc1) * (v1 - corrected_voltage) / (v1 - v2)
-            print("[main] Lead SOC calculated:", soc)
+            print("[main] Lead SOC calculated:", soc, " for voltage:", voltage, "and temp:", temperature_c)
             return round(soc, 1)
 
     return None
@@ -122,7 +122,7 @@ def agm_soc(voltage, temperature_c):
 
         if v1 >= corrected_voltage >= v2:
             soc = soc1 + (soc2 - soc1) * (v1 - corrected_voltage) / (v1 - v2)
-            print("[main] AGM SOC calculated:", soc)
+            print("[main] Lead SOC calculated:", soc, " for voltage:", voltage, "and temp:", temperature_c)
             return round(soc, 1)
 
     return None
@@ -251,7 +251,7 @@ def read_all_ads1115_channels():
     print(f"channel voltages: {[ch.voltage for ch in channels]}")
     aux_voltage = channels[0].voltage * 3.965  # facteur de division
     main_voltage = channels[1].voltage * 3.98  # facteur de division
-    main_level = lead_soc(main_voltage, 25) 
+    main_level = lead_soc(main_voltage, 25)
     aux_level = agm_soc(aux_voltage, 25)
     SiteStatus_instance.update(
         main_voltage=main_voltage if 10 < main_voltage < 15.0 else 0.0,
