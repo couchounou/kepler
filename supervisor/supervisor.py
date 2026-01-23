@@ -232,16 +232,13 @@ def read_all_ads1115_channels():
     ]
     print(f"channel voltages: {[ch.voltage for ch in channels]}")
     SiteStatus_instance.update(
-        # auxiliary_voltage=channels[1].voltage * 3.965,
-        # principal_voltage=channels[0].voltage * 3.98,
-        # auxiliary_voltage=random.uniform(11.5, 13.5),
-        principal_voltage=random.uniform(11.5, 13.5),
-        #panel_voltage=random.uniform(0.0, 25.0),
+        auxiliary_voltage=channels[1].voltage * 3.965,
+        principal_voltage=channels[0].voltage * 3.98,
         water_level=round(channels[2].voltage * 4.59, 0),
         temperature_1=round(channels[3].voltage * 4.59, 1),
         temperature_2=round(channels[3].voltage * 4.59, 1)
     )
-
+    print(f"Updated SiteStatus_instance: {SiteStatus_instance}")
 
 async def periodic_solar_read():
     while True:
