@@ -302,10 +302,10 @@ async def read_loop(interval_minutes=0.5):
 
         print("try Reading ADS1115 channels...")
         if ADAFRUIT_AVAILABLE:
-            print("Using real ADS1115 readings.")
+            print("[main] Using real ADS1115 readings.")
             read_all_ads1115_channels()
         else:
-            print("Using fake ADS1115 readings.")
+            print("[main] Using fake ADS1115 readings.")
             read_all_ads1115_channels_fake()
         print(SiteStatus_instance)
         connected = False
@@ -314,7 +314,7 @@ async def read_loop(interval_minutes=0.5):
             connected, lte_signal = ready_or_connect(force=False)
         else:
             connected = True
-        print("Internet connected:", connected, " via ", "LTE" if lte_signal else "WLAN0")
+        print("[main] Internet connected:", connected, " via ", "LTE" if lte_signal else "WLAN0")
         SiteStatus_instance.update(lte_signal=lte_signal)
         POINTS.append(SiteStatus_instance.to_point())
         SiteStatus_instance.reset()
