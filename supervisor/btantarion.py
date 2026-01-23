@@ -51,7 +51,7 @@ class btantarion:
                 if cmd is None:  # Sleep step
                     time.sleep(2)
                 else:
-                    result = subprocess.run(cmd, check=True, capture_output=False, text=True)
+                    result = subprocess.run(cmd, check=True, capture_output=False, text=True,timeout=3)
                     if result.stdout:
                         logging.info(f"    {result.stdout.strip()}")
 
