@@ -2,6 +2,16 @@ import serial
 import time
 import subprocess
 import socket
+import logging
+import sys
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[
+        logging.StreamHandler(sys.stdout),
+        logging.FileHandler("kepler.log")
+    ]
+)
 
 MODEM_PORT = "/dev/ttyACM0"
 BAUDRATE = 115200
@@ -15,41 +25,41 @@ def send_at(ser, command, delay=0.5):
     ser.write((command + "\r").encode())
     time.sleep(delay)
     resp = ser.read_all().decode(errors="ignore")
-    print(f">{resp}")
+    logging.info(f">{resp}")
     return resp
 
 
 def wait_network_registration(ser, timeout=MAX_WAIT_NETWORK):
     """Attendre que le modem soit enregistré sur le réseau LTE"""
-    print("...try registering...")
+    logging.info("...try registering...")
     for _ in range(timeout):
         resp = send_at(ser, "AT+CREG?")
         if "+CREG: 0,1" in resp or "+CREG: 0,5" in resp:
-            print("✅ Modem registered on network")
+            logging.info("✅ Modem registered on network")
             return True
         time.sleep(1)
-    print("❌ Failed: modem not registered")
+    logging.info("❌ Failed: modem not registered")
     return False
 
 
 def is_reg(ser):
     resp = send_at(ser, "AT+CFUN?")
     if "+CFUN: 1" not in resp:
-        print("❌ Modem not initialized")
+        logging.info("❌ Modem not initialized")
         return False
     resp = send_at(ser, "AT+CREG?")
     if "+CREG: 0,1" in resp or "+CREG: 0,5" in resp:
-        print("✅ Modem registered")
+        logging.info("✅ Modem registered")
         return True
     if "+CREG: 0,2" in resp:
-        print("✅ Modem still waiting for registration")
+        logging.info("✅ Modem still waiting for registration")
         time.sleep(3)
         return True
     return False
 
 
 def test_ping(num: int = 2, target: str = "8.8.8.8", timeout: int = 2) -> bool:
-    print(f"  Test ping to {target}...")
+    logging.info(f"  Test ping to {target}...")
     try:
         result = subprocess.run(
             [
@@ -68,13 +78,13 @@ def test_ping(num: int = 2, target: str = "8.8.8.8", timeout: int = 2) -> bool:
         )
 
         if result.returncode == 0:
-            print("[LTE] LTE Internet OK")
+            logging.info("[LTE] LTE Internet OK")
             return True
         else:
-            print(f"[LTE] LTE Internet KO: {result.stderr}".strip())
+            logging.info(f"[LTE] LTE Internet KO: {result.stderr}".strip())
             return False
     except Exception as e:
-        print(f"[LTE] Error during ping test: {e}")
+        logging.info(f"[LTE] Error during ping test: {e}")
         return False
 
 def wlan0_has_internet(timeout=1) -> bool:
@@ -91,24 +101,24 @@ def wlan0_has_internet(timeout=1) -> bool:
 
 def ready_or_connect(force=False) -> tuple[bool, bool]:
     if wlan0_has_internet():
-        print("[LTE] WLAN0 already connected to internet.")
+        logging.info("[LTE] WLAN0 already connected to internet.")
         return True, False
 
     if not force and test_ping("8.8.8.8"):
-        print("[LTE] LTE already connected")
+        logging.info("[LTE] LTE already connected")
         return True, True
 
-    print("[LTE] LTE not connected, initializing...")
+    logging.info("[LTE] LTE not connected, initializing...")
     try:
         ser = serial.Serial(MODEM_PORT, BAUDRATE, timeout=1)
         time.sleep(1)
     except Exception as e:
-        print(f"[LTE] Error opening serial port: {e}")
+        logging.info(f"[LTE] Error opening serial port: {e}")
         return False, False
 
     send_at(ser, "AT")
     if not is_reg(ser) or force:
-        print("[LTE] Init modem...")
+        logging.info("[LTE] Init modem...")
         send_at(ser, "AT+CFUN=1", 1)
         send_at(ser, f'AT+CGDCONT=1,"IP","{APN}"', 1)
 
@@ -120,9 +130,9 @@ def ready_or_connect(force=False) -> tuple[bool, bool]:
     ser.close()
 
     success = test_ping(PING_TARGET)
-    print("[LTE] ✅ LTE init. successful" if success else "[LTE] ❌ LTE init. failed")
+    logging.info("[LTE] ✅ LTE init. successful" if success else "[LTE] ❌ LTE init. failed")
     return success, success
 
 
 if __name__ == "__main__":
-    print(ready_or_connect(force=False))
+    logging.info(ready_or_connect(force=False))

@@ -3,7 +3,27 @@ import subprocess
 import time
 from datetime import datetime
 from bleak import BleakClient, BleakScanner
+import logging
+import sys
 
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[
+        logging.StreamHandler(sys.stdout),
+        logging.FileHandler("kepler.log")
+    ]
+)
+logging.info("Service démarré")
+import logging, sys
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[
+        logging.StreamHandler(sys.stdout),
+        logging.FileHandler("kepler.log")
+    ]
+)
+logging.info("Service démarré")
 
 class btantarion:
     def __init__(self):
@@ -23,7 +43,7 @@ class btantarion:
 
     def restart_bluetooth(self):
         """Restart Bluetooth and HCI UART module"""
-        print("[BTS] Restarting Bluetooth...")
+        logging.info("[BTS] Restarting Bluetooth...")
         commands = [
             ("Turning Bluetooth power off", ["bluetoothctl", "power", "off"]),
             ("Stopping bluetooth service", [
@@ -45,84 +65,81 @@ class btantarion:
 
         for step_name, cmd in commands:
             try:
-                print(f"[BTS] [*] {step_name}...")
+                logging.info(f"[BTS] [*] {step_name}...")
 
                 if cmd is None:  # Sleep step
                     time.sleep(2)
                 else:
                     result = subprocess.run(cmd, check=True, capture_output=True, text=True)
                     if result.stdout:
-                        print(f"    {result.stdout.strip()}")
+                        logging.info(f"    {result.stdout.strip()}")
 
-                print(f"[BTS] [✓] {step_name} done")
+                logging.info(f"[BTS] [✓] {step_name} done")
 
             except subprocess.CalledProcessError as e:
-                print(f"[BTS] [✗] Error during {step_name}: {e.stderr}")
+                logging.info(f"[BTS] [✗] Error during {step_name}: {e.stderr}")
                 continue
             except Exception as e:
-                print(f"[BTS] [✗] Unexpected error: {e}")
+                logging.info(f"[BTS] [✗] Unexpected error: {e}")
                 continue
-        print("[BTS] [✓] Bluetooth restart completed successfully")
+        logging.info("[BTS] [✓] Bluetooth restart completed successfully")
         return True
 
     async def run(self, loop=90):
         device = await self.find_device_with_timeout("regulator", timeout=20)
         if device is None:
-            print("[BTS] Device 'regulator' non trouvé")
+            logging.info("[BTS] Device 'regulator' non trouvé")
         else:
-            print(f"[BTS] Device trouvé: {device.address}")
+            logging.info(f"[BTS] Device trouvé: {device.address}")
             self.address = device.address
         errors = 0
         while True:
             try:
-                print(
-                    "[BTS] -------> Tentative de connexion au MPPT... device:",
-                    self.address
-                )
+                logging.info(f"[BTS] -------> Tentative de connexion au MPPT... device: {self.address}")
 
                 async with BleakClient(self.address, timeout=10.0) as client:
                     # Affichage des services
                     for service in client.services:
-                        print("[BTS] Service:", service.uuid)
+                        logging.info(f"[BTS] Service: {service.uuid}")
                         for char in service.characteristics:
-                            print(f"  Char: {char.uuid}, Handle: {char.handle}, Properties: {char.properties}")
+                            logging.info(f"  Char: {char.uuid}, Handle: {char.handle}, Properties: {char.properties}")
                 async with BleakClient(self.address, timeout=10.0) as client:
                     # Souscrire à toutes les notifications sur le handle 0x000f
 
                     try:
-                        print("[BTS] Nettoyage des notifications existantes...")
+                        logging.info("[BTS] Nettoyage des notifications existantes...")
                         await client.stop_notify(0x000e)
                     except Exception as e:
-                        print(f"Erreur lors de l'arrêt des notifications existantes: {e}")
+                        logging.info(f"Erreur lors de l'arrêt des notifications existantes: {e}")
                         continue
 
                     try:
-                        print("[BTS] Souscription aux notifications...")
+                        logging.info("[BTS] Souscription aux notifications...")
                         await client.start_notify(
                             0x000e,
                             self.notification_handler
                         )
                     except Exception as e:
-                        print(f"Erreur lors de la souscription aux notifications: {e}")
+                        logging.info(f"Erreur lors de la souscription aux notifications: {e}")
                         continue
                     while True:
                         try:
-                            print("[BTS] Envoi requete et attente notification...")
+                            logging.info("[BTS] Envoi requete et attente notification...")
                             await client.write_gatt_char(
                                 self.WRITE_UUID,
                                 self.WRITE_COMMAND,
                                 response=True
                             )
                         except Exception as e:
-                            print(f"Erreur lors de l'envoi de la requête: {e}")
+                            logging.info(f"Erreur lors de l'envoi de la requête: {e}")
                             break
-                        print("[BTS] En écoute des notifications sur handle 0x000e...")
+                        logging.info("[BTS] En écoute des notifications sur handle 0x000e...")
                         await asyncio.sleep(loop)
             except Exception as e:
-                print(f"Erreur Bleak : {e}")
+                logging.info(f"Erreur Bleak : {e}")
                 errors += 1
                 if errors >= 10:
-                    print("\033[91m[BTS] Trop d'erreurs, redémarrage du Bluetooth\033[0m")
+                    logging.info("[BTS] Trop d'erreurs, redémarrage du Bluetooth")
                     self.restart_bluetooth()
                     errors = 0
                 else:
@@ -132,7 +149,7 @@ class btantarion:
     def parse_notification(self, data: bytearray):
         # convertir bytes ASCII en string
         s = data.decode('ascii')
-        print(f"Trame reçue: de {len(s)} caractères: {s}")
+        logging.info(f"Trame reçue: de {len(s)} caractères: {s}")
         if data[-1] == 0x0d:  # CR à la fin
             s = data[:-1].decode('ascii')
             self.notif_14_buffer += s
@@ -152,42 +169,42 @@ class btantarion:
             self.state["energy_daily"] = int(
                 self.notif_14_buffer[17:20])  # 1280 → 1280 Wh
             self.state["last_update"] = datetime.now().isoformat()
-            print(f"'{datetime.now()}: Courant: {self.state['charging_current']}A, Tension batterie: {self.state['battery_voltage']}V, Tension panneau: {self.state['panel_voltage']}V ")
+            logging.info(f"'{datetime.now()}: Courant: {self.state['charging_current']}A, Tension batterie: {self.state['battery_voltage']}V, Tension panneau: {self.state['panel_voltage']}V ")
             out = ""
             out += f"\033[92m{self.notif_14_buffer[0:3]}\033[0m"
             out += f"\033[92m{self.notif_14_buffer[3:7]}\033[0m"
             out += self.notif_14_buffer[7:20]
             out += f"\033[92m{self.notif_14_buffer[20:23]}\033[0m" + self.notif_14_buffer[23:]
-            print(f"Trame complète: {out}")
+            logging.info(f"Trame complète: {out}")
             self.notif_14_buffer = ""
         else:
             s = data.decode('ascii')
             self.notif_14_buffer = s + self.notif_14_buffer
-            print(f"... trame #1: {s}")
+            logging.info(f"... trame #1: {s}")
             # 004127005000000000052160000000000000000
 
     def notification_handler(self, handle, data):
         hex_str = data.hex()
-        print(f"Notification reçue (handle: {handle}): {hex_str}")
+        logging.info(f"Notification reçue (handle: {handle}): {hex_str}")
         self.parse_notification(data)
 
     async def find_device_with_timeout(self, device_name, timeout=20):
-        print("[BTS] Recherche devices sur hci0...")
+        logging.info("[BTS] Recherche devices sur hci0...")
         try:
             devices = await BleakScanner.discover(timeout=timeout)
             for device in devices:
-                print(f"[BTS] Device: {device}")
+                logging.info(f"[BTS] Device: {device}")
                 if device.name and device_name.lower() in device.name.lower():
-                    print(f"[BTS] Device trouvé: {device.name}")
+                    logging.info(f"[BTS] Device trouvé: {device.name}")
                     return device
 
-            print("[BTS] Device non trouvé")
+            logging.info("[BTS] Device non trouvé")
             return None
         except asyncio.TimeoutError:
-            print("[BTS] Timeout: recherche dépassée")
+            logging.info("[BTS] Timeout: recherche dépassée")
             return None
         except Exception as e:
-            print(f"[BTS] Erreur lors de la recherche des devices: {e}")
+            logging.info(f"[BTS] Erreur lors de la recherche des devices: {e}")
             return None
 
     def get_state(self):
@@ -203,7 +220,7 @@ if __name__ == "__main__":
         # Boucle de consultation d'état
         while True:
             etat = supervisor.get_state()
-            print("[BTS] ----> Test etat depuis main " + str(etat))
+            logging.info("[BTS] ----> Test etat depuis main " + str(etat))
             await asyncio.sleep(30)  # Affiche l'état toutes les 5 secondes
 
     asyncio.run(main())
