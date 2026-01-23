@@ -88,7 +88,7 @@ def lead_soc(voltage, temperature_c):
 
         if v1 >= corrected_voltage >= v2:
             soc = soc1 + (soc2 - soc1) * (v1 - corrected_voltage) / (v1 - v2)
-            print("[MAIN] Lead SOC calculated:", soc, " for voltage:", voltage, "and temp:", temperature_c)
+            logging.info("[MAIN] Lead SOC calculated: %f for voltage: %f and temp: %f", soc, voltage, temperature_c)
             return round(soc, 1)
 
     return None
@@ -133,7 +133,7 @@ def agm_soc(voltage, temperature_c):
 
         if v1 >= corrected_voltage >= v2:
             soc = soc1 + (soc2 - soc1) * (v1 - corrected_voltage) / (v1 - v2)
-            print("[MAIN] Lead SOC calculated:", soc, " for voltage:", voltage, "and temp:", temperature_c)
+            logging.info("[MAIN] Lead SOC calculated: %f for voltage: %f and temp: %f", soc, voltage, temperature_c)
             return round(soc, 1)
 
     return None
@@ -214,14 +214,14 @@ def influx_write_pts(points: list, bucket: str) -> None:
         return True
     except InfluxDBError as e:
         if e.response.status == 401 or e.response.status == 403:
-            print(f"[influx] insufficient rights to {bucket}")
+            logging.info(f"[INFLUX] insufficient rights to {bucket}")
         else:
-            print(f"[influx] influx error {e}")
+            logging.info(f"[INFLUX] influx error {e}")
     except Exception as e:
         if hasattr(e, "reason"):
-            print(f"[influx] for bucket :{bucket} : {e.reason}")
+            logging.info(f"[INFLUX] for bucket :{bucket} : {e.reason}")
         else:
-            print(f"[influx] for bucket: {bucket}: {e}")
+            logging.info(f"[INFLUX] for bucket: {bucket}: {e}")
     return False
 
 
