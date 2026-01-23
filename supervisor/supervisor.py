@@ -273,38 +273,20 @@ def read_all_ads1115_channels():
     print(f"[main] Updated SiteStatus_instance: {SiteStatus_instance}")
 
 
-async def periodic_solar_read():
-    while True:
-        try:
-            result = await asyncio.wait_for(get_solar_reg_data(), timeout=60)
-            print("Résultat périodique:", result)
-            if result:
-                # Mettre à jour SiteStatus_instance avec les données reçues
-                SiteStatus_instance.update(
-                    panel_voltage=result.get("panel_voltage", 0.0),
-                    panel_power=result.get("panel_power", 0.0)
-                )
-        except asyncio.TimeoutError:
-            print("Timeout global atteint, arrêt de la lecture périodique.")
-        await asyncio.sleep(300)  # 5 minutes
-
-
 async def read_loop(interval_minutes=0.5):
     """
     Continuously reads all 4 ADS1115 channels
     every 'interval_minutes' minutes and prints the results.
     """
-    # solar_task = asyncio.create_task(periodic_solar_read())
     supervisor_bt = btantarion()
     asyncio.create_task(supervisor_bt.run())
 
     while True:
         btstate = supervisor_bt.get_state()
-        print("supervisor values read ", btstate)
-
+        print("[main] Bluetooth read ", btstate)
         aux_volt = btstate.get("battery_voltage", 0.0)
         if aux_volt:
-            print("Calculating auxiliary SOC with voltage:", aux_volt)
+            print("[main] Calculating auxiliary SOC with voltage:", aux_volt)
             aux_level = agm_soc(aux_volt, btstate.get("temperature_1", 10))
             if aux_level:
                 SiteStatus_instance.update(
