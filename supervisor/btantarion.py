@@ -23,6 +23,7 @@ class btantarion:
 
     def restart_bluetooth(self):
         """Restart Bluetooth and HCI UART module"""
+        print("[BTS] Restarting Bluetooth...")
         commands = [
             ("Turning Bluetooth power off", ["bluetoothctl", "power", "off"]),
             ("Stopping bluetooth service", [
