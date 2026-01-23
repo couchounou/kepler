@@ -51,7 +51,7 @@ class btantarion:
                 if cmd is None:  # Sleep step
                     time.sleep(2)
                 else:
-                    result = subprocess.run(cmd, check=True, capture_output=False, text=True, timeout=6)
+                    result = subprocess.run(cmd, check=True, capture_output=False, text=True, timeout=20)
                     if result.stdout:
                         logging.info(f"    {result.stdout.strip()}")
 
@@ -91,7 +91,7 @@ class btantarion:
                         logging.info("[BTS] Nettoyage des notifications existantes...")
                         await client.stop_notify(0x000e)
                     except Exception as e:
-                        logging.info(f"Erreur lors de l'arrêt des notifications existantes: {e}")
+                        logging.error(f"[BTS] Erreur lors de l'arrêt des notifications existantes: {e}")
                         continue
 
                     try:
@@ -101,7 +101,7 @@ class btantarion:
                             self.notification_handler
                         )
                     except Exception as e:
-                        logging.info(f"Erreur lors de la souscription aux notifications: {e}")
+                        logging.error(f"[BTS] lors de la souscription aux notifications: {e}")
                         continue
                     while True:
                         try:
@@ -112,12 +112,12 @@ class btantarion:
                                 response=True
                             )
                         except Exception as e:
-                            logging.info(f"Erreur lors de l'envoi de la requête: {e}")
+                            logging.error(f"[BTS] Erreur lors de l'envoi de la requête: {e}")
                             break
                         logging.info("[BTS] En écoute des notifications sur handle 0x000e...")
                         await asyncio.sleep(loop)
             except Exception as e:
-                logging.info(f"Erreur Bleak : {e}")
+                logging.error(f"Erreur Bleak : {e}")
                 errors += 1
                 if errors >= 10:
                     logging.info("[BTS] Trop d'erreurs, redémarrage du Bluetooth")
@@ -130,7 +130,7 @@ class btantarion:
     def parse_notification(self, data: bytearray):
         # convertir bytes ASCII en string
         s = data.decode('ascii')
-        logging.info(f"Trame reçue: de {len(s)} caractères: {s}")
+        logging.info(f"[BTS] Trame reçue: de {len(s)} caractères: {s}")
         if data[-1] == 0x0d:  # CR à la fin
             s = data[:-1].decode('ascii')
             self.notif_14_buffer += s
@@ -150,23 +150,23 @@ class btantarion:
             self.state["energy_daily"] = int(
                 self.notif_14_buffer[17:20])  # 1280 → 1280 Wh
             self.state["last_update"] = datetime.now().isoformat()
-            logging.info(f"'{datetime.now()}: Courant: {self.state['charging_current']}A, Tension batterie: {self.state['battery_voltage']}V, Tension panneau: {self.state['panel_voltage']}V ")
+            logging.info(f"[BTS] Courant: {self.state['charging_current']}A, Tension batterie: {self.state['battery_voltage']}V, Tension panneau: {self.state['panel_voltage']}V ")
             out = ""
             out += f"\033[92m{self.notif_14_buffer[0:3]}\033[0m"
             out += f"\033[92m{self.notif_14_buffer[3:7]}\033[0m"
             out += self.notif_14_buffer[7:20]
             out += f"\033[92m{self.notif_14_buffer[20:23]}\033[0m" + self.notif_14_buffer[23:]
-            logging.info(f"Trame complète: {out}")
+            logging.info(f"[BTS] Trame complète: {out}")
             self.notif_14_buffer = ""
         else:
             s = data.decode('ascii')
             self.notif_14_buffer = s + self.notif_14_buffer
-            logging.info(f"... trame #1: {s}")
+            logging.info(f"[BTS] ... trame #1: {s}")
             # 004127005000000000052160000000000000000
 
     def notification_handler(self, handle, data):
         hex_str = data.hex()
-        logging.info(f"Notification reçue (handle: {handle}): {hex_str}")
+        logging.info(f"[BTS] Notification reçue (handle: {handle}): {hex_str}")
         self.parse_notification(data)
 
     async def find_device_with_timeout(self, device_name, timeout=20):
