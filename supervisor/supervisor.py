@@ -88,7 +88,7 @@ def lead_soc(voltage, temperature_c):
 
         if v1 >= corrected_voltage >= v2:
             soc = soc1 + (soc2 - soc1) * (v1 - corrected_voltage) / (v1 - v2)
-            print("[main] Lead SOC calculated:", soc, " for voltage:", voltage, "and temp:", temperature_c)
+            print("[MAIN] Lead SOC calculated:", soc, " for voltage:", voltage, "and temp:", temperature_c)
             return round(soc, 1)
 
     return None
@@ -133,7 +133,7 @@ def agm_soc(voltage, temperature_c):
 
         if v1 >= corrected_voltage >= v2:
             soc = soc1 + (soc2 - soc1) * (v1 - corrected_voltage) / (v1 - v2)
-            print("[main] Lead SOC calculated:", soc, " for voltage:", voltage, "and temp:", temperature_c)
+            print("[MAIN] Lead SOC calculated:", soc, " for voltage:", voltage, "and temp:", temperature_c)
             return round(soc, 1)
 
     return None
@@ -272,16 +272,16 @@ def read_all_ads1115_channels():
         temperature_2=round(channels[3].voltage * 4.59, 1)
     )
     if not SiteStatus_instance.status["aux_voltage"] and 10 < aux_voltage < 15.0:
-        logging.info("[main] Updating aux_voltage to %f from ADS1115", aux_voltage)
+        logging.info("[MAIN] Updating aux_voltage to %f from ADS1115", aux_voltage)
         SiteStatus_instance.update(
             aux_voltage=aux_voltage
         )
     if not SiteStatus_instance.status["aux_level"] and aux_level:
-        logging.info("[main] Updating aux_level to %f from ADS1115", aux_level)
+        logging.info("[MAIN] Updating aux_level to %f from ADS1115", aux_level)
         SiteStatus_instance.update(
             aux_level=aux_level
         )
-    logging.info(f"[main] Updated SiteStatus_instance: {SiteStatus_instance}")
+    logging.info(f"[MAIN] Updated SiteStatus_instance: {SiteStatus_instance}")
 
 
 async def read_loop(interval_minutes=0.5):
@@ -294,10 +294,10 @@ async def read_loop(interval_minutes=0.5):
 
     while True:
         btstate = supervisor_bt.get_state()
-        logging.info("[main] Bluetooth read %s", btstate)
+        logging.info("[MAIN] Bluetooth read %s", btstate)
         aux_volt = btstate.get("battery_voltage", 0.0)
         if aux_volt:
-            logging.info("[main] Calculating auxiliary SOC with voltage: %f", aux_volt)
+            logging.info("[MAIN] Calculating auxiliary SOC with voltage: %f", aux_volt)
             aux_level = agm_soc(aux_volt, btstate.get("temperature_1", 10))
             if aux_level:
                 SiteStatus_instance.update(
@@ -311,12 +311,12 @@ async def read_loop(interval_minutes=0.5):
                 energy_daily=btstate.get("energy_daily", 0.0),
             )
 
-        logging.info("[main] try Reading ADS1115 channels...")
+        logging.info("[MAIN] try Reading ADS1115 channels...")
         if ADAFRUIT_AVAILABLE:
-            logging.info("[main] Using real ADS1115 readings.")
+            logging.info("[MAIN] Using real ADS1115 readings.")
             read_all_ads1115_channels()
         else:
-            logging.info("[main] Using fake ADS1115 readings.")
+            logging.info("[MAIN] Using fake ADS1115 readings.")
             read_all_ads1115_channels_fake()
         logging.info(SiteStatus_instance)
         connected = False
@@ -325,7 +325,7 @@ async def read_loop(interval_minutes=0.5):
             connected, lte_signal = ready_or_connect(force=False)
         else:
             connected = True
-        logging.info("[main] Internet connected: %s via %s", connected, "LTE" if lte_signal else "WLAN0")
+        logging.info("[MAIN] Internet connected: %s via %s", connected, "LTE" if lte_signal else "WLAN0")
         SiteStatus_instance.update(lte_signal=lte_signal)
         POINTS.append(SiteStatus_instance.to_point())
         SiteStatus_instance.reset()
@@ -334,13 +334,13 @@ async def read_loop(interval_minutes=0.5):
             if influx_write_pts(POINTS, BUCKET):
                 POINTS.clear()
                 logging.info(
-                    "Points successfully written to InfluxDB through %s",
+                    "[MAIN] Points successfully written to InfluxDB through %s",
                     "LTE" if lte_signal else "WLAN0"
                 )
             else:
-                logging.info("[main] Failed to write points to InfluxDB.")
+                logging.info("[MAIN] Failed to write points to InfluxDB.")
         else:
-            logging.info("[main] No internet connection. Points not sent.")
+            logging.info("[MAIN] No internet connection. Points not sent.")
         await asyncio.sleep(interval_minutes * 60)  # <-- async sleep
 
 
@@ -368,5 +368,5 @@ if __name__ == "__main__":
         org=ORG
     )
     WRITE_API = CLIENT.write_api(write_options=SYNCHRONOUS)
-    logging.info(f"[main] Starting supervisor version 224 with InfluxDB org:{ORG}, server:{SERVER}, bucket:{BUCKET}")
+    logging.info(f"[MAIN] Starting supervisor version 224 with InfluxDB org:{ORG}, server:{SERVER}, bucket:{BUCKET}")
     asyncio.run(read_loop())
