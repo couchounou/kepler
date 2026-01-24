@@ -139,6 +139,15 @@ def agm_soc(voltage, temperature_c):
     return None
 
 
+def ntc_temperature(voltage):
+    if voltage <= 0 or voltage >= VCC:
+        return None
+
+    r_ntc = R_FIXED * (voltage / (VCC - voltage))
+    temp_k = 1.0 / ((1.0 / T0) + (1.0 / BETA) * math.log(r_ntc / R0))
+    return temp_k - 273.15
+
+
 class SiteStatus:
     def __init__(self, site_id: str):
         self.site_id = site_id
@@ -235,14 +244,6 @@ def read_all_ads1115_channels_fake():
         temperature_2=random.uniform(-10, 50)
     )
 
-
-def ntc_temperature(voltage):
-    if voltage <= 0 or voltage >= VCC:
-        return None
-
-    r_ntc = R_FIXED * (voltage / (VCC - voltage))
-    temp_k = 1.0 / ((1.0 / T0) + (1.0 / BETA) * math.log(r_ntc / R0))
-    return temp_k - 273.15
 
 def read_all_ads1115_channels():
     """
