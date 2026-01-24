@@ -145,7 +145,9 @@ def ntc_temperature(voltage):
 
     r_ntc = R_FIXED * (voltage / (VCC - voltage))
     temp_k = 1.0 / ((1.0 / T0) + (1.0 / BETA) * math.log(r_ntc / R0))
-    return temp_k - 273.15
+    res = temp_k - 273.15
+    print(f"[MAIN] NTC temperature calculated: {res} °C for voltage: {voltage} V")
+    return res
 
 
 class SiteStatus:
@@ -268,9 +270,8 @@ def read_all_ads1115_channels():
     SiteStatus_instance.update(
         main_voltage=main_voltage if 10 < main_voltage < 15.0 else 0.0,
         main_level=main_level or 0.0,
-        water_level=round(channels[2].voltage * 4.59, 0),
-        temperature_1=round(channels[3].voltage * 4.59, 1),
-        temperature_2=round(channels[3].voltage * 4.59, 1)
+        water_level=round(channels[3].voltage * 4.59, 0),
+        temperature_1=ntc_temperature(channels[2].voltage),
     )
     if not SiteStatus_instance.status["aux_voltage"] and 10 < aux_voltage < 15.0:
         logging.info("[MAIN] Updating aux_voltage to %f from ADS1115", aux_voltage)
