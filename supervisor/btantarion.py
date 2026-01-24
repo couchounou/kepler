@@ -143,7 +143,7 @@ class btantarion:
             )  # 1280 → 12.8 V
             self.state["charging_power"] = int(
                 self.notif_14_buffer[6:9]
-            ) / 10    # 050 → 5.0 W
+            )    # 050 → 50 W
             self.state["panel_voltage"] = round(
                 int(self.notif_14_buffer[20:23]) / 10, 1
             )  # 1280→ 12.8 V
