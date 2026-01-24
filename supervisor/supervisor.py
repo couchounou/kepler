@@ -265,8 +265,9 @@ def read_all_ads1115_channels():
     logging.info(f"[MAIN] channel voltages: {[ch.voltage for ch in channels]}")
     aux_voltage = channels[0].voltage * 3.965  # facteur de division
     main_voltage = channels[1].voltage * 3.98  # facteur de division
-    main_level = lead_soc(main_voltage, 25)
-    aux_level = agm_soc(aux_voltage, 25)
+    temp = SiteStatus_instance.status["temperature_1"] if SiteStatus_instance.status["temperature_1"] else 20
+    main_level = lead_soc(main_voltage, temp)
+    aux_level = agm_soc(aux_voltage, temp)
     SiteStatus_instance.update(
         main_voltage=main_voltage if 10 < main_voltage < 15.0 else 0.0,
         main_level=main_level or 0.0,
