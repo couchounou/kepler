@@ -137,23 +137,25 @@ class btantarion:
         elif len(data) == 1 and data[-1] == 0x0a:
             self.state["charging_current"] = int(
                 self.notif_14_buffer[0:3]
-            )  # 001 → 1 A
-            self.state["charging_power"] = int(
-                self.notif_14_buffer[7:10]
-            )  # 050 → 50 W
+            ) / 10  # 001 → 0.1 A
             self.state["battery_voltage"] = round(
-                int(self.notif_14_buffer[3:7]) / 100, 2
+                int(self.notif_14_buffer[3:6]) / 10, 2
             )  # 1280 → 12.8 V
+            self.state["charging_power"] = int(
+                self.notif_14_buffer[6:9]
+            ) / 10    # 050 → 5.0 W
             self.state["panel_voltage"] = round(
                 int(self.notif_14_buffer[20:23]) / 10, 1
-            )  # 1280 → 12.8 V
+            )  # 1280→ 12.8 V
             self.state["energy_daily"] = int(
                 self.notif_14_buffer[17:20])  # 1280 → 1280 Wh
             self.state["last_update"] = datetime.now().isoformat()
             out = (
                 f"{self.notif_14_buffer[0:3]}|"
-                f"{self.notif_14_buffer[3:7]}|"
-                f"{self.notif_14_buffer[7:20]}|"
+                f"{self.notif_14_buffer[3:6]}|"
+                f"{self.notif_14_buffer[6:9]}|"
+                f"{self.notif_14_buffer[9:17]}|"
+                f"{self.notif_14_buffer[17:20]}|"
                 f"{self.notif_14_buffer[20:23]}|"
                 f"{self.notif_14_buffer[23:]}"
             )
