@@ -145,7 +145,7 @@ def ntc_temperature(voltage):
 
     r_ntc = R_FIXED * (voltage / (VCC - voltage))
     temp_k = 1.0 / ((1.0 / T0) + (1.0 / BETA) * math.log(r_ntc / R0))
-    res = temp_k - 273.15
+    res = round(temp_k - 273.15, 1)
     print(f"[MAIN] NTC temperature calculated: {res} °C for voltage: {voltage} V")
     return res
 
