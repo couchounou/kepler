@@ -145,7 +145,7 @@ class btantarion:
                 int(self.notif_14_buffer[3:7]) / 100, 2
             )  # 1280 → 12.8 V
             self.state["panel_voltage"] = round(
-                int(self.notif_14_buffer[20:23]) / 100, 1
+                int(self.notif_14_buffer[20:23]) / 10, 1
             )  # 1280 → 12.8 V
             self.state["energy_daily"] = int(
                 self.notif_14_buffer[17:20])  # 1280 → 1280 Wh
