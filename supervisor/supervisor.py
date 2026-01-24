@@ -260,7 +260,7 @@ def read_all_ads1115_channels():
         AnalogIn(ads, 2),
         AnalogIn(ads, 3)
     ]
-    logging.info(f"channel voltages: {[ch.voltage for ch in channels]}")
+    logging.info(f"[MAIN] channel voltages: {[ch.voltage for ch in channels]}")
     aux_voltage = channels[0].voltage * 3.965  # facteur de division
     main_voltage = channels[1].voltage * 3.98  # facteur de division
     main_level = lead_soc(main_voltage, 25)
