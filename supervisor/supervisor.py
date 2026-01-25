@@ -287,7 +287,7 @@ def read_all_ads1115_channels():
     logging.info(f"[MAIN] Updated SiteStatus_instance: {SiteStatus_instance}")
 
 
-async def read_loop(interval_minutes=0.5):
+async def read_loop(interval_minutes=2):
     """
     Continuously reads all 4 ADS1115 channels
     every 'interval_minutes' minutes and prints the results.
