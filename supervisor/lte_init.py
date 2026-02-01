@@ -76,6 +76,7 @@ def test_ping(num: int = 2, target: str = "8.8.8.8", timeout: int = 2) -> bool:
         logging.info(f"[LTE] Error during ping test: {e}")
         return False
 
+
 def wlan0_has_internet(timeout=1) -> bool:
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
