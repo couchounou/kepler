@@ -90,13 +90,15 @@ def wlan0_has_internet(timeout=1) -> bool:
 
 
 def ready_or_connect(force=False) -> tuple[bool, bool]:
+    is_registered = False
     if wlan0_has_internet():
         logging.info("[LTE] WLAN0 already connected to internet.")
-        return True, False
+        is_registered = is_reg(serial.Serial(MODEM_PORT, BAUDRATE, timeout=1))
+        return True, False, is_registered
 
     if not force and test_ping("8.8.8.8"):
         logging.info("[LTE] LTE already connected")
-        return True, True
+        return True, True, True
 
     logging.info("[LTE] LTE not connected, initializing...")
     try:
@@ -111,17 +113,18 @@ def ready_or_connect(force=False) -> tuple[bool, bool]:
         logging.info("[LTE] Init modem...")
         send_at(ser, "AT+CFUN=1", 1)
         send_at(ser, f'AT+CGDCONT=1,"IP","{APN}"', 1)
+        is_registered = True
 
     if not wait_network_registration(ser):
         ser.close()
-        return False, False
+        return False, False, False
 
     send_at(ser, "AT+CGACT=1,1", 1)
     ser.close()
 
     success = test_ping(PING_TARGET)
     logging.info("[LTE] ✅ LTE init. successful" if success else "[LTE] ❌ LTE init. failed")
-    return success, success
+    return success, success, is_registered
 
 
 if __name__ == "__main__":

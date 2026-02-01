@@ -169,6 +169,7 @@ class SiteStatus:
             "temperature_1": 0.0,
             "temperature_2": 0.0,
             "lte_signal": False,
+            "lte_registered": False,
             "energy_daily": 0.0
         }
 
@@ -328,12 +329,13 @@ async def read_loop(interval_minutes=2):
         logging.info(SiteStatus_instance)
         connected = False
         lte_signal = False
+        is_registered = False
         if not test_ping(1):
-            connected, lte_signal = ready_or_connect(force=False)
+            connected, lte_signal, is_registered = ready_or_connect(force=False)
         else:
             connected = True
         logging.info("[MAIN] Internet connected: %s via %s", connected, "LTE" if lte_signal else "WLAN0")
-        SiteStatus_instance.update(lte_signal=lte_signal)
+        SiteStatus_instance.update(lte_signal=lte_signal, lte_registered=is_registered)
         POINTS.append(SiteStatus_instance.to_point())
         SiteStatus_instance.reset()
 
