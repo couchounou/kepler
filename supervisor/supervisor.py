@@ -48,6 +48,7 @@ R0 = 10000.0            # NTC à 25°C
 BETA = 3950.0           # Coefficient Beta
 T0 = 298.15             # 25°C en Kelvi
 
+
 def lead_soc(voltage, temperature_c):
     """
     Estime le SOC (%) d'une batterie plomb 12V
@@ -252,7 +253,7 @@ def read_all_ads1115_channels():
     Reads all 4 channels from the ADS1115 ADC
     and returns their values as a list.
     """
-    try
+    try:
         i2c = busio.I2C(board.SCL, board.SDA)
         ads = ADS.ADS1115(i2c)
         ads.gain = 1  # +/-4.096V
