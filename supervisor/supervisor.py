@@ -252,17 +252,20 @@ def read_all_ads1115_channels():
     Reads all 4 channels from the ADS1115 ADC
     and returns their values as a list.
     """
-
-    i2c = busio.I2C(board.SCL, board.SDA)
-    ads = ADS.ADS1115(i2c)
-    ads.gain = 1  # +/-4.096V
-    channels = [
-        AnalogIn(ads, 0),
-        AnalogIn(ads, 1),
-        AnalogIn(ads, 2),
-        AnalogIn(ads, 3)
-    ]
-    logging.info(f"[MAIN] channel voltages: {[ch.voltage for ch in channels]}")
+    try
+        i2c = busio.I2C(board.SCL, board.SDA)
+        ads = ADS.ADS1115(i2c)
+        ads.gain = 1  # +/-4.096V
+        channels = [
+            AnalogIn(ads, 0),
+            AnalogIn(ads, 1),
+            AnalogIn(ads, 2),
+            AnalogIn(ads, 3)
+        ]
+        logging.info(f"[MAIN] channel voltages: {[ch.voltage for ch in channels]}")
+    except Exception as e:
+        logging.info(f"[MAIN] Error initializing ADS1115: {e}")
+        return
     aux_voltage = channels[0].voltage * 3.965  # facteur de division
     main_voltage = channels[1].voltage * 3.98  # facteur de division
     temp = SiteStatus_instance.status["temperature_1"] if SiteStatus_instance.status["temperature_1"] else 20
