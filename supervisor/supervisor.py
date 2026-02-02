@@ -50,6 +50,7 @@ BETA = 3950.0           # Coefficient Beta
 T0 = 298.15             # 25°C en Kelvi
 LAST_UPDATE = None
 
+
 def lead_soc(voltage, temperature_c):
     """
     Estime le SOC (%) d'une batterie plomb 12V
@@ -155,6 +156,7 @@ def ntc_temperature(voltage):
 def reboot_system():
     logging.info("[MAIN] Rebooting system...")
     subprocess.run(['sudo', 'reboot'])
+
 
 class SiteStatus:
     def __init__(self, site_id: str):
