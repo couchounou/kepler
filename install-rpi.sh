@@ -1,9 +1,8 @@
 #!/bin/bash
 
 # priotité wifi 
-sudo nmcli connection modify "wlan0" ipv4.route-metric 100
-sudo nmcli connection modify "eth0" ipv4.route-metric 200
-
+sudo nmcli connection modify "wlan0" ipv4.route-metric 50
+sudo nmcli device wifi connect "iphoneA1" password "mot2passe2m"
 
 cd ~
 mkdir -p kepler
