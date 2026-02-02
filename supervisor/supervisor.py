@@ -1,3 +1,4 @@
+from asyncio import subprocess
 from datetime import datetime, UTC
 import random
 import configparser
@@ -47,7 +48,7 @@ R_FIXED = 10000.0       # Résistance fixe (ohms)
 R0 = 10000.0            # NTC à 25°C
 BETA = 3950.0           # Coefficient Beta
 T0 = 298.15             # 25°C en Kelvi
-
+LAST_UPDATE = None
 
 def lead_soc(voltage, temperature_c):
     """
@@ -150,6 +151,10 @@ def ntc_temperature(voltage):
     print(f"[MAIN] NTC temperature calculated: {res} °C for voltage: {voltage} V")
     return res
 
+
+def reboot_system():
+    logging.info("[MAIN] Rebooting system...")
+    subprocess.run(['sudo', 'reboot'])
 
 class SiteStatus:
     def __init__(self, site_id: str):
@@ -297,6 +302,7 @@ async def read_loop(interval_minutes=2):
     Continuously reads all 4 ADS1115 channels
     every 'interval_minutes' minutes and prints the results.
     """
+    global LAST_UPDATE
     supervisor_bt = btantarion()
     asyncio.create_task(supervisor_bt.run())
 
@@ -346,10 +352,16 @@ async def read_loop(interval_minutes=2):
                     "[MAIN] Points successfully written to InfluxDB through %s",
                     "LTE" if lte_signal else "WLAN0"
                 )
+                LAST_UPDATE = datetime.now(UTC)
             else:
                 logging.info("[MAIN] Failed to write points to InfluxDB.")
         else:
             logging.info("[MAIN] No internet connection. Points not sent.")
+        if LAST_UPDATE:
+            elapsed = (datetime.now(UTC) - LAST_UPDATE).total_seconds() / 60
+            if elapsed > 360:
+                logging.info("[MAIN] Last successful update was %f minutes ago, rebooting system.", elapsed)
+                reboot_system()
         await asyncio.sleep(interval_minutes * 60)  # <-- async sleep
 
 
