@@ -93,7 +93,10 @@ def ready_or_connect(force=False) -> tuple[bool, bool]:
     is_registered = False
     if wlan0_has_internet():
         logging.info("[LTE] WLAN0 already connected to internet.")
-        is_registered = is_reg(serial.Serial(MODEM_PORT, BAUDRATE, timeout=1))
+        try:
+            is_registered = is_reg(serial.Serial(MODEM_PORT, BAUDRATE, timeout=1))
+        except Exception as e:
+            logging.info(f"[LTE] Error opening serial port: {e}")
         return True, False, is_registered
 
     if not force and test_ping("8.8.8.8"):
