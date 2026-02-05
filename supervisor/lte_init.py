@@ -17,7 +17,7 @@ def send_at(ser, command, delay=0.5):
     ser.write((command + "\r").encode())
     time.sleep(delay)
     resp = ser.read_all().decode(errors="ignore")
-    logging.info(f">{resp}")
+    logging.debug(">%s", resp)
     return resp
 
 

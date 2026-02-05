@@ -1,8 +1,34 @@
 #!/bin/bash
 
 # priotité wifi 
-sudo nmcli connection modify "wlan0" ipv4.route-metric 50
-sudo nmcli device wifi connect "iphoneA1" password "mot2passe2m"
+
+
+
+sudo nmcli connection add \
+  type wifi \
+  ifname wlan0 \
+  con-name sablons \
+  ssid "SABLONS_MILIEU"
+
+sudo nmcli connection modify sablons \
+  wifi-sec.key-mgmt wpa-psk \
+  wifi-sec.psk "laclewifidecouchounou*"
+
+
+sudo nmcli connection add \
+  type wifi \
+  ifname wlan0 \
+  con-name iphoneA1 \
+  ssid "iphoneA1"
+
+sudo nmcli connection modify iphoneA1 \
+  wifi-sec.key-mgmt wpa-psk \
+  wifi-sec.psk "mot2passe2m"
+
+sudo nmcli connection modify "sablons" ipv4.route-metric 50
+sudo nmcli connection modify "iphoneA1" ipv4.route-metric 50
+
+sudo rfkill unblock bluetooth
 
 cd ~
 mkdir -p kepler
