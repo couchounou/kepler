@@ -167,10 +167,13 @@ class btantarion:
             logging.info("[BTS] Trame complète: %s", out)
             self.notif_14_buffer = ""
             logging.info(
-                "[BTS] ---> Charge: %sA, Tension batterie: %sV, Tension panneau: %sV ",
-                self.state['charging_current'],
+                "[BTS] ---> U batterie: %sV, U panneau: %sV, Courant: %sA, Puissance: %sW , Capacité: %sAh, Energie quotidienne: %sWh",
                 self.state['battery_voltage'],
-                self.state['panel_voltage']
+                self.state['panel_voltage'],
+                self.state['charging_current'],
+                self.state['charging_power'],
+                self.state['charging_capacity'],
+                self.state['energy_daily']
             )
         else:
             s = data.decode('ascii')
