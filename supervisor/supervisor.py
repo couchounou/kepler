@@ -149,7 +149,7 @@ def ntc_temperature(voltage):
     r_ntc = R_FIXED * (voltage / (VCC - voltage))
     temp_k = 1.0 / ((1.0 / T0) + (1.0 / BETA) * math.log(r_ntc / R0))
     res = round(temp_k - 273.15, 1)
-    print(f"[MAIN] NTC temperature calculated: {res} °C for voltage: {voltage} V")
+    logging.info(f"[MAIN] NTC temperature calculated: {res} °C for voltage: {voltage} V")
     return res
 
 
@@ -286,7 +286,8 @@ def read_all_ads1115_channels():
         SiteStatus_instance.update(
             aux_level=aux_level
         )
-    logging.info(f"[MAIN] Updated SiteStatus_instance: {SiteStatus_instance}")
+    for key, val in SiteStatus_instance.status.items():
+        logging.info(f"[MAIN] SiteStatus:{key} = {val}")
 
 
 async def read_loop(interval_minutes=2):
