@@ -4,15 +4,6 @@
 
 
 
-sudo nmcli connection add \
-  type wifi \
-  ifname wlan0 \
-  con-name sablons \
-  ssid "SABLONS_MILIEU"
-
-sudo nmcli connection modify sablons \
-  wifi-sec.key-mgmt wpa-psk \
-  wifi-sec.psk "laclewifidecouchounou*"
 
 
 sudo nmcli connection add \
@@ -25,7 +16,7 @@ sudo nmcli connection modify iphoneA1 \
   wifi-sec.key-mgmt wpa-psk \
   wifi-sec.psk "mot2passe2m"
 
-sudo nmcli connection modify "sablons" ipv4.route-metric 50
+sudo nmcli connection modify "netplan-wlan0-SABLONS_MILIEU" ipv4.route-metric 50
 sudo nmcli connection modify "iphoneA1" ipv4.route-metric 50
 
 sudo rfkill unblock bluetooth

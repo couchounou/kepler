@@ -245,17 +245,6 @@ def influx_write_pts(points: list, bucket: str) -> None:
     return False
 
 
-def read_all_ads1115_channels_fake():
-    SiteStatus_instance.update(
-        # auxiliary_voltage=if Sitrandom.uniform(11.5, 13.5),
-        principal_voltage=random.uniform(11.5, 13.5),
-        # panel_voltage=random.uniform(0.0, 25.0),
-        water_level=random.uniform(0, 100),
-        temperature_1=random.uniform(-10, 50),
-        temperature_2=random.uniform(-10, 50)
-    )
-
-
 def read_all_ads1115_channels():
     """
     Reads all 4 channels from the ADS1115 ADC
@@ -332,8 +321,7 @@ async def read_loop(interval_minutes=2):
             logging.info("[MAIN] Using real ADS1115 readings.")
             read_all_ads1115_channels()
         else:
-            logging.info("[MAIN] Using fake ADS1115 readings.")
-            read_all_ads1115_channels_fake()
+            logging.warning("[MAIN] Adafruit library not available, using simulated data.")
         logging.info(SiteStatus_instance)
         connected = False
         lte_signal = False
