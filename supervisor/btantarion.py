@@ -10,6 +10,7 @@ class btantarion:
     def __init__(self):
         self.state = {
             "charging_current": 0,
+            "charging_capacity": 0,
             "battery_voltage": 0.0,
             "panel_voltage": 0.0,
             "charging_power": 0,
@@ -147,6 +148,8 @@ class btantarion:
             self.state["panel_voltage"] = round(
                 int(self.notif_14_buffer[20:23]) / 10, 1
             )  # 1280→ 12.8 V
+            self.state["charging_capacity"] = int(
+                self.notif_14_buffer[11:14])  # 128→ 128 Ah           
             self.state["energy_daily"] = int(
                 self.notif_14_buffer[17:20])  # 1280 → 1280 Wh
             self.state["last_update"] = datetime.now().isoformat()
@@ -154,7 +157,9 @@ class btantarion:
                 f"{self.notif_14_buffer[0:3]}|"
                 f"{self.notif_14_buffer[3:6]}|"
                 f"{self.notif_14_buffer[6:9]}|"
-                f"{self.notif_14_buffer[9:17]}|"
+                f"{self.notif_14_buffer[9:11]}|"
+                f"{self.notif_14_buffer[11:14]}|"
+                f"{self.notif_14_buffer[14:17]}|"
                 f"{self.notif_14_buffer[17:20]}|"
                 f"{self.notif_14_buffer[20:23]}|"
                 f"{self.notif_14_buffer[23:]}"

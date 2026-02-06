@@ -172,6 +172,7 @@ class SiteStatus:
             "panel_voltage": 0.0,
             "panel_power": 0.0,
             "charging_current": 0.0,
+            "charging_capacity": 0.0,
             "water_level": 0.0,
             "temperature_1": 0.0,
             "temperature_2": 0.0,
@@ -313,6 +314,7 @@ async def read_loop(interval_minutes=2):
                 panel_voltage=btstate.get("panel_voltage", 0.0),
                 panel_power=btstate.get("charging_power", 0.0),
                 charging_current=btstate.get("charging_current", 0.0),
+                chargubing_capacity=btstate.get("charging_capacity", 0.0),
                 energy_daily=btstate.get("energy_daily", 0.0),
             )
 
