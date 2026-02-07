@@ -1,8 +1,8 @@
-import serial
 import time
 import subprocess
 import socket
 import logging
+import serial
 
 
 MODEM_PORT = "/dev/ttyACM0"
@@ -51,7 +51,7 @@ def is_reg(ser):
 
 
 def test_ping(num: int = 2, target: str = "8.8.8.8", timeout: int = 2) -> bool:
-    logging.info(f"[LTE] Test ping to {target}...")
+    logging.info("[LTE] Test ping to %s...", target)
     try:
         result = subprocess.run(
             [
@@ -73,7 +73,7 @@ def test_ping(num: int = 2, target: str = "8.8.8.8", timeout: int = 2) -> bool:
             logging.info(f"[LTE] Internet KO: {result.stderr}".strip())
             return False
     except Exception as e:
-        logging.info(f"[LTE] Error during ping test: {e}")
+        logging.info("[LTE] Error during ping test: %s", e)
         return False
 
 
@@ -96,7 +96,7 @@ def ready_or_connect(force=False) -> tuple[bool, bool]:
         try:
             is_registered = is_reg(serial.Serial(MODEM_PORT, BAUDRATE, timeout=1))
         except Exception as e:
-            logging.info(f"[LTE] Error opening serial port: {e}")
+            logging.info("[LTE] Error opening serial port: %s", e)
         return True, False, is_registered
 
     if not force and test_ping("8.8.8.8"):
@@ -108,7 +108,7 @@ def ready_or_connect(force=False) -> tuple[bool, bool]:
         ser = serial.Serial(MODEM_PORT, BAUDRATE, timeout=1)
         time.sleep(1)
     except Exception as e:
-        logging.info(f"[LTE] Error opening serial port: {e}")
+        logging.info("[LTE] Error opening serial port: %s", e)
         return False, False
 
     send_at(ser, "AT")
@@ -128,6 +128,14 @@ def ready_or_connect(force=False) -> tuple[bool, bool]:
     success = test_ping(PING_TARGET)
     logging.info("[LTE] ✅ LTE init. successful" if success else "[LTE] ❌ LTE init. failed")
     return success, success, is_registered
+
+
+def is_lte_used(dest="8.8.8.8") -> bool:
+    out = subprocess.check_output(
+        ["ip", "route", "get", dest],
+        text=True
+    )
+    return "dev eth0" in out
 
 
 if __name__ == "__main__":

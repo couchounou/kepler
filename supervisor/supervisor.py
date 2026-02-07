@@ -1,6 +1,5 @@
 from asyncio import subprocess
 from datetime import datetime, UTC
-import random
 import configparser
 import os
 import asyncio
@@ -11,17 +10,17 @@ try:
     import board
     import busio
     import adafruit_ads1x15.ads1115 as ADS
-    import adafruit_ads1x15.ads1x15 as ADSbase
     from adafruit_ads1x15.analog_in import AnalogIn
     ADAFRUIT_AVAILABLE = True
-except:
+except ImportError:
     print("Failed to import Adafruit ")
     ADAFRUIT_AVAILABLE = False
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 from influxdb_client.client.exceptions import InfluxDBError
-from lte_init import test_ping, ready_or_connect
-from btantarion import btantarion
+from lte_init import is_lte_used, test_ping, ready_or_connect
+from btantarion import Btantarion
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -149,13 +148,13 @@ def ntc_temperature(voltage):
     r_ntc = R_FIXED * (voltage / (VCC - voltage))
     temp_k = 1.0 / ((1.0 / T0) + (1.0 / BETA) * math.log(r_ntc / R0))
     res = round(temp_k - 273.15, 1)
-    logging.info(f"[MAIN] NTC temperature calculated: {res} °C for voltage: {voltage} V")
+    logging.info("[MAIN] NTC temperature calculated: %s °C for voltage: %s V", res, voltage)
     return res
 
 
 def reboot_system():
     logging.info("[MAIN] Rebooting system...")
-    subprocess.run(['sudo', 'reboot'])
+    subprocess.run(['sudo', 'reboot'], check=False)
 
 
 class SiteStatus:
@@ -226,7 +225,7 @@ class SiteStatus:
 
 
 SiteStatus_instance = SiteStatus(site_id="site_001")
-solar_regulator = btantarion()
+supervisor_bt = Btantarion()
 
 
 def influx_write_pts(points: list, bucket: str) -> None:
@@ -235,14 +234,14 @@ def influx_write_pts(points: list, bucket: str) -> None:
         return True
     except InfluxDBError as e:
         if e.response.status == 401 or e.response.status == 403:
-            logging.info(f"[INFLUX] insufficient rights to {bucket}")
+            logging.info("[INFLUX] insufficient rights to %s", bucket)
         else:
-            logging.info(f"[INFLUX] influx error {e}")
+            logging.info("[INFLUX] influx error %s", e)
     except Exception as e:
         if hasattr(e, "reason"):
-            logging.info(f"[INFLUX] for bucket :{bucket} : {e.reason}")
+            logging.info("[INFLUX] for bucket :%s : %s", bucket, e.reason)
         else:
-            logging.info(f"[INFLUX] for bucket: {bucket}: {e}")
+            logging.info("[INFLUX] for bucket: %s: %s", bucket, e)
     return False
 
 
@@ -261,9 +260,9 @@ def read_all_ads1115_channels():
             AnalogIn(ads, 2),
             AnalogIn(ads, 3)
         ]
-        logging.info(f"[MAIN] channel voltages: {[ch.voltage for ch in channels]}")
+        logging.info("[MAIN] channel voltages: %s", [ch.voltage for ch in channels])
     except Exception as e:
-        logging.info(f"[MAIN] Error initializing ADS1115: {e}")
+        logging.info("[MAIN] Error initializing ADS1115: %s", e)
         return
     aux_voltage = channels[0].voltage * 3.965  # facteur de division
     main_voltage = channels[1].voltage * 3.98  # facteur de division
@@ -294,7 +293,6 @@ async def read_loop(interval_minutes=2):
     every 'interval_minutes' minutes and prints the results.
     """
     global LAST_UPDATE
-    supervisor_bt = btantarion()
     asyncio.create_task(supervisor_bt.run())
 
     while True:
@@ -324,7 +322,7 @@ async def read_loop(interval_minutes=2):
         else:
             logging.warning("[MAIN] Adafruit library not available, using simulated data.")
         for key, val in SiteStatus_instance.status.items():
-            logging.info(f"[MAIN] SiteStatus:{key} = {val}")
+            logging.info("[MAIN] SiteStatus:%s = %s", key, val)
         connected = False
         lte_signal = False
         is_registered = False
@@ -332,16 +330,18 @@ async def read_loop(interval_minutes=2):
             connected, lte_signal, is_registered = ready_or_connect(force=False)
         else:
             connected = True
+            lte_signal = is_lte_used() if connected else False
         logging.info("[MAIN] Internet connected: %s via %s", connected, "LTE" if lte_signal else "WLAN0")
         SiteStatus_instance.update(lte_signal=lte_signal, lte_registered=is_registered)
         POINTS.append(SiteStatus_instance.to_point())
         SiteStatus_instance.reset()
-
         if connected:
             if influx_write_pts(POINTS, BUCKET):
+                num_points = len(POINTS)
                 POINTS.clear()
                 logging.info(
-                    "[MAIN] Points successfully written to InfluxDB through %s",
+                    "[MAIN] %s Points successfully written to InfluxDB using %s",
+                    num_points,
                     "LTE" if lte_signal else "WLAN0"
                 )
                 LAST_UPDATE = datetime.now(UTC)
@@ -381,5 +381,8 @@ if __name__ == "__main__":
         org=ORG
     )
     WRITE_API = CLIENT.write_api(write_options=SYNCHRONOUS)
-    logging.info(f"[MAIN] Starting supervisor version 224 with InfluxDB org:{ORG}, server:{SERVER}, bucket:{BUCKET}")
+    logging.info(
+        "[MAIN] Starting supervisor version 224 with InfluxDB org:%s, server:%s, bucket:%s",
+        ORG, SERVER, BUCKET
+    )
     asyncio.run(read_loop())

@@ -1,12 +1,12 @@
 import asyncio
 import subprocess
+import logging
 import time
 from datetime import datetime
 from bleak import BleakClient, BleakScanner
-import logging
 
 
-class btantarion:
+class Btantarion:
     def __init__(self):
         self.state = {
             "charging_current": 0,
@@ -20,21 +20,15 @@ class btantarion:
         self.notif_14_buffer = ""
         self.restart_bluetooth()
         self.address = "00:0d:18:05:53:24"
-        self.WRITE_COMMAND = bytearray([0x4F, 0x4B])
-        self.WRITE_UUID = "00002af1-0000-1000-8000-00805f9b34fb"
+        self.write_command = bytearray([0x4F, 0x4B])
+        self.write_uuid = "00002af1-0000-1000-8000-00805f9b34fb"
 
     def restart_bluetooth(self):
         """Restart Bluetooth and HCI UART module"""
         logging.info("[BTS] Restarting Bluetooth...")
         commands = [
             ("Turning Bluetooth power off", ["bluetoothctl", "power", "off"]),
-            ("Stopping bluetooth service", [
-                "sudo",
-                "systemctl",
-                "stop",
-                "bluetooth"
-                ]
-            ),
+            ("Stopping bluetooth service", ["sudo", "systemctl", "stop", "bluetooth"]),
             ("Unloading hci_uart module", ["sudo", "rmmod", "hci_uart"]),
             ("Waiting 2 seconds", None),
             ("Loading hci_uart module", ["sudo", "modprobe", "hci_uart"]),
@@ -72,7 +66,7 @@ class btantarion:
         if device is None:
             logging.info("[BTS] Device 'regulator' non trouvé")
         else:
-            logging.info(f"[BTS] Device trouvé: {device.address}")
+            logging.info("[BTS] Device trouvé: %s", device.address)
             self.address = device.address
         errors = 0
         while True:
@@ -84,7 +78,12 @@ class btantarion:
                     for service in client.services:
                         logging.info("[BTS] Service: %s", service.uuid)
                         for char in service.characteristics:
-                            logging.info("  Char: %s, Handle: %s, Properties: %s", char.uuid, char.handle, char.properties)
+                            logging.info(
+                                "  Char: %s, Handle: %s, Properties: %s",
+                                char.uuid,
+                                char.handle,
+                                char.properties
+                            )
                 async with BleakClient(self.address, timeout=10.0) as client:
                     # Souscrire à toutes les notifications sur le handle 0x000f
 
@@ -108,8 +107,8 @@ class btantarion:
                         try:
                             logging.info("[BTS] Envoi requete et attente notification...")
                             await client.write_gatt_char(
-                                self.WRITE_UUID,
-                                self.WRITE_COMMAND,
+                                self.write_uuid,
+                                self.write_command,
                                 response=True
                             )
                         except Exception as e:
@@ -149,7 +148,7 @@ class btantarion:
                 int(self.notif_14_buffer[20:23]) / 10, 1
             )  # 1280→ 12.8 V
             self.state["charging_capacity"] = int(
-                self.notif_14_buffer[11:14])  # 128→ 128 Ah           
+                self.notif_14_buffer[11:14])  # 128→ 128 Ah
             self.state["energy_daily"] = int(
                 self.notif_14_buffer[17:20])  # 1280 → 1280 Wh
             self.state["last_update"] = datetime.now().isoformat()
@@ -167,13 +166,14 @@ class btantarion:
             logging.info("[BTS] Trame complète: %s", out)
             self.notif_14_buffer = ""
             logging.info(
-                "[BTS] ---> U batterie: %sV, U panneau: %sV, Courant: %sA, Puissance: %sW , Capacité: %sAh, Energie quotidienne: %sWh",
-                self.state['battery_voltage'],
-                self.state['panel_voltage'],
-                self.state['charging_current'],
-                self.state['charging_power'],
-                self.state['charging_capacity'],
-                self.state['energy_daily']
+                "[BTS] ---> U batterie: %sV, U panneau: %sV, Courant: %sA, "
+                "Puissance: %sW , Capacité: %sAh, Energie quotidienne: %sWh",
+                self.state["battery_voltage"],
+                self.state["panel_voltage"],
+                self.state["charging_current"],
+                self.state["charging_power"],
+                self.state["charging_capacity"],
+                self.state["energy_daily"]
             )
         else:
             s = data.decode('ascii')
@@ -210,7 +210,7 @@ class btantarion:
 
 
 if __name__ == "__main__":
-    supervisor = btantarion()
+    supervisor = Btantarion()
 
     async def main():
         # Lancer la tâche principale en arrière-plan
