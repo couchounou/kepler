@@ -23,28 +23,28 @@ def send_at(ser, command, delay=0.5):
 
 def wait_network_registration(ser, timeout=MAX_WAIT_NETWORK):
     """Attendre que le modem soit enregistré sur le réseau LTE"""
-    logging.info("...try registering...")
+    logging.info("[LTE] ...try registering...")
     for _ in range(timeout):
         resp = send_at(ser, "AT+CREG?")
         if "+CREG: 0,1" in resp or "+CREG: 0,5" in resp:
-            logging.info("✅ Modem registered on network")
+            logging.info("[LTE] ✅ Modem registered on network")
             return True
         time.sleep(1)
-    logging.info("❌ Failed: modem not registered")
+    logging.info("[LTE] ❌ Failed: modem not registered")
     return False
 
 
 def is_reg(ser):
     resp = send_at(ser, "AT+CFUN?")
     if "+CFUN: 1" not in resp:
-        logging.info("❌ Modem not initialized")
+        logging.info("[LTE] ❌ Modem not initialized")
         return False
     resp = send_at(ser, "AT+CREG?")
     if "+CREG: 0,1" in resp or "+CREG: 0,5" in resp:
-        logging.info("✅ Modem registered")
+        logging.info("[LTE] ✅ Modem registered")
         return True
     if "+CREG: 0,2" in resp:
-        logging.info("✅ Modem still waiting for registration")
+        logging.info("[LTE] ✅ Modem still waiting for registration")
         time.sleep(3)
         return True
     return False

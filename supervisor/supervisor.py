@@ -286,8 +286,6 @@ def read_all_ads1115_channels():
         SiteStatus_instance.update(
             aux_level=aux_level
         )
-    for key, val in SiteStatus_instance.status.items():
-        logging.info(f"[MAIN] SiteStatus:{key} = {val}")
 
 
 async def read_loop(interval_minutes=2):
@@ -325,7 +323,8 @@ async def read_loop(interval_minutes=2):
             read_all_ads1115_channels()
         else:
             logging.warning("[MAIN] Adafruit library not available, using simulated data.")
-        logging.info(SiteStatus_instance)
+        for key, val in SiteStatus_instance.status.items():
+            logging.info(f"[MAIN] SiteStatus:{key} = {val}")
         connected = False
         lte_signal = False
         is_registered = False
