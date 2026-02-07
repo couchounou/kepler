@@ -214,7 +214,7 @@ class SiteStatus:
 
         point = Point("site_metrics").tag("site_id", self.site_id)
         for field, value in self.status.items():
-            if float(value) == 0.0 and field in ["principal_voltage", "auxiliary_voltage"]:
+            if (value is None or float(value) == 0.0) and field in ["main_voltage", "aux_voltage"]:
                 continue
             point = point.field(field, float(value))
         point = point.time(datetime.now(UTC))
