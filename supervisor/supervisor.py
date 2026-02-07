@@ -164,9 +164,9 @@ class SiteStatus:
 
     def reset(self):
         self.status = {
-            "aux_voltage": 0.0,
+            "aux_voltage": None,
             "aux_level": 0.0,
-            "main_voltage": 0.0,
+            "main_voltage": None,
             "main_level": 0.0,
             "panel_voltage": 0.0,
             "panel_power": 0.0,
