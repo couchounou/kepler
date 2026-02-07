@@ -130,7 +130,7 @@ class Btantarion:
     def parse_notification(self, data: bytearray):
         # convertir bytes ASCII en string
         s = data.decode('ascii')
-        logging.info("[BTS] Trame reçue: de %d caractères: %s", len(s), s)
+        logging.debug("[BTS] Trame reçue: de %d caractères: %s", len(s), s)
         if data[-1] == 0x0d:  # CR à la fin
             s = data[:-1].decode('ascii')
             self.notif_14_buffer += s
@@ -178,7 +178,7 @@ class Btantarion:
         else:
             s = data.decode('ascii')
             self.notif_14_buffer = s + self.notif_14_buffer
-            logging.info("[BTS] ... trame #1: %s", s)
+            logging.debug("[BTS] ... trame #1: %s", s)
             # 004127005000000000052160000000000000000
 
     def notification_handler(self, handle, data):
