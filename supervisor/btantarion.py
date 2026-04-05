@@ -4,7 +4,7 @@ import logging
 import time
 from datetime import datetime
 from bleak import BleakClient, BleakScanner
-
+from tstbthome import scan
 
 class Btantarion:
     def __init__(self):
@@ -115,7 +115,8 @@ class Btantarion:
                             logging.error("[BTS] Erreur lors de l'envoi de la requête: %s", e)
                             break
                         logging.info("[BTS] En écoute des notifications sur handle 0x000e...")
-                        await asyncio.sleep(loop)
+                        await scan("F8:44:77:2A:C3:C0", duration=loop)
+                        # await asyncio.sleep(loop)
             except Exception as e:
                 logging.error("Erreur Bleak : %s", e)
                 errors += 1

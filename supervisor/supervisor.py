@@ -320,7 +320,7 @@ async def read_loop(interval_minutes=2):
             logging.info("[MAIN] Using real ADS1115 readings.")
             read_all_ads1115_channels()
         else:
-            logging.warning("[MAIN] Adafruit library not available, using simulated data.")
+            logging.warning("[MAIN] Adafruit library not available, using simulated data....")
         for key, val in SiteStatus_instance.status.items():
             logging.info("[MAIN] SiteStatus:%s = %s", key, val)
         connected = False
