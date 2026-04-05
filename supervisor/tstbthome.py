@@ -186,7 +186,10 @@ async def scan(target_address: str | None = None, duration: float | None = None)
     """
     log.info("Démarrage du scan BLE BTHome%s…",
              f" (filtre: {target_address})" if target_address else "")
-
+    print(
+        "Démarrage du scan BLE BTHome%s…",
+        f" (filtre: {target_address})" if target_address else ""
+    )
     seen: dict[str, float] = {}   # adresse → timestamp dernière réception
 
     def callback(device: BLEDevice, adv: AdvertisementData):
