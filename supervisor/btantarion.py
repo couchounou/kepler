@@ -117,6 +117,7 @@ class Btantarion:
                         logging.info("[BTS] En écoute des notifications sur handle 0x000e...")
                         await scan("F8:44:77:2A:C3:C0", duration=loop)
                         # await asyncio.sleep(loop)
+                    await scan("F8:44:77:2A:C3:C0", duration=loop)
             except Exception as e:
                 logging.error("Erreur Bleak : %s", e)
                 errors += 1
