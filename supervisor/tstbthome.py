@@ -43,7 +43,7 @@ logging.basicConfig(
     format="%(asctime)s  %(levelname)-7s  %(message)s",
     datefmt="%H:%M:%S",
 )
-log = logging.getLogger("bthome")
+logging = logging.getLogger("bthome")
 
 # ── UUID des caractéristiques GATT ───────────────────────────────────────────
 
@@ -113,7 +113,7 @@ def decode_frame(data: bytes) -> dict:
                 result[f"unknown_0x{obj_id:02X}"] = data[pos] if pos < len(data) else None
                 pos += 1
         except (IndexError, struct.error):
-            log.warning(f"Trame tronquée à l'offset {pos} (obj_id=0x{obj_id:02X})")
+            logging.warning(f"Trame tronquée à l'offset {pos} (obj_id=0x{obj_id:02X})")
             break
 
     # Déduire le type
@@ -184,7 +184,7 @@ async def scan(target_address: str | None = None, duration: float | None = None)
     :param target_address: si fourni, filtre sur cette adresse MAC
     :param duration:       durée en secondes (None = infini jusqu'à Ctrl-C)
     """
-    log.info("Démarrage du scan BLE BTHome%s…",
+    logging.info("Démarrage du scan BLE BTHome%s…",
              f" (filtre: {target_address})" if target_address else "")
     print(
         "Démarrage du scan BLE BTHome%s…",
@@ -219,23 +219,23 @@ async def scan(target_address: str | None = None, duration: float | None = None)
         if duration:
             await asyncio.sleep(duration)
         else:
-            log.info("Scan en cours — Ctrl-C pour arrêter")
+            logging.info("Scan en cours — Ctrl-C pour arrêter")
             try:
                 await asyncio.Future()   # attente infinie
             except asyncio.CancelledError:
                 pass
 
-    log.info("Scan terminé.")
+    logging.info("Scan terminé.")
 
 
 # ── Lecture des caractéristiques GATT ─────────────────────────────────────────
 
 async def read_characteristics(address: str):
     """Se connecte au device et lit toutes les caractéristiques connues."""
-    log.info("Connexion GATT à %s…", address)
+    logging.info("Connexion GATT à %s…", address)
 
     async with BleakClient(address) as client:
-        log.info("Connecté (%s)", address)
+        logging.info("Connecté (%s)", address)
 
         print(f"\n{'='*56}")
         print(f"  Caractéristiques GATT — {address}")
@@ -278,17 +278,17 @@ async def write_characteristic(address: str, uuid: str, int_value: int):
     for name, (u, f, access, _) in CHARACTERISTICS.items():
         if u.lower() == uuid.lower():
             if "w" not in access:
-                log.error("La caractéristique '%s' est en lecture seule.", name)
+                logging.error("La caractéristique '%s' est en lecture seule.", name)
                 return
             fmt = f
             break
 
     data = struct.pack(fmt, int_value)
-    log.info("Connexion GATT à %s…", address)
+    logging.info("Connexion GATT à %s…", address)
 
     async with BleakClient(address) as client:
         await client.write_gatt_char(uuid, data)
-        log.info("Écriture OK — UUID=%s  valeur=%d  bytes=%s", uuid, int_value, data.hex())
+        logging.info("Écriture OK — UUID=%s  valeur=%d  bytes=%s", uuid, int_value, data.hex())
 
 
 # ── Synchronisation de l'heure ────────────────────────────────────────────────
@@ -300,19 +300,19 @@ async def sync_time(address: str, utc_offset_minutes: int = 0):
     :param utc_offset_minutes: ex. 120 pour UTC+2
     """
     now_unix = int(time.time())
-    log.info("Sync heure : %s UTC  (offset=%d min)",
+    logging.info("Sync heure : %s UTC  (offset=%d min)",
              datetime.utcfromtimestamp(now_unix).isoformat(), utc_offset_minutes)
 
     async with BleakClient(address) as client:
         # UNIX timestamp
         uuid_time = CHARACTERISTICS["unix_time"][0]
         await client.write_gatt_char(uuid_time, struct.pack("<I", now_unix))
-        log.info("UNIX time écrit : %d", now_unix)
+        logging.info("UNIX time écrit : %d", now_unix)
 
         # UTC offset
         uuid_offset = CHARACTERISTICS["utc_offset"][0]
         await client.write_gatt_char(uuid_offset, struct.pack("<h", utc_offset_minutes))
-        log.info("UTC offset écrit : %d min", utc_offset_minutes)
+        logging.info("UTC offset écrit : %d min", utc_offset_minutes)
 
 
 # ── Découverte automatique ────────────────────────────────────────────────────
@@ -328,7 +328,7 @@ async def discover(duration: float = 10.0) -> list[tuple[str, str]]:
         if extract_bthome_payload(adv) is not None:
             found[device.address] = device.name or "?"
 
-    log.info("Découverte des devices BTHome (%ds)…", int(duration))
+    logging.info("Découverte des devices BTHome (%ds)…", int(duration))
     async with BleakScanner(detection_callback=callback):
         await asyncio.sleep(duration)
 
@@ -402,4 +402,4 @@ if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        log.info("Interrompu.")
+        logging.info("Interrompu.")

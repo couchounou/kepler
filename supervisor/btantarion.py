@@ -84,6 +84,7 @@ class Btantarion:
                                 char.handle,
                                 char.properties
                             )
+                
                 async with BleakClient(self.address, timeout=10.0) as client:
                     # Souscrire à toutes les notifications sur le handle 0x000f
 
@@ -117,6 +118,7 @@ class Btantarion:
                         logging.info("[BTS] En écoute des notifications sur handle 0x000e...")
                         await scan("F8:44:77:2A:C3:C0", duration=loop)
                         # await asyncio.sleep(loop)
+                
                 await scan("F8:44:77:2A:C3:C0", duration=loop)
             except Exception as e:
                 logging.error("Erreur Bleak : %s", e)
