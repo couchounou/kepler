@@ -116,6 +116,8 @@ class Btantarion:
                             logging.error("[BTS] Erreur lors de l'envoi de la requête: %s", e)
                             break
                         logging.info("[BTS] En écoute des notifications sur handle 0x000e...")
+                        import asyncio
+                        print("[BTANTARION] asyncio loop:", asyncio.get_running_loop(), flush=True)
                         await scan("F8:44:77:2A:C3:C0", duration=loop)
                         # await asyncio.sleep(loop)
                 
@@ -131,6 +133,8 @@ class Btantarion:
                 continue
             finally:
                 logging.info("[BTS] Scan devices BTHome en cours...")
+                import asyncio
+                print("[BTANTARION] asyncio loop:", asyncio.get_running_loop(), flush=True)
                 await scan("F8:44:77:2A:C3:C0", duration=loop)
 
     def parse_notification(self, data: bytearray):

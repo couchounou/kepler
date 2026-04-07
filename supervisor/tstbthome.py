@@ -60,7 +60,7 @@ CHARACTERISTICS = {
 # UUID de service BTHome standard
 BTHOME_SERVICE_UUID = "0000181c-0000-1000-8000-00805f9b34fb"
 # Certains devices utilisent un UUID non-standard — on accepte les deux
-BTHOME_ALT_UUID     = "0000fcd2-0000-1000-8000-00805f9b34fb"
+BTHOME_ALT_UUID = "0000fcd2-0000-1000-8000-00805f9b34fb"
 
 
 def decode_frame(data: bytes) -> dict:
@@ -168,6 +168,8 @@ def fmt_decoded(decoded: dict, addr: str, rssi: int | None = None) -> str:
 # ── Scanner passif ────────────────────────────────────────────────────────────
 
 async def scan(target_address: str | None = None, duration: float | None = None):
+    import asyncio
+    print("[SCAN] asyncio loop:", asyncio.get_running_loop(), flush=True)
     """
     Écoute passivement les advertisements BTHome.
 
