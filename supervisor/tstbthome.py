@@ -36,16 +36,6 @@ from bleak import BleakScanner, BleakClient
 from bleak.backends.device import BLEDevice
 from bleak.backends.scanner import AdvertisementData
 
-# ── Logging ──────────────────────────────────────────────────────────────────
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s  %(levelname)-7s  %(message)s",
-    datefmt="%H:%M:%S",
-)
-logging = logging.getLogger("bthome")
-
-# ── UUID des caractéristiques GATT ───────────────────────────────────────────
 
 CHARACTERISTICS = {
     "unix_time":          ("d56a3410-115e-41d1-945b-3a7f189966a1", "<I",  "rw", "UTC timestamp"),
@@ -399,6 +389,12 @@ async def main():
 
 
 if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s  %(levelname)-7s  %(message)s",
+        datefmt="%H:%M:%S",
+    )
+    logging = logging.getLogger("bthome")
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
