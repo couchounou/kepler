@@ -174,12 +174,11 @@ async def scan(target_address: str | None = None, duration: float | None = None)
     :param target_address: si fourni, filtre sur cette adresse MAC
     :param duration:       durée en secondes (None = infini jusqu'à Ctrl-C)
     """
-    logging.info("Démarrage du scan BLE BTHome%s…",
-             f" (filtre: {target_address})" if target_address else "")
-    print(
-        "Démarrage du scan BLE BTHome%s…",
+    logging.info(
+        "[SCAN] Démarrage du scan BLE BTHome%s…",
         f" (filtre: {target_address})" if target_address else ""
     )
+    print(f"[SCAN] Démarrage du scan BLE BTHome {f'(filtre: {target_address})' if target_address else ''}", flush=True)
     seen: dict[str, float] = {}   # adresse → timestamp dernière réception
 
     def callback(device: BLEDevice, adv: AdvertisementData):
