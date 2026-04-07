@@ -130,6 +130,7 @@ class Btantarion:
                     await asyncio.sleep(5)
                 continue
             finally:
+                logging.info("[BTS] Scan devices BTHome en cours...")
                 await scan("F8:44:77:2A:C3:C0", duration=loop)
 
     def parse_notification(self, data: bytearray):
