@@ -72,10 +72,8 @@ class Btantarion:
         errors = 0
         while True:
             try:
-                logging.info("[BTS] En écoute des notifications sur handle 0x000e...")
                 await scan("F8:44:77:2A:C3:C0", duration=loop)
                 logging.info("[BTS] -------> Tentative de connexion au MPPT... device: %s", self.address)
-
                 async with BleakClient(self.address, timeout=10.0) as client:
                     # Affichage des services
                     for service in client.services:
@@ -90,10 +88,10 @@ class Btantarion:
 
                 async with BleakClient(self.address, timeout=10.0) as client:
                     # Souscrire à toutes les notifications sur le handle 0x000f
-
                     try:
                         logging.info("[BTS] Nettoyage des notifications existantes...")
                         await client.stop_notify(0x000e)
+                        logging.info("[BTS] En écoute des notifications sur handle 0x000e...")
                     except Exception as e:
                         logging.error("[BTS] Erreur lors de l'arrêt des notifications existantes: %s", e)
                         continue
@@ -131,9 +129,7 @@ class Btantarion:
                 else:
                     await asyncio.sleep(5)
                 continue
-            finally:
-                logging.info("[BTS] Scan devices BTHome en cours...")
-                await scan("F8:44:77:2A:C3:C0", duration=loop)
+
 
     def parse_notification(self, data: bytearray):
         # convertir bytes ASCII en string

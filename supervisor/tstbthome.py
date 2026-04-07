@@ -177,8 +177,6 @@ def fmt_decoded(decoded: dict, addr: str, rssi: int | None = None) -> str:
 # ── Scanner passif ────────────────────────────────────────────────────────────
 
 async def scan(target_address: str | None = None, duration: float | None = None):
-    import asyncio
-    print("[SCAN] asyncio loop:", asyncio.get_running_loop(), flush=True)
     """
     Écoute passivement les advertisements BTHome.
 
