@@ -77,27 +77,36 @@ def decode_frame(data: bytes) -> dict:
 
         try:
             if obj_id == 0x01:
-                result["battery_pct"] = data[pos];          pos += 1
+                result["battery_pct"] = data[pos]
+                pos += 1
             elif obj_id == 0x15:
-                result["battery_low"] = bool(data[pos]);    pos += 1
+                result["battery_low"] = bool(data[pos])
+                pos += 1
             elif obj_id == 0x1E:
-                raw = data[pos];                             pos += 1
+                raw = data[pos]
+                pos += 1
                 result["light"] = {0: "dark", 1: "twilight", 2: "bright"}.get(raw, f"?({raw})")
                 result["light_raw"] = raw
             elif obj_id == 0x2E:
-                result["humidity_pct"] = data[pos];         pos += 1
+                result["humidity_pct"] = data[pos]
+                pos += 1
             elif obj_id == 0x45:
-                raw = struct.unpack_from("<h", data, pos)[0]; pos += 2
+                raw = struct.unpack_from("<h", data, pos)[0]
+                pos += 2
                 result["temperature_c"] = raw / 10.0
             elif obj_id == 0xF0:
-                result["device_type_id"] = struct.unpack_from("<H", data, pos)[0]; pos += 2
+                result["device_type_id"] = struct.unpack_from("<H", data, pos)[0]
+                pos += 2
             elif obj_id == 0xF1:
-                result["firmware_u32"] = struct.unpack_from("<I", data, pos)[0];   pos += 4
+                result["firmware_u32"] = struct.unpack_from("<I", data, pos)[0]
+                pos += 4
             elif obj_id == 0xF2:
-                b = data[pos:pos+3]; pos += 3
+                b = data[pos:pos+3]
+                pos += 3
                 result["firmware_u24"] = b[0] | (b[1] << 8) | (b[2] << 16)
             elif obj_id == 0x3A:
-                raw = data[pos];                             pos += 1
+                raw = data[pos]
+                pos += 1
                 result["button_event"] = {1: "short_press"}.get(raw, f"?({raw})")
             else:
                 result[f"unknown_0x{obj_id:02X}"] = data[pos] if pos < len(data) else None
@@ -140,7 +149,7 @@ def extract_bthome_payload(adv: AdvertisementData) -> bytes | None:
 # ── Formatage ─────────────────────────────────────────────────────────────────
 
 def fmt_decoded(decoded: dict, addr: str, rssi: int | None = None) -> str:
-    ts   = datetime.now().strftime("%H:%M:%S")
+    ts = datetime.now().strftime("%H:%M:%S")
     ftyp = decoded.get("frame_type", "?")
     rssi_s = f"  RSSI={rssi} dBm" if rssi is not None else ""
 
@@ -148,7 +157,7 @@ def fmt_decoded(decoded: dict, addr: str, rssi: int | None = None) -> str:
 
     field_labels = {
         "battery_pct":    ("Batterie",    "%"),
-        "battery_low":    ("Batt. faible",""),
+        "battery_low":    ("Batt. faible", ""),
         "temperature_c":  ("Temp.",       "°C"),
         "humidity_pct":   ("Humidité",    "%"),
         "light":          ("Lumière",     ""),
@@ -291,8 +300,10 @@ async def sync_time(address: str, utc_offset_minutes: int = 0):
     :param utc_offset_minutes: ex. 120 pour UTC+2
     """
     now_unix = int(time.time())
-    logging.info("Sync heure : %s UTC  (offset=%d min)",
-             datetime.utcfromtimestamp(now_unix).isoformat(), utc_offset_minutes)
+    logging.info(
+        "Sync heure : %s UTC  (offset=%d min)",
+        datetime.utcfromtimestamp(now_unix).isoformat(), utc_offset_minutes
+    )
 
     async with BleakClient(address) as client:
         # UNIX timestamp
@@ -324,7 +335,7 @@ async def discover(duration: float = 10.0) -> list[tuple[str, str]]:
         await asyncio.sleep(duration)
 
     if found:
-        print(f"\nDevices BTHome détectés :")
+        print("\nDevices BTHome détectés :")
         for addr, name in found.items():
             print(f"  {addr}  {name}")
     else:
