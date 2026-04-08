@@ -210,8 +210,8 @@ async def scan(target_address: str | None = None, duration: float | None = None)
             return
         seen[addr] = now
 
-        print(fmt_decoded(decoded, addr, adv.rssi))
-        print()
+        # print(fmt_decoded(decoded, addr, adv.rssi))
+        print(decoded)
 
     async with BleakScanner(detection_callback=callback):
         if duration:
