@@ -30,6 +30,11 @@ logging.basicConfig(
         logging.FileHandler("kepler.log")
     ]
 )
+logging.getLogger("dbus").setLevel(logging.WARNING)
+logging.getLogger("dbus_fast").setLevel(logging.WARNING)
+logging.getLogger("bleak.backends.bluezdbus").setLevel(logging.WARNING)
+logging.getLogger("bleak.backends.bluez").setLevel(logging.WARNING)
+logging.getLogger("org.bluez").setLevel(logging.WARNING)
 logging.info("Service démarré")
 
 SHELLY_MAC = "30:30:F9:E7:07:76"
