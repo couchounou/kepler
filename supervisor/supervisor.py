@@ -220,7 +220,10 @@ class SiteStatus:
         for field, value in self.status.items():
             if (value is None or float(value) == 0.0) and field in ["main_voltage", "aux_voltage"]:
                 continue
-            point = point.field(field, float(value))
+            if isinstance(value, str):
+                point = point.field(field, value)
+            else:
+                point = point.field(field, float(value))
         point = point.time(datetime.now(UTC))
         return point
 
