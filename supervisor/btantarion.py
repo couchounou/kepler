@@ -19,7 +19,8 @@ class Btantarion:
             "last_update": None,
             "bt_temperature": 0.0,
             "bt_humidity": 0.0,
-            "bt_last_update": None
+            "bt_last_update": None,
+            "bt_light": ""
         }
         self.notif_14_buffer = ""
         self.restart_bluetooth()

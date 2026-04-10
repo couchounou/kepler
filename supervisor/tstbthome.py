@@ -214,6 +214,7 @@ async def scan(target_address: str | None = None, duration: float | None = None,
         state_obj["bt_temperature"] = decoded.get("temperature_c", 0.0)
         state_obj["bt_humidity"] = decoded.get("humidity_pct", 0.0)
         state_obj["bt_last_update"] = datetime.now().isoformat()
+        state_obj["bt_light"] = decoded.get("light", "")
 
 
     async with BleakScanner(detection_callback=callback):
