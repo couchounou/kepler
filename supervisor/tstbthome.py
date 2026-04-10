@@ -176,7 +176,7 @@ def fmt_decoded(decoded: dict, addr: str, rssi: int | None = None) -> str:
 
 # ── Scanner passif ────────────────────────────────────────────────────────────
 
-async def scan(target_address: str | None = None, duration: float | None = None):
+async def scan(target_address: str | None = None, duration: float | None = None, state_obj: dict | None = None):
     """
     Écoute passivement les advertisements BTHome.
 
@@ -211,6 +211,10 @@ async def scan(target_address: str | None = None, duration: float | None = None)
 
         # print(fmt_decoded(decoded, addr, adv.rssi))
         logging.info("[SCAN] %s", decoded)
+        if state_obj is not None:
+            if addr not in state_obj:
+                state_obj[addr] = {}
+            state_obj[addr] = decoded
 
     async with BleakScanner(detection_callback=callback):
         if duration:
