@@ -207,7 +207,11 @@ class SiteStatus:
         for key, value in kwargs.items():
             if key in self.status:
                 logging.debug("[SiteStatus] Updating %s: %s", key, value)
-                self.status[key] = float(value)
+                try:
+                    self.status[key] = float(value)
+                except (ValueError, TypeError):
+                    logging.warning("[SiteStatus] Could not convert %s to float for key %s, setting as is.", value, key)
+                    self.status[key] = value
             else:
                 raise KeyError(f"{key} n'est pas un champ valide")
 
