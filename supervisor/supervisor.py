@@ -318,11 +318,10 @@ async def read_loop(interval_minutes=2):
         if aux_volt:
             logging.info("[MAIN] Calculating auxiliary SOC with voltage: %f", aux_volt)
             aux_level = agm_soc(aux_volt, btstate.get("temperature_1", 10))
-
-        if aux_level:
-            SiteStatus_instance.update(
-                aux_level=aux_level
-            )
+            if aux_level:
+                SiteStatus_instance.update(
+                    aux_level=aux_level
+                )
 
         SiteStatus_instance.update(
             aux_voltage=aux_volt,
