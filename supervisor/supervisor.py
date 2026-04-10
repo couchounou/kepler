@@ -313,25 +313,28 @@ async def read_loop(interval_minutes=2):
     while True:
         btstate = supervisor_bt.get_state()
         logging.info("[MAIN] Bluetooth read %s", btstate)
+
         aux_volt = btstate.get("battery_voltage", 0.0)
         if aux_volt:
             logging.info("[MAIN] Calculating auxiliary SOC with voltage: %f", aux_volt)
             aux_level = agm_soc(aux_volt, btstate.get("temperature_1", 10))
-            if aux_level:
-                SiteStatus_instance.update(
-                    aux_level=aux_level
-                )
+
+        if aux_level:
             SiteStatus_instance.update(
-                aux_voltage=aux_volt,
-                panel_voltage=btstate.get("panel_voltage", 0.0),
-                panel_power=btstate.get("charging_power", 0.0),
-                charging_current=btstate.get("charging_current", 0.0),
-                charging_capacity=btstate.get("charging_capacity", 0.0),
-                energy_daily=btstate.get("energy_daily", 0.0),
-                bt_temperature=btstate.get("bt_temperature", 0.0),
-                bt_humidity=btstate.get("bt_humidity", 0.0),
-                bt_last_update=btstate.get("bt_last_update", None),
-                bt_light=btstate.get("bt_light", "")
+                aux_level=aux_level
+            )
+
+        SiteStatus_instance.update(
+            aux_voltage=aux_volt,
+            panel_voltage=btstate.get("panel_voltage", 0.0),
+            panel_power=btstate.get("charging_power", 0.0),
+            charging_current=btstate.get("charging_current", 0.0),
+            charging_capacity=btstate.get("charging_capacity", 0.0),
+            energy_daily=btstate.get("energy_daily", 0.0),
+            bt_temperature=btstate.get("bt_temperature", 0.0),
+            bt_humidity=btstate.get("bt_humidity", 0.0),
+            bt_last_update=btstate.get("bt_last_update", None),
+            bt_light=btstate.get("bt_light", "")
             )
 
         logging.info("[MAIN] try Reading ADS1115 channels...")

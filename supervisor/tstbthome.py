@@ -217,8 +217,8 @@ async def scan(target_address: str | None = None, duration: float | None = None,
         state_obj.state["bt_light"] = decoded.get("light", "")
         logging.debug(
             "[SCAN] Température BT: %s °C, Humidité BT: %s %%, Lumière: %s",
-            state_obj.state["bt_temperature"],
-            state_obj.state["bt_humidity"],
+            state_obj.state.get("bt_temperature", 0.0),
+            state_obj.state.get("bt_humidity", 0.0),
             state_obj.state.get("bt_light", "")
         )
 

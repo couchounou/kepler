@@ -90,7 +90,7 @@ class Btantarion:
                                 char.handle,
                                 char.properties
                             )
-
+                
                 async with BleakClient(self.address, timeout=10.0) as client:
                     # Souscrire à toutes les notifications sur le handle 0x000f
                     try:
