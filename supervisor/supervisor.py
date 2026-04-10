@@ -23,7 +23,7 @@ from btantarion import Btantarion
 
 
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,
     format="%(asctime)s [%(levelname)s] %(message)s",
     handlers=[
         logging.StreamHandler(sys.stdout),
@@ -201,6 +201,7 @@ class SiteStatus:
 
         for key, value in kwargs.items():
             if key in self.status:
+                logging.debug("[SiteStatus] Updating %s: %s", key, value)
                 self.status[key] = float(value)
             else:
                 raise KeyError(f"{key} n'est pas un champ valide")
