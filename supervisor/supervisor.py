@@ -191,7 +191,7 @@ class SiteStatus:
             "bt_temperature": 0.0,
             "bt_humidity": 0.0,
             "bt_last_update": None,
-            "bt_light": 0.0
+            "bt_light_txt": None
         }
 
     def update(self, **kwargs):
@@ -342,7 +342,7 @@ async def read_loop(interval_minutes=2):
             bt_temperature=btstate.get("bt_temperature", 0.0),
             bt_humidity=btstate.get("bt_humidity", 0.0),
             bt_last_update=btstate.get("bt_last_update", None),
-            bt_light=btstate.get("bt_light", "")
+            bt_light_txt=btstate.get("bt_light", "")
             )
 
         logging.info("[MAIN] try Reading ADS1115 channels...")
