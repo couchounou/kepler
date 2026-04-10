@@ -22,13 +22,18 @@ from lte_init import is_lte_used, test_ping, ready_or_connect
 from btantarion import Btantarion
 
 
+stdout_handler = logging.StreamHandler(sys.stdout)
+stderr_handler = logging.StreamHandler(sys.stderr)
+file_handler = logging.FileHandler("kepler.log")
+# stdout_handler.addFilter(lambda record: record.levelno < logging.WARNING)
+file_handler.setLevel(logging.DEBUG)
+stdout_handler.setLevel(logging.DEBUG)
+stderr_handler.setLevel(logging.WARNING)
+
 logging.basicConfig(
     level=logging.DEBUG,
     format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[
-        logging.StreamHandler(sys.stdout),
-        logging.FileHandler("kepler.log")
-    ]
+    handlers=[stdout_handler, stderr_handler, file_handler]
 )
 logging.getLogger("dbus").setLevel(logging.WARNING)
 logging.getLogger("dbus_fast").setLevel(logging.WARNING)
