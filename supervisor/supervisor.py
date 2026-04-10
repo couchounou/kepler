@@ -218,6 +218,8 @@ class SiteStatus:
 
         point = Point("site_metrics").tag("site_id", self.site_id)
         for field, value in self.status.items():
+            if value is None:
+                continue
             if (value is None or float(value) == 0.0) and field in ["main_voltage", "aux_voltage"]:
                 continue
             if isinstance(value, str):
