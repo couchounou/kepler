@@ -17,7 +17,9 @@ class Btantarion:
             "charging_power": 0,
             "energy_daily": 0,
             "last_update": None,
-            "bthome": {}
+            "bt_temperature": 0.0,
+            "bt_humidity": 0.0,
+            "bt_last_update": None
         }
         self.notif_14_buffer = ""
         self.restart_bluetooth()
@@ -73,7 +75,7 @@ class Btantarion:
         errors = 0
         while True:
             try:
-                await scan("F8:44:77:2A:C3:C0", duration=loop, state_obj=self.state["bthome"])
+                await scan("F8:44:77:2A:C3:C0", duration=loop, state_obj=self.state)
                 logging.info("[BTS] -------> Tentative de connexion au MPPT... device: %s", self.address)
                 async with BleakClient(self.address, timeout=10.0) as client:
                     # Affichage des services

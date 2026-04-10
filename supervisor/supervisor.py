@@ -177,7 +177,9 @@ class SiteStatus:
             "temperature_2": 0.0,
             "lte_signal": False,
             "lte_registered": False,
-            "energy_daily": 0.0
+            "energy_daily": 0.0,
+            "bt_temperature": 0.0,
+            "bt_humidity": 0.0,
         }
 
     def update(self, **kwargs):
@@ -313,6 +315,9 @@ async def read_loop(interval_minutes=2):
                 charging_current=btstate.get("charging_current", 0.0),
                 charging_capacity=btstate.get("charging_capacity", 0.0),
                 energy_daily=btstate.get("energy_daily", 0.0),
+                bt_temperature=btstate.get("bt_temperature", 0.0),
+                bt_humidity=btstate.get("bt_humidity", 0.0),
+                bt_last_update=btstate.get("bt_last_update", None)
             )
 
         logging.info("[MAIN] try Reading ADS1115 channels...")

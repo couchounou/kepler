@@ -211,10 +211,10 @@ async def scan(target_address: str | None = None, duration: float | None = None,
 
         # print(fmt_decoded(decoded, addr, adv.rssi))
         logging.info("[SCAN] %s", decoded)
-        if state_obj is not None:
-            if addr not in state_obj:
-                state_obj[addr] = {}
-            state_obj[addr] = decoded
+        state_obj["bt_temperature"] = decoded.get("temperature_c", 0.0)
+        state_obj["bt_humidity"] = decoded.get("humidity_pct", 0.0)
+        state_obj["bt_last_update"] = datetime.now().isoformat()
+
 
     async with BleakScanner(detection_callback=callback):
         if duration:
