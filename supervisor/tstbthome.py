@@ -187,7 +187,6 @@ async def scan(target_address: str | None = None, duration: float | None = None)
         "[SCAN] Démarrage du scan BLE BTHome%s…",
         f" (filtre: {target_address})" if target_address else ""
     )
-    print(f"[SCAN] Démarrage du scan BLE BTHome {f'(filtre: {target_address})' if target_address else ''}", flush=True)
     seen: dict[str, float] = {}   # adresse → timestamp dernière réception
 
     def callback(device: BLEDevice, adv: AdvertisementData):
@@ -211,7 +210,7 @@ async def scan(target_address: str | None = None, duration: float | None = None)
         seen[addr] = now
 
         # print(fmt_decoded(decoded, addr, adv.rssi))
-        print(decoded)
+        logging.info("[SCAN] %s", fmt_decoded(decoded, addr, adv.rssi))
 
     async with BleakScanner(detection_callback=callback):
         if duration:
@@ -223,7 +222,7 @@ async def scan(target_address: str | None = None, duration: float | None = None)
             except asyncio.CancelledError:
                 pass
 
-    logging.info("Scan terminé.")
+    logging.info("[SCAN] End of scan.")
 
 
 # ── Lecture des caractéristiques GATT ─────────────────────────────────────────
