@@ -184,7 +184,7 @@ async def scan(target_address: str | None = None, duration: float | None = None,
     :param duration:       durée en secondes (None = infini jusqu'à Ctrl-C)
     """
     logging.info(
-        "[SCAN] Démarrage du scan BLE BTHome%s…",
+        "[SCAN] Démarrage du scan BLE BTHome %s…",
         f" (filtre: {target_address})" if target_address else ""
     )
     seen: dict[str, float] = {}   # adresse → timestamp dernière réception
@@ -215,8 +215,8 @@ async def scan(target_address: str | None = None, duration: float | None = None,
         state_obj.state["bt_humidity"] = decoded.get("humidity_pct", 0.0)
         state_obj.state["bt_last_update"] = datetime.now().isoformat()
         state_obj.state["bt_light"] = decoded.get("light", "")
-        logging.info(
-            "[BTS] ---> Température BT: %s °C, Humidité BT: %s %%, Lumière: %s",
+        logging.debug(
+            "[SCAN] Température BT: %s °C, Humidité BT: %s %%, Lumière: %s",
             state_obj.state["bt_temperature"],
             state_obj.state["bt_humidity"],
             state_obj.state.get("bt_light", "")

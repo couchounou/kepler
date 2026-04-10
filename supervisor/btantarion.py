@@ -77,6 +77,7 @@ class Btantarion:
         while True:
             try:
                 await scan("F8:44:77:2A:C3:C0", duration=loop, state_obj=self)
+                logging.debug("[BTS] State after scan: %s", self.state)
                 logging.info("[BTS] -------> Tentative de connexion au MPPT... device: %s", self.address)
                 async with BleakClient(self.address, timeout=10.0) as client:
                     # Affichage des services
