@@ -40,13 +40,23 @@ deactivate
 REAL_USER=$(logname 2>/dev/null || echo "$SUDO_USER")
 echo "Configuring services for user: $REAL_USER"
 
+
 TEMPLATE=~/kepler/services/kepler.service
 TARGET=/etc/systemd/system/kepler.service
 sudo sed "s|\$USER|${REAL_USER}|g" "$TEMPLATE" | sudo tee "$TARGET" > /dev/null
 
+
+sudo chmod +x ~/kepler/git-update.sh
 TEMPLATE=~/kepler/services/git-update.service
 TARGET=/etc/systemd/system/git-update.service
 sudo sed "s|\$USER|${REAL_USER}|g" "$TEMPLATE" | sudo tee "$TARGET" > /dev/null
+
+
+sudo chmod +x ~/kepler/ip-failover.sh
+TEMPLATE=~/kepler/services/ip-failover.service
+TARGET=/etc/systemd/system/ip-failover.service
+sudo sed "s|\$USER|${REAL_USER}|g" "$TEMPLATE" | sudo tee "$TARGET" > /dev/null
+
 
 sudo chmod +x ~/kepler/git-update.sh
 TEMPLATE=~/kepler/git-update.sh

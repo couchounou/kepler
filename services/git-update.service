@@ -3,7 +3,6 @@ Description=Git auto-pull at startup
 After=network-online.target
 Wants=network-online.target
 
-# ⛔ Limite globale de retries
 StartLimitIntervalSec=300
 StartLimitBurst=5
 
@@ -14,7 +13,6 @@ Group=$USER
 WorkingDirectory=/home/$USER/kepler
 ExecStart=/home/$USER/kepler/git-update.sh
 
-# 🔁 Retry en cas d’échec
 Restart=on-failure
 RestartSec=15
 
