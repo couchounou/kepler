@@ -238,9 +238,9 @@ class SiteStatus:
             if isinstance(value, str):
                 point = point.field(field, value)
             else:
-                if (float(value) == 0.0) and field in ["main_voltage", "aux_voltage"]:
+                if (float(value) == 0.0) and field in ["main_voltage", "aux_voltage", "bt_humidity"]:
                     continue
-            point = point.field(field, float(value))
+                point = point.field(field, float(value))
         point = point.time(datetime.now(UTC))
         return point
 
