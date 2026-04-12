@@ -26,12 +26,12 @@ stdout_handler = logging.StreamHandler(sys.stdout)
 stderr_handler = logging.StreamHandler(sys.stderr)
 file_handler = logging.FileHandler("kepler.log")
 # stdout_handler.addFilter(lambda record: record.levelno < logging.WARNING)
-file_handler.setLevel(logging.DEBUG)
-stdout_handler.setLevel(logging.DEBUG)
+file_handler.setLevel(logging.INFO)
+stdout_handler.setLevel(logging.INFO)
 stderr_handler.setLevel(logging.WARNING)
 
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
     handlers=[stdout_handler, stderr_handler, file_handler]
 )
