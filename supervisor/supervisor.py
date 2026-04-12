@@ -59,9 +59,6 @@ BETA = 3950.0           # Coefficient Beta
 T0 = 298.15             # 25°C en Kelvi
 LAST_UPDATE = None
 
-SiteStatus_instance = SiteStatus(site_id="site_001")
-supervisor_bt = Btantarion()
-
 
 def lead_soc(voltage, temperature_c):
     """
@@ -384,6 +381,10 @@ async def read_loop(interval_minutes=2):
                 logging.info("[MAIN] Last successful update was %f minutes ago, rebooting system.", elapsed)
                 reboot_system()
         await asyncio.sleep(interval_minutes * 60)  # <-- async sleep
+
+
+SiteStatus_instance = SiteStatus(site_id="site_001")
+supervisor_bt = Btantarion()
 
 
 if __name__ == "__main__":
