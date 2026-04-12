@@ -17,8 +17,8 @@ class Btantarion:
             "charging_power": 0,
             "energy_daily": 0,
             "last_update": None,
-            "bt_temperature": 0.0,
-            "bt_humidity": 0.0,
+            "bt_temperature": None,
+            "bt_humidity": None,
             "bt_last_update": None,
             "bt_light": ""
         }
@@ -90,7 +90,7 @@ class Btantarion:
                                 char.handle,
                                 char.properties
                             )
-                
+
                 async with BleakClient(self.address, timeout=10.0) as client:
                     # Souscrire à toutes les notifications sur le handle 0x000f
                     try:

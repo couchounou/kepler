@@ -59,6 +59,9 @@ BETA = 3950.0           # Coefficient Beta
 T0 = 298.15             # 25°C en Kelvi
 LAST_UPDATE = None
 
+SiteStatus_instance = SiteStatus(site_id="site_001")
+supervisor_bt = Btantarion()
+
 
 def lead_soc(voltage, temperature_c):
     """
@@ -188,8 +191,8 @@ class SiteStatus:
             "lte_signal": False,
             "lte_registered": False,
             "energy_daily": 0.0,
-            "bt_temperature": 0.0,
-            "bt_humidity": 0.0,
+            "bt_temperature": None,
+            "bt_humidity": None,
             "bt_last_update": None,
             "bt_light_txt": None
         }
@@ -240,16 +243,12 @@ class SiteStatus:
             else:
                 if (float(value) == 0.0) and field in ["main_voltage", "aux_voltage"]:
                     continue
-                point = point.field(field, float(value))
+            point = point.field(field, float(value))
         point = point.time(datetime.now(UTC))
         return point
 
     def __repr__(self):
         return f"SiteStatus(site_id={self.site_id}, status={self.status})"
-
-
-SiteStatus_instance = SiteStatus(site_id="site_001")
-supervisor_bt = Btantarion()
 
 
 def influx_write_pts(points: list, bucket: str) -> None:
@@ -339,8 +338,8 @@ async def read_loop(interval_minutes=2):
             charging_current=btstate.get("charging_current", 0.0),
             charging_capacity=btstate.get("charging_capacity", 0.0),
             energy_daily=btstate.get("energy_daily", 0.0),
-            bt_temperature=btstate.get("bt_temperature", 0.0),
-            bt_humidity=btstate.get("bt_humidity", 0.0),
+            bt_temperature=btstate.get("bt_temperature", None),
+            bt_humidity=btstate.get("bt_humidity", None),
             bt_last_update=btstate.get("bt_last_update", None),
             bt_light_txt=btstate.get("bt_light", "")
             )
