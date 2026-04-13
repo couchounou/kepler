@@ -70,6 +70,7 @@ def test_ping(num: int = 2, target: str = "8.8.8.8", timeout: int = 2) -> bool:
 
         if result.returncode == 0:
             logging.info("[LTE] Internet OK")
+            return True
         else:
             logging.info(f"[LTE] Internet KO: {result.stderr}".strip())
             return False
