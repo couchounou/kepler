@@ -8,11 +8,18 @@ TEST_IP="8.8.8.8"
 PING_COUNT=3
 INTERVAL=60
 CONFIRM_COUNT=3
-STARTUP_WAIT=30      # secondes max à attendre au démarrage
-STARTUP_RETRY=5      # intervalle entre chaque vérification au démarrage
+STARTUP_WAIT=30
+STARTUP_RETRY=5
 
 current_gw="primary"
 success_streak=0
+
+# ── DNS de secours immédiat au démarrage ───────────────────────────────────────
+# Évite la fenêtre sans DNS si wlan0 est absent au boot
+echo "nameserver 8.8.8.8"  > /etc/resolv.conf
+echo "nameserver 1.1.1.1" >> /etc/resolv.conf
+
+# ── Fonctions ──────────────────────────────────────────────────────────────────
 
 check_primary() {
     ping -c 2 -W 2 -I $PRIMARY_DEV $PRIMARY_GW &>/dev/null || return 1
@@ -46,14 +53,12 @@ wait_for_any_interface() {
         local primary_ok=false
         local backup_ok=false
 
-        # Vérifie wlan0
         if ip link show $PRIMARY_DEV &>/dev/null && \
            ip addr show $PRIMARY_DEV | grep -q "inet " && \
            ping -c 1 -W 2 -I $PRIMARY_DEV $PRIMARY_GW &>/dev/null; then
             primary_ok=true
         fi
 
-        # Vérifie eth0
         if ip link show $BACKUP_DEV &>/dev/null && \
            ip addr show $BACKUP_DEV | grep -q "inet " && \
            ping -c 1 -W 2 -I $BACKUP_DEV $BACKUP_GW &>/dev/null; then
@@ -63,15 +68,15 @@ wait_for_any_interface() {
         if $primary_ok; then
             echo "$(date) - Démarrage : wlan0 prête, démarrage en mode primary"
             current_gw="primary"
+            # wlan0 dispo : on peut utiliser son DNS
+            echo "nameserver 192.168.1.1" > /etc/resolv.conf
             return 0
         elif $backup_ok; then
             echo "$(date) - Démarrage : wlan0 absente, eth0 prête, bascule initiale sur backup"
-            # Pas de wlan0 : on met sa metric très haute pour ne pas bloquer
             ip route show dev $PRIMARY_DEV | grep -q "^default" && \
                 set_metric $PRIMARY_DEV $PRIMARY_GW 100
             set_metric $BACKUP_DEV $BACKUP_GW 50
-            echo "nameserver 8.8.8.8"  > /etc/resolv.conf
-            echo "nameserver 1.1.1.1" >> /etc/resolv.conf
+            # DNS publics déjà écrits en haut du script, rien à faire
             current_gw="backup"
             return 0
         fi
@@ -107,6 +112,7 @@ retour_primary() {
     set_metric $PRIMARY_DEV $PRIMARY_GW 50
     set_metric $BACKUP_DEV  $BACKUP_GW  100
 
+    # wlan0 confirmé fonctionnel → DNS local du routeur
     echo "nameserver 192.168.1.1" > /etc/resolv.conf
 
     current_gw="primary"

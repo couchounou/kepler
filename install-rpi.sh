@@ -71,6 +71,13 @@ sudo systemctl enable kepler.service
 sudo systemctl start kepler.service
 sudo systemctl enable ip-failover.service
 sudo systemctl start ip-failover.service
+
+
+sudo tee /etc/NetworkManager/conf.d/no-dns.conf << EOF
+[main]
+dns=none
+EOF
+sudo systemctl restart NetworkManager
 echo "Installation complete."
 
 sudo apt clean
