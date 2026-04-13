@@ -26,7 +26,7 @@ check_primary() {
 bascule_backup() {
     echo "$(date) - Bascule sur eth0 (backup)"
     # Dégrader wlan0 plutôt que supprimer
-    ip route replace default via $PRIMARY_GW dev $PRIMARY_DEV metric 200
+    ip route replace default via $PRIMARY_GW dev $PRIMARY_DEV metric 100
     ip route replace default via $BACKUP_GW dev $BACKUP_DEV metric 50
 
     # Basculer le DNS sur un serveur public joignable partout
@@ -41,7 +41,7 @@ retour_primary() {
     echo "$(date) - Retour confirmé sur wlan0 (primary)"
     # Restaurer la métrique d'origine
     ip route replace default via $PRIMARY_GW dev $PRIMARY_DEV metric 50
-    ip route replace default via $BACKUP_GW dev $BACKUP_DEV metric 200
+    ip route replace default via $BACKUP_GW dev $BACKUP_DEV metric 100
 
     # Restaurer le DNS d'origine
     echo "nameserver 192.168.1.1" > /etc/resolv.conf
