@@ -23,14 +23,37 @@ check_primary() {
     return $result
 }
 
+set_metric() {
+    local dev=$1
+    local gw=$2
+    local metric=$3
+
+    if ip route show dev $dev | grep -q "^default.*proto dhcp"; then
+        # Route DHCP existante → modifie en place, zéro doublon
+        ip route change default via $gw dev $dev proto dhcp metric $metric
+    elif ip route show dev $dev | grep -q "^default"; then
+        # Route default sans proto dhcp → modifie quand même
+        ip route change default via $gw dev $dev metric $metric
+    else
+        # Aucune route default → création manuelle
+        echo "$(date) - WARNING: pas de route default sur $dev, création manuelle"
+        ip route add default via $gw dev $dev metric $metric
+    fi
+}
+
 bascule_backup() {
+    # Vérifie que le backup est disponible avant de basculer
+    if ! ping -c 2 -W 2 -I $BACKUP_DEV $BACKUP_GW &>/dev/null; then
+        echo "$(date) - wlan0 KO mais eth0 injoignable aussi, on attend..."
+        return 1
+    fi
+
     echo "$(date) - Bascule sur eth0 (backup)"
-    # Dégrader wlan0 plutôt que supprimer
-    ip route replace default via $PRIMARY_GW dev $PRIMARY_DEV metric 100
-    ip route replace default via $BACKUP_GW dev $BACKUP_DEV metric 50
+    set_metric $PRIMARY_DEV $PRIMARY_GW 100
+    set_metric $BACKUP_DEV  $BACKUP_GW  50
 
     # Basculer le DNS sur un serveur public joignable partout
-    echo "nameserver 8.8.8.8" > /etc/resolv.conf
+    echo "nameserver 8.8.8.8"  > /etc/resolv.conf
     echo "nameserver 1.1.1.1" >> /etc/resolv.conf
 
     current_gw="backup"
@@ -39,9 +62,8 @@ bascule_backup() {
 
 retour_primary() {
     echo "$(date) - Retour confirmé sur wlan0 (primary)"
-    # Restaurer la métrique d'origine
-    ip route replace default via $PRIMARY_GW dev $PRIMARY_DEV metric 50
-    ip route replace default via $BACKUP_GW dev $BACKUP_DEV metric 100
+    set_metric $PRIMARY_DEV $PRIMARY_GW 50
+    set_metric $BACKUP_DEV  $BACKUP_GW  100
 
     # Restaurer le DNS d'origine
     echo "nameserver 192.168.1.1" > /etc/resolv.conf
