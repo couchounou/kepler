@@ -51,17 +51,19 @@ def is_reg(ser):
 
 
 def test_ping(num: int = 2, target: str = "8.8.8.8", timeout: int = 2) -> bool:
-    logging.info("[LTE] Test ping to %s...", target)
+    
     try:
+        cmd = [
+            "ping",
+            "-W",
+            str(timeout),
+            "-c",
+            str(num),
+            target
+        ]
+        logging.info("[LTE] Test ping : %s", cmd)
         result = subprocess.run(
-            [
-                "ping",
-                "-w",
-                str(timeout),
-                "-c",
-                str(num),
-                target
-            ],
+            cmd,
             capture_output=True,
             text=True,
             check=False
