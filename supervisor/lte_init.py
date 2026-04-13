@@ -51,7 +51,6 @@ def is_reg(ser):
 
 
 def test_ping(num: int = 2, target: str = "8.8.8.8", timeout: int = 2) -> bool:
-    
     try:
         cmd = [
             "ping",
@@ -84,7 +83,7 @@ def wlan0_has_internet(timeout=1) -> bool:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(timeout)
         sock.setsockopt(socket.SOL_SOCKET, 25, b"wlan0\0")
-        sock.connect(("8.8.8.8", 53))
+        sock.connect((PING_TARGET, 53))
         sock.close()
         return True
     except OSError:
@@ -101,7 +100,7 @@ def ready_or_connect(force=False) -> tuple[bool, bool]:
             logging.info("[LTE] Error opening serial port: %s", e)
         return True, False, is_registered
 
-    if not force and test_ping("8.8.8.8"):
+    if not force and test_ping(PING_TARGET):
         logging.info("[LTE] LTE already connected")
         return True, True, True
 
@@ -132,7 +131,7 @@ def ready_or_connect(force=False) -> tuple[bool, bool]:
     return success, success, is_registered
 
 
-def is_lte_used(dest="8.8.8.8") -> bool:
+def is_lte_used(dest=PING_TARGET) -> bool:
     out = subprocess.check_output(
         ["ip", "route", "get", dest],
         text=True
