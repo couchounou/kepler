@@ -100,7 +100,7 @@ def ready_or_connect(force=False) -> tuple[bool, bool]:
             logging.info("[LTE] Error opening serial port: %s", e)
         return True, False, is_registered
 
-    if not force and test_ping(PING_TARGET):
+    if not force and test_ping(target=PING_TARGET):
         logging.info("[LTE] LTE already connected")
         return True, True, True
 
