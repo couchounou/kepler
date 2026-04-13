@@ -126,7 +126,7 @@ def ready_or_connect(force=False) -> tuple[bool, bool]:
     send_at(ser, "AT+CGACT=1,1", 1)
     ser.close()
 
-    success = test_ping(PING_TARGET)
+    success = test_ping(target=PING_TARGET)
     logging.info("[LTE] ✅ LTE init. successful" if success else "[LTE] ❌ LTE init. failed")
     return success, success, is_registered
 
