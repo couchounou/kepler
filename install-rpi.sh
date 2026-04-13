@@ -69,6 +69,8 @@ sudo systemctl enable git-update.service
 sudo systemctl start git-update.service
 sudo systemctl enable kepler.service
 sudo systemctl start kepler.service
+sudo systemctl enable ip-failover.service
+sudo systemctl start ip-failover.service
 echo "Installation complete."
 
 sudo apt clean
