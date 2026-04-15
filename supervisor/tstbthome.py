@@ -196,7 +196,7 @@ async def scan(target_address: list[str] | None = None, duration: float | None =
         if target_address is not None and addr not in target_address:
             return
 
-        logging.info("[SCAN] Advertisement from %s (RSSI=%s dBm)", addr, adv.rssi)
+        logging.debug("[SCAN] Advertisement from %s (RSSI=%s dBm)", addr, adv.rssi)
 
         payload = extract_bthome_payload(adv)
         if payload is None:
