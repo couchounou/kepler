@@ -77,12 +77,12 @@ class Btantarion:
         while True:
             try:
                 logging.info("[BTS] -------> Scan device: %s", "F8:44:77:2A:C3:C0")
-                await scan(["F8:44:77:2A:C3:C0", self.address], duration=65, state_obj=self)
+                await scan(["F8:44:77:2A:C3:C0"], duration=65, state_obj=self)
                 logging.debug("[BTS] State after scan: %s", self.state)
 
                 
                 logging.info("[BTS] -------> Try MPPT connexion... device: %s", self.address)
-                async with BleakClient(self.address, timeout=10.0) as client:
+                async with BleakClient(self.address, timeout=20.0) as client:
                     try:
                         logging.info("[BTS] Nettoyage des notifications existantes...")
                         await client.stop_notify(0x000e)
