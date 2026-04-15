@@ -176,7 +176,7 @@ def fmt_decoded(decoded: dict, addr: str, rssi: int | None = None) -> str:
 
 # ── Scanner passif ────────────────────────────────────────────────────────────
 
-async def scan(target_address: str | None = None, duration: float | None = None, state_obj: dict | None = None):
+async def scan(target_address: list[str] | None = None, duration: float | None = None, state_obj: dict | None = None):
     """
     Écoute passivement les advertisements BTHome.
 
@@ -187,13 +187,16 @@ async def scan(target_address: str | None = None, duration: float | None = None,
         "[SCAN] Démarrage du scan BLE BTHome %s…",
         f" (filtre: {target_address})" if target_address else ""
     )
+    target_address = [a.upper() for a in target_address] if target_address else None
     seen: dict[str, float] = {}   # adresse → timestamp dernière réception
 
     def callback(device: BLEDevice, adv: AdvertisementData):
         addr = device.address.upper()
 
-        if target_address and addr != target_address.upper():
+        if target_address is not None and addr not in target_address:
             return
+
+        logging.info("[SCAN] Advertisement from %s (RSSI=%s dBm)", addr, adv.rssi)
 
         payload = extract_bthome_payload(adv)
         if payload is None:
