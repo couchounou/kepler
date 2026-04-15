@@ -67,7 +67,7 @@ class Btantarion:
         return True
 
     async def run(self, loop=90):
-        device = await self.find_device_with_timeout("regulator", timeout=30)
+        device = await self.find_device_with_timeout("regulator", timeout=40)
         if device is None:
             logging.info("[BTS] Device 'regulator' non trouvé")
         else:
@@ -184,7 +184,7 @@ class Btantarion:
         self.parse_notification(data)
 
     async def find_device_with_timeout(self, device_name, timeout=20):
-        logging.info("[BTS] Recherche devices sur hci0...")
+        logging.info("[BTS] Recherche devices sur hci0 for %d seconds...", timeout)
         try:
             devices = await BleakScanner.discover(timeout=timeout)
             for device in devices:
