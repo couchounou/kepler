@@ -68,11 +68,9 @@ class Btantarion:
 
     async def run(self, loop=90):
         device = await self.find_device_with_timeout("regulator", timeout=40)
-        if device is None:
-            logging.info("[BTS] Device 'regulator' non trouvé")
-        else:
+        if device:
             logging.info("[BTS] Device trouvé: %s", device.address)
-            self.address = device.address
+            self.address = device.address.upper()
         errors = 0
         while True:
             try:
@@ -192,8 +190,7 @@ class Btantarion:
                 if device.name and device_name.lower() in device.name.lower():
                     logging.info("[BTS] Device trouvé: %s", device.name)
                     return device
-
-            logging.info("[BTS] Device non trouvé")
+            logging.info("[BTS] Device %s non trouvé", device_name)
             return None
         except asyncio.TimeoutError:
             logging.info("[BTS] Timeout: recherche dépassée")

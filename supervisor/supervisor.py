@@ -348,7 +348,7 @@ async def read_loop(interval_minutes=2):
         else:
             logging.warning("[MAIN] Adafruit library not available, using simulated data....")
         for key, val in SiteStatus_instance.status.items():
-            logging.info("[MAIN] SiteStatus:%s = %s", key, val)
+            logging.debug("[MAIN] SiteStatus:%s = %s", key, val)
         connected = False
         lte_signal = False
         is_registered = False
