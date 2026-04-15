@@ -67,7 +67,7 @@ class Btantarion:
         return True
 
     async def run(self, loop=90):
-        device = await self.find_device_with_timeout("regulator", timeout=20)
+        device = await self.find_device_with_timeout("regulator", timeout=30)
         if device is None:
             logging.info("[BTS] Device 'regulator' non trouvé")
         else:
@@ -77,7 +77,7 @@ class Btantarion:
         while True:
             try:
                 logging.info("[BTS] -------> Scan device: %s", "F8:44:77:2A:C3:C0")
-                await scan(["F8:44:77:2A:C3:C0", self.address], duration=45, state_obj=self)
+                await scan(["F8:44:77:2A:C3:C0", self.address], duration=65, state_obj=self)
                 logging.debug("[BTS] State after scan: %s", self.state)
 
                 

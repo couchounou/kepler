@@ -184,7 +184,7 @@ async def scan(target_address: list[str] | None = None, duration: float | None =
     :param duration:       durée en secondes (None = infini jusqu'à Ctrl-C)
     """
     logging.info(
-        "[SCAN] Démarrage du scan BLE BTHome %s…",
+        "[SCAN] Start Scan for %s",
         f" (filtre: {target_address})" if target_address else ""
     )
     target_address = [a.upper() for a in target_address] if target_address else None
