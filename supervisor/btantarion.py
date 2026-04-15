@@ -110,19 +110,18 @@ class Btantarion:
                     except Exception as e:
                         logging.error("[BTS] lors de la souscription aux notifications: %s", e)
                         continue
-                    while True:
-                        try:
-                            logging.info("[BTS] Envoi requete et attente notification...")
-                            await client.write_gatt_char(
-                                self.write_uuid,
-                                self.write_command,
-                                response=True
-                            )
-                        except Exception as e:
-                            logging.error("[BTS] Erreur lors de l'envoi de la requête: %s", e)
-                            break
 
-                        # await asyncio.sleep(loop)
+                    try:
+                        logging.info("[BTS] Envoi requete et attente notification...")
+                        await client.write_gatt_char(
+                            self.write_uuid,
+                            self.write_command,
+                            response=True
+                        )
+                    except Exception as e:
+                        logging.error("[BTS] Erreur lors de l'envoi de la requête: %s", e)
+                        break
+
 
             except Exception as e:
                 logging.error("Erreur Bleak : %s", e)
