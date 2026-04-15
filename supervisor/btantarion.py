@@ -76,23 +76,12 @@ class Btantarion:
         errors = 0
         while True:
             try:
-                await scan("F8:44:77:2A:C3:C0", duration=loop, state_obj=self)
+                logging.info("[BTS] -------> Scan device: %s", "F8:44:77:2A:C3:C0")
+                await scan("F8:44:77:2A:C3:C0", duration=45, state_obj=self)
                 logging.debug("[BTS] State after scan: %s", self.state)
-                logging.info("[BTS] -------> Tentative de connexion au MPPT... device: %s", self.address)
+                
+                logging.info("[BTS] -------> Try MPPT connexion... device: %s", self.address)
                 async with BleakClient(self.address, timeout=10.0) as client:
-                    # Affichage des services
-                    for service in client.services:
-                        logging.info("[BTS] Service: %s", service.uuid)
-                        for char in service.characteristics:
-                            logging.info(
-                                "  Char: %s, Handle: %s, Properties: %s",
-                                char.uuid,
-                                char.handle,
-                                char.properties
-                            )
-
-                async with BleakClient(self.address, timeout=10.0) as client:
-                    # Souscrire à toutes les notifications sur le handle 0x000f
                     try:
                         logging.info("[BTS] Nettoyage des notifications existantes...")
                         await client.stop_notify(0x000e)
@@ -122,7 +111,6 @@ class Btantarion:
                         logging.error("[BTS] Erreur lors de l'envoi de la requête: %s", e)
                         break
 
-
             except Exception as e:
                 logging.error("Erreur Bleak : %s", e)
                 errors += 1
@@ -133,6 +121,7 @@ class Btantarion:
                 else:
                     await asyncio.sleep(5)
                 continue
+            await asyncio.sleep(loop)
 
     def parse_notification(self, data: bytearray):
         # convertir bytes ASCII en string
