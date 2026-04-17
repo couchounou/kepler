@@ -75,7 +75,7 @@ class Btantarion:
         while True:
             try:
                 logging.info("[BTS] -------> Scan device: %s", "F8:44:77:2A:C3:C0")
-                await scan(["F8:44:77:2A:C3:C0"], duration=65, state_obj=self)
+                # await scan(["F8:44:77:2A:C3:C0"], duration=65, state_obj=self)
                 logging.debug("[BTS] State after scan: %s", self.state)
 
                 
