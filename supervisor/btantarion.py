@@ -70,7 +70,7 @@ class Btantarion:
         device = await self.find_device_with_timeout("regulator", timeout=40)
         if device:
             logging.info("[BTS] Device trouvé: %s", device.address)
-            self.address = device.address.upper()
+            self.address = device.address
         errors = 0
         while True:
             try:
