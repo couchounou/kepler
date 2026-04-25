@@ -78,7 +78,6 @@ class Btantarion:
                 # await scan(["F8:44:77:2A:C3:C0"], duration=65, state_obj=self)
                 logging.debug("[BTS] State after scan: %s", self.state)
 
-                
                 logging.info("[BTS] -------> Try MPPT connexion... device: %s", self.address)
                 async with BleakClient(self.address, timeout=20.0) as client:
                     try:
@@ -88,6 +87,8 @@ class Btantarion:
                     except Exception as e:
                         logging.error("[BTS] Erreur lors de l'arrêt des notifications existantes: %s", e)
                         continue
+                    finally:
+                        await client.stop_notify(0x000e)  # Toujours libérer
 
                     try:
                         logging.info("[BTS] Souscription aux notifications...")
@@ -98,7 +99,9 @@ class Btantarion:
                     except Exception as e:
                         logging.error("[BTS] lors de la souscription aux notifications: %s", e)
                         continue
-
+                    finally:
+                        await client.stop_notify(0x000e)  # Toujours libérer
+                        
                     try:
                         logging.info("[BTS] Envoi requete et attente notification...")
                         await client.write_gatt_char(
