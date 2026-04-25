@@ -79,6 +79,17 @@ class Btantarion:
                 logging.debug("[BTS] State after scan: %s", self.state)
 
                 logging.info("[BTS] -------> Try MPPT connexion... device: %s", self.address)
+                async with BleakClient(self.address, timeout=10.0) as client:
+                    # Affichage des services
+                    for service in client.services:
+                        logging.info("[BTS] Service: %s", service.uuid)
+                        for char in service.characteristics:
+                            logging.info(
+                                "  Char: %s, Handle: %s, Properties: %s",
+                                char.uuid,
+                                char.handle,
+                                char.properties
+                            )
                 async with BleakClient(self.address, timeout=20.0) as client:
                     try:
                         logging.info("[BTS] Nettoyage des notifications existantes...")
@@ -101,7 +112,7 @@ class Btantarion:
                         continue
                     finally:
                         await client.stop_notify(0x000e)  # Toujours libérer
-                        
+
                     try:
                         logging.info("[BTS] Envoi requete et attente notification...")
                         await client.write_gatt_char(
