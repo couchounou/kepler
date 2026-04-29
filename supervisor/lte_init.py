@@ -12,12 +12,13 @@ PING_TARGET = "8.8.8.8"
 MAX_WAIT_NETWORK = 120
 
 
-def send_at(ser, command, delay=0.5):
+def send_at(ser, command, delay=0.5, log=False):
     """Envoyer une commande AT et retourner la réponse"""
     ser.write((command + "\r").encode())
     time.sleep(delay)
     resp = ser.read_all().decode(errors="ignore")
-    logging.debug(">%s", resp)
+    if log or logging.getLogger().isEnabledFor(logging.DEBUG):
+        logging.info("%s>%s", command, resp)
     return resp
 
 
@@ -124,7 +125,7 @@ def ready_or_connect(force=False) -> tuple[bool, bool]:
         ser.close()
         return False, False, False
 
-    send_at(ser, "AT+CGACT=1,1", 1)
+    send_at(ser, "AT+CGACT=1,1", 1, log=True)
     ser.close()
 
     success = test_ping(target=PING_TARGET)
