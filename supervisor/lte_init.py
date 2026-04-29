@@ -35,6 +35,17 @@ def wait_network_registration(ser, timeout=MAX_WAIT_NETWORK):
     return False
 
 
+def reset_modem():
+    logging.info("[LTE] Resetting modem...")
+    try:
+        ser = serial.Serial(MODEM_PORT, BAUDRATE, timeout=1)
+        send_at(ser, "AT+CFUN=0", 1)
+        send_at(ser, "AT+CFUN=1", 1)
+        ser.close()
+        logging.info("[LTE] Modem reset command sent")
+    except Exception as e:
+        logging.info("[LTE] Error resetting modem: %s", e)
+
 def is_reg(ser):
     resp = send_at(ser, "AT+CFUN?")
     if "+CFUN: 1" not in resp:
@@ -126,6 +137,16 @@ def ready_or_connect(force=False) -> tuple[bool, bool]:
         return False, False, False
 
     resp = send_at(ser, "AT+CGACT=1,1", 1, log=True)
+    if "OK" not in resp:
+        logging.error("[LTE] ❌ Activation PDP context failed: %s", resp.strip())
+        logging.info("[LTE] Diagnostic: AT+CREG? -> %s", send_at(ser, "AT+CREG?"))
+        logging.info("[LTE] Diagnostic: AT+CGREG? -> %s", send_at(ser, "AT+CGREG?"))
+        logging.info("[LTE] Diagnostic: AT+CGATT? -> %s", send_at(ser, "AT+CGATT?"))
+        logging.info("[LTE] Diagnostic: AT+CSQ -> %s", send_at(ser, "AT+CSQ"))
+        logging.info("[LTE] Diagnostic: AT+CGDCONT? -> %s", send_at(ser, "AT+CGDCONT?"))
+        reset_modem()
+        ser.close()
+        return False, False, False
     logging.info("[LTE] Activating PDP context: %s", resp)
     ser.close()
 
