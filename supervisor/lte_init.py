@@ -125,7 +125,8 @@ def ready_or_connect(force=False) -> tuple[bool, bool]:
         ser.close()
         return False, False, False
 
-    send_at(ser, "AT+CGACT=1,1", 1, log=True)
+    resp = send_at(ser, "AT+CGACT=1,1", 1, log=True)
+    logging.info("[LTE] Activating PDP context: %s", resp)
     ser.close()
 
     success = test_ping(target=PING_TARGET)
