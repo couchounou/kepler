@@ -40,13 +40,13 @@ set_metric() {
     elif ip route show dev $dev | grep -q "^default"; then
         ip route change default via $gw dev $dev metric $metric
     else
-        echo "$(date) - WARNING: pas de route default sur $dev, création manuelle"
+        echo "$(date) - WARNING: pas de route default sur $dev, création manuelle" | tee -a /var/log/failover.log
         ip route add default via $gw dev $dev metric $metric
     fi
 }
 
 wait_for_any_interface() {
-    echo "$(date) - Démarrage : attente qu'au moins une interface soit prête..."
+    echo "$(date) - Démarrage : attente qu'au moins une interface soit prête..." | tee -a /var/log/failover.log
     local waited=0
 
     while [ $waited -lt $STARTUP_WAIT ]; do
@@ -66,13 +66,13 @@ wait_for_any_interface() {
         fi
 
         if $primary_ok; then
-            echo "$(date) - Démarrage : wlan0 prête, démarrage en mode primary"
+            echo "$(date) - Démarrage : wlan0 prête, démarrage en mode primary" | tee -a /var/log/failover.log
             current_gw="primary"
             # wlan0 dispo : on peut utiliser son DNS
             echo "nameserver 192.168.1.1" > /etc/resolv.conf
             return 0
         elif $backup_ok; then
-            echo "$(date) - Démarrage : wlan0 absente, eth0 prête, bascule initiale sur backup"
+            echo "$(date) - Démarrage : wlan0 absente, eth0 prête, bascule initiale sur backup" | tee -a /var/log/failover.log
             ip route show dev $PRIMARY_DEV | grep -q "^default" && \
                 set_metric $PRIMARY_DEV $PRIMARY_GW 100
             set_metric $BACKUP_DEV $BACKUP_GW 50
@@ -81,22 +81,22 @@ wait_for_any_interface() {
             return 0
         fi
 
-        echo "$(date) - Démarrage : aucune interface prête, attente... (${waited}s/${STARTUP_WAIT}s)"
+        echo "$(date) - Démarrage : aucune interface prête, attente... (${waited}s/${STARTUP_WAIT}s)" | tee -a /var/log/failover.log
         sleep $STARTUP_RETRY
         waited=$((waited + STARTUP_RETRY))
     done
 
-    echo "$(date) - WARNING: aucune interface prête après ${STARTUP_WAIT}s, démarrage quand même"
+    echo "$(date) - WARNING: aucune interface prête après ${STARTUP_WAIT}s, démarrage quand même" | tee -a /var/log/failover.log
     return 1
 }
 
 bascule_backup() {
     if ! ping -c 2 -W 2 -I $BACKUP_DEV $BACKUP_GW &>/dev/null; then
-        echo "$(date) - wlan0 KO mais eth0 injoignable aussi, on attend..."
+        echo "$(date) - wlan0 KO mais eth0 injoignable aussi, on attend..." | tee -a /var/log/failover.log
         return 1
     fi
 
-    echo "$(date) - Bascule sur eth0 (backup)"
+    echo "$(date) - Bascule sur eth0 (backup)" | tee -a /var/log/failover.log
     set_metric $PRIMARY_DEV $PRIMARY_GW 100
     set_metric $BACKUP_DEV  $BACKUP_GW  50
 
@@ -108,7 +108,7 @@ bascule_backup() {
 }
 
 retour_primary() {
-    echo "$(date) - Retour confirmé sur wlan0 (primary)"
+    echo "$(date) - Retour confirmé sur wlan0 (primary)" | tee -a /var/log/failover.log
     set_metric $PRIMARY_DEV $PRIMARY_GW 50
     set_metric $BACKUP_DEV  $BACKUP_GW  100
 
@@ -126,13 +126,13 @@ wait_for_any_interface
 while true; do
     if check_primary; then
         success_streak=$((success_streak + 1))
-        echo "$(date) - wlan0 OK (streak: $success_streak/$CONFIRM_COUNT)"
+        echo "$(date) - wlan0 OK (streak: $success_streak/$CONFIRM_COUNT)" | tee -a /var/log/failover.log
 
         if [ "$current_gw" = "backup" ] && [ "$success_streak" -ge "$CONFIRM_COUNT" ]; then
             retour_primary
         fi
     else
-        echo "$(date) - wlan0 KO"
+        echo "$(date) - wlan0 KO" | tee -a /var/log/failover.log
         success_streak=0
 
         if [ "$current_gw" = "primary" ]; then
