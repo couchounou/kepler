@@ -145,7 +145,7 @@ def agm_soc(voltage, temperature_c):
 
         if v1 >= corrected_voltage >= v2:
             soc = soc1 + (soc2 - soc1) * (v1 - corrected_voltage) / (v1 - v2)
-            logging.info("[MAIN] Lead SOC calculated: %f for voltage: %f and temp: %f", soc, voltage, temperature_c)
+            logging.info("[MAIN] AGM SOC calculated: %f for voltage: %f and temp: %f", soc, voltage, temperature_c)
             return round(soc, 1)
 
     return None
