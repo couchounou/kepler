@@ -314,7 +314,7 @@ async def read_loop(interval_minutes=2):
     """
     global LAST_UPDATE
     asyncio.create_task(supervisor_bt.run())
-
+    lte_failed = 0
     while True:
         btstate = supervisor_bt.get_state()
         logging.info("[MAIN] Bluetooth read %s", btstate)
@@ -353,7 +353,12 @@ async def read_loop(interval_minutes=2):
         lte_signal = False
         is_registered = False
         if not test_ping(1):
-            connected, lte_signal, is_registered = ready_or_connect(force=False)
+            connected, lte_signal, is_registered, lte_as_failed = ready_or_connect(force=False)
+            if lte_as_failed:
+                lte_failed += 1
+                if lte_failed > 30:
+                    logging.info("[LTE] Too many failed attempts, rebooting system...")
+                    subprocess.run(["sudo", "reboot"])
         else:
             connected = True
             lte_signal = is_lte_used() if connected else False

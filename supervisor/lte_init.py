@@ -103,9 +103,9 @@ def wlan0_has_internet(timeout=1) -> bool:
         return False
 
 
-def ready_or_connect(force=False) -> tuple[bool, bool]:
+def ready_or_connect(force=False) -> tuple[bool, bool, bool, int]:
     is_registered = False
-    failed = 0
+    lte_failed = False
     if wlan0_has_internet():
         logging.info("[LTE] WLAN0 already connected to internet.")
         try:
@@ -153,12 +153,9 @@ def ready_or_connect(force=False) -> tuple[bool, bool]:
     success = test_ping(target=PING_TARGET)
     if not success:
         logging.info("[LTE] ❌ LTE init. seems to have failed after PDP activation")
-        failed += 1
+        lte_failed = True
     logging.info("[LTE] ✅ LTE init. successful" if success else "[LTE] ❌ LTE init. failed")
-    if failed > 30:
-        logging.info("[LTE] Too many failed attempts, rebooting system...")
-        subprocess.run(["sudo", "reboot"])
-    return success, success, is_registered
+    return success, success, is_registered, lte_failed
 
 
 def is_lte_used(dest=PING_TARGET) -> bool:
