@@ -356,6 +356,7 @@ async def read_loop(interval_minutes=2):
             connected, lte_signal, is_registered, lte_as_failed = ready_or_connect(force=False)
             if lte_as_failed:
                 lte_failed += 1
+                logging.warning("[LTE] LTE connection failed, attempt #%d", lte_failed)
                 if lte_failed > 30:
                     logging.info("[LTE] Too many failed attempts, rebooting system...")
                     subprocess.run(["sudo", "reboot"])
