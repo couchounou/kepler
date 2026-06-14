@@ -28,6 +28,7 @@ class Btantarion:
         self.address = "00:0D:18:05:53:24"
         self.write_command = bytearray([0x4F, 0x4B])
         self.write_uuid = "00002af1-0000-1000-8000-00805f9b34fb"
+        self.scan_duration = 5
 
     def restart_bluetooth(self):
         """Restart Bluetooth and HCI UART module"""
@@ -68,17 +69,16 @@ class Btantarion:
         return True
 
     async def run(self, loop=90):
-        scan_task = asyncio.create_task(scan(target_address=self.scan_addresses, state_obj=self))
         errors = 0
         while True:
             try:
-                if scan_task.done():
-                    try:
-                        scan_task.result()
-                    except Exception as e:
-                        logging.error("[BTS] BTHome scan stopped unexpectedly: %s", e)
-                    logging.info("[BTS] Restarting BTHome scan task")
-                    scan_task = asyncio.create_task(scan(target_address=self.scan_addresses, state_obj=self))
+                if self.scan_addresses:
+                    logging.info("[BTS] BTHome scan for %d seconds before MPPT poll", self.scan_duration)
+                    await scan(
+                        target_address=self.scan_addresses,
+                        duration=self.scan_duration,
+                        state_obj=self
+                    )
 
                 logging.info("[BTS] -------> Tentative de connexion au MPPT... device: %s", self.address)
 
@@ -125,6 +125,7 @@ class Btantarion:
                             break
                         logging.info("[BTS] En écoute des notifications sur handle 0x000e...")
                         await asyncio.sleep(loop)
+                        break
             except Exception as e:
                 logging.error("Erreur Bleak : %s", e)
                 errors += 1
