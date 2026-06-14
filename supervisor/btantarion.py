@@ -3,7 +3,7 @@ import subprocess
 import logging
 import time
 from datetime import datetime
-from bleak import BleakClient, BleakScanner
+from bleak import BleakClient
 from tstbthome import scan
 
 
@@ -69,10 +69,6 @@ class Btantarion:
 
     async def run(self, loop=90):
         scan_task = asyncio.create_task(scan(target_address=self.scan_addresses, state_obj=self))
-        device = await self.find_device_with_timeout("regulator", timeout=40)
-        if device:
-            logging.info("[BTS] Device trouvé: %s", device.address)
-            self.address = device.address
         errors = 0
         while True:
             try:
@@ -198,24 +194,6 @@ class Btantarion:
         hex_str = data.hex()
         logging.info("[BTS] Notification reçue (handle: %s): %s ", handle, hex_str)
         self.parse_notification(data)
-
-    async def find_device_with_timeout(self, device_name, timeout=20):
-        logging.info("[BTS] Recherche devices sur hci0 for %d seconds...", timeout)
-        try:
-            devices = await BleakScanner.discover(timeout=timeout)
-            for device in devices:
-                logging.info("[BTS] Device: %s", device)
-                if device.name and device_name.lower() in device.name.lower():
-                    logging.info("[BTS] Device trouvé: %s", device.name)
-                    return device
-            logging.info("[BTS] Device %s non trouvé", device_name)
-            return None
-        except asyncio.TimeoutError:
-            logging.info("[BTS] Timeout: recherche dépassée")
-            return None
-        except Exception as e:
-            logging.info("[BTS] Erreur lors de la recherche des devices: %s", e)
-            return None
 
     def get_state(self):
         return self.state
