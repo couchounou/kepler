@@ -112,11 +112,11 @@ def ready_or_connect(force=False) -> tuple[bool, bool, bool, int]:
             is_registered = is_reg(serial.Serial(MODEM_PORT, BAUDRATE, timeout=1))
         except Exception as e:
             logging.info("[LTE] Error opening serial port: %s", e)
-        return True, False, is_registered
+        return True, False, is_registered, lte_failed
 
     if not force and test_ping(target=PING_TARGET):
         logging.info("[LTE] LTE already connected")
-        return True, True, True
+        return True, True, True, lte_failed
 
     logging.info("[LTE] LTE not connected, initializing...")
     try:
@@ -124,7 +124,7 @@ def ready_or_connect(force=False) -> tuple[bool, bool, bool, int]:
         time.sleep(1)
     except Exception as e:
         logging.info("[LTE] Error opening serial port: %s", e)
-        return False, False
+        return False, False, False, lte_failed
 
     send_at(ser, "AT")
     if not is_reg(ser) or force:
@@ -135,7 +135,7 @@ def ready_or_connect(force=False) -> tuple[bool, bool, bool, int]:
 
     if not wait_network_registration(ser):
         ser.close()
-        return False, False, False
+        return False, False, False, lte_failed
 
     resp = send_at(ser, "AT+CGACT=1,1", 1, log=True)
     if "OK" not in resp:
@@ -147,7 +147,8 @@ def ready_or_connect(force=False) -> tuple[bool, bool, bool, int]:
         logging.info("[LTE] Diagnostic: AT+CGDCONT? -> %s", send_at(ser, "AT+CGDCONT?"))
         reset_modem()
         ser.close()
-        return False, False, False
+        lte_failed = True
+        return False, False, False, lte_failed
     logging.info("[LTE] Activating PDP context: %s", resp)
     ser.close()
     success = test_ping(target=PING_TARGET)
