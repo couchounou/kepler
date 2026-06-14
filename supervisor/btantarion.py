@@ -28,7 +28,7 @@ class Btantarion:
         self.address = "00:0D:18:05:53:24"
         self.write_command = bytearray([0x4F, 0x4B])
         self.write_uuid = "00002af1-0000-1000-8000-00805f9b34fb"
-        self.scan_duration = 5
+        self.scan_duration = 45
 
     def restart_bluetooth(self):
         """Restart Bluetooth and HCI UART module"""
