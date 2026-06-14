@@ -42,7 +42,7 @@ logging.getLogger("bleak.backends.bluez").setLevel(logging.WARNING)
 logging.getLogger("org.bluez").setLevel(logging.WARNING)
 logging.info("Service démarré")
 
-SHELLY_MAC = "30:30:F9:E7:07:76"
+SHELLY_MAC = "C0:2C:ED:A8:EE:6E"
 SHELLY_MAC_2 = "7C:C6:B6:57:53:BA"
 POINTS = []
 BUCKET = None
@@ -390,7 +390,7 @@ async def read_loop(interval_minutes=2):
 
 
 SiteStatus_instance = SiteStatus(site_id="site_001")
-supervisor_bt = Btantarion()
+supervisor_bt = Btantarion(scan_addresses=[SHELLY_MAC])
 
 
 if __name__ == "__main__":

@@ -8,7 +8,7 @@ from tstbthome import scan
 
 
 class Btantarion:
-    def __init__(self):
+    def __init__(self, scan_addresses=None):
         self.state = {
             "charging_current": 0,
             "charging_capacity": 0,
@@ -22,6 +22,7 @@ class Btantarion:
             "bt_last_update": None,
             "bt_light": ""
         }
+        self.scan_addresses = [address.upper() for address in scan_addresses] if scan_addresses else None
         self.notif_14_buffer = ""
         self.restart_bluetooth()
         self.address = "00:0D:18:05:53:24"
@@ -67,6 +68,7 @@ class Btantarion:
         return True
 
     async def run(self, loop=90):
+        scan_task = asyncio.create_task(scan(target_address=self.scan_addresses, state_obj=self))
         device = await self.find_device_with_timeout("regulator", timeout=40)
         if device:
             logging.info("[BTS] Device trouvé: %s", device.address)
@@ -74,6 +76,14 @@ class Btantarion:
         errors = 0
         while True:
             try:
+                if scan_task.done():
+                    try:
+                        scan_task.result()
+                    except Exception as e:
+                        logging.error("[BTS] BTHome scan stopped unexpectedly: %s", e)
+                    logging.info("[BTS] Restarting BTHome scan task")
+                    scan_task = asyncio.create_task(scan(target_address=self.scan_addresses, state_obj=self))
+
                 logging.info("[BTS] -------> Tentative de connexion au MPPT... device: %s", self.address)
 
                 async with BleakClient(self.address, timeout=10.0) as client:
