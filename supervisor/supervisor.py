@@ -345,7 +345,12 @@ async def read_loop(interval_minutes=2):
         aux_volt = v_state.get("battery_voltage", 0.0)
         if aux_volt:
             logging.info("[MAIN] Calculating auxiliary SOC with voltage: %f", aux_volt)
-            aux_level = agm_soc(aux_volt, sh_state.get("temperature", 10))
+            # 💡 Sécurité : si la température reçue est None, on force 10 par défaut pour éviter le crash
+            temp_shelly = sh_state.get("temperature")
+            if temp_shelly is None:
+                temp_shelly = 10
+                
+            aux_level = agm_soc(aux_volt, temp_shelly)
             if aux_level:
                 SiteStatus_instance.update(
                     aux_level=aux_level
