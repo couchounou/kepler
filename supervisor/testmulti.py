@@ -19,8 +19,8 @@ class GlobalStateManager:
         self.bthome_parser = BTHomeBluetoothDeviceData()
         
         # Fenêtre de capture (ex: on n'accepte les données que les 15 premières secondes de chaque minute)
-        self.intervalle_ecoute_seconds = 60
-        self.duree_fenetre_seconds = 15
+        self.intervalle_ecoute_seconds = 120
+        self.duree_fenetre_seconds = 30
         
         # Stockage des états actuels
         self.victron_state = {}
