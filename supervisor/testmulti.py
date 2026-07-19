@@ -33,7 +33,7 @@ class GlobalStateManager:
         self.bthome_states = {} 
 
     def update_victron(self, advertise_data):
-        """Décode et stocke l'intégralité des attributs réels du régulateur Victron MPPT"""
+        """Décode et stocke l'intégralité des attributs officiels du régulateur Victron MPPT"""
         try:
             raw_data = None
             if advertise_data.manufacturer_data:
@@ -42,23 +42,25 @@ class GlobalStateManager:
                     break
 
             if raw_data:
+                # Décodage via la bibliothèque officielle
                 parsed = self.victron_parser.parse(raw_data)
                 
-                # 💡 Correction ici : 'get_charge_current' à la place de 'get_battery_current'
+                # 💡 MAJ avec les STRICTS BONNES MÉTHODES de la bibliothèque
                 self.victron_state.update({
                     "battery_voltage": parsed.get_battery_voltage(),
-                    "charge_current": parsed.get_charge_current(),  # Courant de charge (A)
-                    "solar_power": parsed.get_solar_power(),        # Puissance PV (W)
-                    "yield_today": parsed.get_yield_today(),        # Wh générés aujourd'hui
-                    "charge_state": parsed.get_charge_state()       # Statut numérique
+                    "battery_current": parsed.get_battery_current(), # Existe bien !
+                    "solar_power": parsed.get_pv_power(),            # C'est bien get_pv_power !
+                    "yield_today": parsed.get_yield_today(),
+                    "charge_state": parsed.get_charge_state()
                 })
                 
+                # Traduction de l'état de charge en texte
                 etats_charge = {0: "Off", 2: "Fault", 3: "Bulk", 4: "Absorption", 5: "Float"}
                 nom_etat = etats_charge.get(self.victron_state["charge_state"], f"Inconnu ({self.victron_state['charge_state']})")
 
                 print(
                     f"⚡ [STORE VICTRON] "
-                    f"Batterie: {self.victron_state['battery_voltage']}V / {self.victron_state['charge_current']}A | "
+                    f"Batterie: {self.victron_state['battery_voltage']}V / {self.victron_state['battery_current']}A | "
                     f"Panneaux: {self.victron_state['solar_power']}W | "
                     f"Rendement du jour: {self.victron_state['yield_today']}Wh | "
                     f"Statut: {nom_etat}"
@@ -67,7 +69,6 @@ class GlobalStateManager:
                 logger.warning("[VICTRON] Paquet reçu mais pas de données constructeur brutes trouvées.")
                 
         except Exception as e:
-            logger.error(f"Erreur stockage Victron : {e}")
 
     def update_bthome(self, mac_address: str, device_obj, advertise_data):
         """Décode et stocke les données d'un capteur BTHome (Shelly, etc.)"""
