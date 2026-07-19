@@ -33,7 +33,7 @@ class GlobalStateManager:
         self.bthome_states = {} 
 
     def update_victron(self, advertise_data):
-        """Décode et stocke l'intégralité des attributs du régulateur Victron"""
+        """Décode et stocke l'intégralité des attributs réels du régulateur Victron MPPT"""
         try:
             raw_data = None
             if advertise_data.manufacturer_data:
@@ -44,23 +44,21 @@ class GlobalStateManager:
             if raw_data:
                 parsed = self.victron_parser.parse(raw_data)
                 
-                # Mise à jour avec TOUTES les valeurs disponibles
+                # 💡 Correction ici : 'get_charge_current' à la place de 'get_battery_current'
                 self.victron_state.update({
                     "battery_voltage": parsed.get_battery_voltage(),
-                    "battery_current": parsed.get_battery_current(),
-                    "solar_power": parsed.get_solar_power(),
-                    "yield_today": parsed.get_yield_today(),
-                    "charge_state": parsed.get_charge_state()
+                    "charge_current": parsed.get_charge_current(),  # Courant de charge (A)
+                    "solar_power": parsed.get_solar_power(),        # Puissance PV (W)
+                    "yield_today": parsed.get_yield_today(),        # Wh générés aujourd'hui
+                    "charge_state": parsed.get_charge_state()       # Statut numérique
                 })
                 
-                # On formate un joli dictionnaire de texte pour l'état de charge (optionnel mais plus lisible)
                 etats_charge = {0: "Off", 2: "Fault", 3: "Bulk", 4: "Absorption", 5: "Float"}
                 nom_etat = etats_charge.get(self.victron_state["charge_state"], f"Inconnu ({self.victron_state['charge_state']})")
 
-                # Print propre et complet dans ton terminal
                 print(
                     f"⚡ [STORE VICTRON] "
-                    f"Batterie: {self.victron_state['battery_voltage']}V / {self.victron_state['battery_current']}A | "
+                    f"Batterie: {self.victron_state['battery_voltage']}V / {self.victron_state['charge_current']}A | "
                     f"Panneaux: {self.victron_state['solar_power']}W | "
                     f"Rendement du jour: {self.victron_state['yield_today']}Wh | "
                     f"Statut: {nom_etat}"
