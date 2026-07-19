@@ -120,8 +120,8 @@ async def main():
         # print(f"📡 [ANTENNE ACTIVE] Vu passer l'appareil : {mac_upper} (RSSI: {advertisement_data.rssi})")
         
         if mac_upper == VICTRON_MAC.upper():
-            # 💡 On passe 'device' ET 'advertisement_data'
-            manager.update_victron(device, advertisement_data)
+            # On ne passe que advertise_data
+            manager.update_victron(advertisement_data)
             
         elif mac_upper in [mac.upper() for mac in LISTE_MAC_BTHOME]:
             manager.update_bthome(mac_upper, device, advertisement_data)
