@@ -69,6 +69,7 @@ class GlobalStateManager:
                 logger.warning("[VICTRON] Paquet reçu mais pas de données constructeur brutes trouvées.")
                 
         except Exception as e:
+            logger.error(f"Erreur stockage Victron : {e}")
 
     def update_bthome(self, mac_address: str, device_obj, advertise_data):
         """Décode et stocke les données d'un capteur BTHome (Shelly, etc.)"""
