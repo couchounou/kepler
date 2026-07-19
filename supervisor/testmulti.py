@@ -16,40 +16,55 @@ logger = logging.getLogger("KeplerCentral")
 # CLASSE DE GESTION DES ÉTATS
 # =====================================================================
 class GlobalStateManager:
+
     def __init__(self, victron_key: str):
         # Initialisation des décodeurs
         self.victron_parser = SolarCharger(victron_key)
         self.bthome_parser = BTHomeBluetoothDeviceData()
         
-        # Stockage des états des équipements
+        # 💡 Stockage complet de TOUS les attributs Victron
         self.victron_state = {
             "battery_voltage": None,
+            "battery_current": None,
             "solar_power": None,
-            "updated_at": None
+            "yield_today": None,
+            "charge_state": None
         }
-        # Dictionnaire dynamique pour stocker plusieurs capteurs de température
         self.bthome_states = {} 
 
     def update_victron(self, advertise_data):
-        """Décode et stocke les données du régulateur Victron"""
+        """Décode et stocke l'intégralité des attributs du régulateur Victron"""
         try:
-            # 💡 Sous Windows, Bleak transmet un dictionnaire de manufacturer_data.
-            # Victron utilise l'ID de fabricant 0x02e1 ou similaire. On fusionne les données brutes.
             raw_data = None
             if advertise_data.manufacturer_data:
-                # On récupère le premier bloc de données binaires disponible
                 for manufacturer_id, data_bytes in advertise_data.manufacturer_data.items():
                     raw_data = data_bytes
                     break
 
             if raw_data:
-                # On passe les octets bruts (bytes) attendus par victron-ble
                 parsed = self.victron_parser.parse(raw_data)
+                
+                # Mise à jour avec TOUTES les valeurs disponibles
                 self.victron_state.update({
                     "battery_voltage": parsed.get_battery_voltage(),
-                    "solar_power": parsed.get_solar_power()
+                    "battery_current": parsed.get_battery_current(),
+                    "solar_power": parsed.get_solar_power(),
+                    "yield_today": parsed.get_yield_today(),
+                    "charge_state": parsed.get_charge_state()
                 })
-                print(f"⚡ [STORE VICTRON] Batterie: {self.victron_state['battery_voltage']}V | Solaire: {self.victron_state['solar_power']}W")
+                
+                # On formate un joli dictionnaire de texte pour l'état de charge (optionnel mais plus lisible)
+                etats_charge = {0: "Off", 2: "Fault", 3: "Bulk", 4: "Absorption", 5: "Float"}
+                nom_etat = etats_charge.get(self.victron_state["charge_state"], f"Inconnu ({self.victron_state['charge_state']})")
+
+                # Print propre et complet dans ton terminal
+                print(
+                    f"⚡ [STORE VICTRON] "
+                    f"Batterie: {self.victron_state['battery_voltage']}V / {self.victron_state['battery_current']}A | "
+                    f"Panneaux: {self.victron_state['solar_power']}W | "
+                    f"Rendement du jour: {self.victron_state['yield_today']}Wh | "
+                    f"Statut: {nom_etat}"
+                )
             else:
                 logger.warning("[VICTRON] Paquet reçu mais pas de données constructeur brutes trouvées.")
                 
