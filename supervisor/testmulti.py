@@ -30,10 +30,20 @@ class GlobalStateManager:
         # Dictionnaire dynamique pour stocker plusieurs capteurs de température
         self.bthome_states = {} 
 
-    def update_victron(self, advertise_data):
+    def update_victron(self, device_obj, advertise_data):
         """Décode et stocke les données du régulateur Victron"""
         try:
-            parsed = self.victron_parser.parse(advertise_data)
+            # 💡 On standardise l'objet pour victron-ble
+            service_info = BluetoothServiceInfoBleak.from_scan(
+                "local",
+                device_obj,
+                advertise_data,
+                0.0,
+                False
+            )
+            
+            # On passe l'objet complet au décodeur Victron
+            parsed = self.victron_parser.parse(service_info)
             self.victron_state.update({
                 "battery_voltage": parsed.get_battery_voltage(),
                 "solar_power": parsed.get_solar_power()
@@ -106,7 +116,8 @@ async def main():
         # print(f"📡 [ANTENNE ACTIVE] Vu passer l'appareil : {mac_upper} (RSSI: {advertisement_data.rssi})")
         
         if mac_upper == VICTRON_MAC.upper():
-            manager.update_victron(advertisement_data)
+            # 💡 On passe 'device' ET 'advertisement_data'
+            manager.update_victron(device, advertisement_data)
             
         elif mac_upper in [mac.upper() for mac in LISTE_MAC_BTHOME]:
             manager.update_bthome(mac_upper, device, advertisement_data)
