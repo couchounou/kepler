@@ -33,7 +33,7 @@ class GlobalStateManager:
         self.bthome_states = {} 
 
     def update_victron(self, advertise_data):
-        """Décode et stocke les attributs réels du régulateur Victron MPPT"""
+        """Décode et stocke les attributs réels du régulateur Victron MPPT via son dictionnaire de données"""
         try:
             raw_data = None
             if advertise_data.manufacturer_data:
@@ -42,27 +42,28 @@ class GlobalStateManager:
                     break
 
             if raw_data:
-                # Décodage via la bibliothèque officielle
-                parsed = self.victron_parser.parse(raw_data)
+                # 1. Décodage initial via la bibliothèque
+                parsed_object = self.victron_parser.parse(raw_data)
                 
-                # 💡 VRAIS ATTRIBUTS DIRECTS (Pas de fonctions, pas de get_)
+                # 2. 💡 LA SOLUTION DIRECTE : On extrait le dictionnaire standardisé complet
+                donnees_brutes = parsed_object.get_data()
+                
+                # 3. On met à jour notre dictionnaire interne de stockage de l'état
                 self.victron_state.update({
-                    "battery_voltage": parsed.battery_voltage,
-                    "battery_charging_current": parsed.battery_charging_current,
-                    "solar_power": parsed.solar_power,
-                    "yield_today": parsed.yield_today,
-                    "charge_state": parsed.charge_state
+                    "battery_voltage": donnees_brutes.get("battery_voltage"),
+                    "battery_charging_current": donnees_brutes.get("battery_charging_current"),
+                    "solar_power": donnees_brutes.get("solar_power"),
+                    "yield_today": donnees_brutes.get("yield_today"),
+                    "charge_state": donnees_brutes.get("charge_state")
                 })
                 
-                # Traduction texte du mode de fonctionnement
-                nom_etat = getattr(parsed.charge_state, "name", str(parsed.charge_state))
-
+                # Affichage propre dans ton terminal
                 print(
                     f"⚡ [STORE VICTRON] "
                     f"Batterie: {self.victron_state['battery_voltage']}V / {self.victron_state['battery_charging_current']}A | "
                     f"Panneaux: {self.victron_state['solar_power']}W | "
                     f"Rendement du jour: {self.victron_state['yield_today']}Wh | "
-                    f"Statut: {nom_etat}"
+                    f"Statut: {self.victron_state['charge_state']}"
                 )
             else:
                 logger.warning("[VICTRON] Paquet reçu mais pas de données constructeur brutes trouvées.")
