@@ -25,7 +25,7 @@ class GlobalStateManager:
         # 💡 Stockage complet de TOUS les attributs Victron
         self.victron_state = {
             "battery_voltage": None,
-            "battery_current": None,
+            "battery_charging_current": None,
             "solar_power": None,
             "yield_today": None,
             "charge_state": None
@@ -33,7 +33,7 @@ class GlobalStateManager:
         self.bthome_states = {} 
 
     def update_victron(self, advertise_data):
-        """Décode et stocke l'intégralité des attributs officiels du régulateur Victron MPPT"""
+        """Décode et stocke les attributs réels du régulateur Victron MPPT"""
         try:
             raw_data = None
             if advertise_data.manufacturer_data:
@@ -45,22 +45,21 @@ class GlobalStateManager:
                 # Décodage via la bibliothèque officielle
                 parsed = self.victron_parser.parse(raw_data)
                 
-                # 💡 MAJ avec les STRICTS BONNES MÉTHODES de la bibliothèque
+                # 💡 VRAIS ATTRIBUTS DIRECTS (Pas de fonctions, pas de get_)
                 self.victron_state.update({
-                    "battery_voltage": parsed.get_battery_voltage(),
-                    "battery_current": parsed.get_battery_current(), # Existe bien !
-                    "solar_power": parsed.get_pv_power(),            # C'est bien get_pv_power !
-                    "yield_today": parsed.get_yield_today(),
-                    "charge_state": parsed.get_charge_state()
+                    "battery_voltage": parsed.battery_voltage,
+                    "battery_charging_current": parsed.battery_charging_current,
+                    "solar_power": parsed.solar_power,
+                    "yield_today": parsed.yield_today,
+                    "charge_state": parsed.charge_state
                 })
                 
-                # Traduction de l'état de charge en texte
-                etats_charge = {0: "Off", 2: "Fault", 3: "Bulk", 4: "Absorption", 5: "Float"}
-                nom_etat = etats_charge.get(self.victron_state["charge_state"], f"Inconnu ({self.victron_state['charge_state']})")
+                # Traduction texte du mode de fonctionnement
+                nom_etat = getattr(parsed.charge_state, "name", str(parsed.charge_state))
 
                 print(
                     f"⚡ [STORE VICTRON] "
-                    f"Batterie: {self.victron_state['battery_voltage']}V / {self.victron_state['battery_current']}A | "
+                    f"Batterie: {self.victron_state['battery_voltage']}V / {self.victron_state['battery_charging_current']}A | "
                     f"Panneaux: {self.victron_state['solar_power']}W | "
                     f"Rendement du jour: {self.victron_state['yield_today']}Wh | "
                     f"Statut: {nom_etat}"
