@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import time
 from victron_ble.devices import SolarCharger
 from bthome_ble import BTHomeBluetoothDeviceData
 from home_assistant_bluetooth import BluetoothServiceInfoBleak
@@ -12,28 +13,29 @@ logging.basicConfig(
 )
 logger = logging.getLogger("KeplerCentral")
 
-# =====================================================================
-# CLASSE DE GESTION DES ÉTATS
-# =====================================================================
 class GlobalStateManager:
-
     def __init__(self, victron_key: str):
-        # Initialisation des décodeurs
         self.victron_parser = SolarCharger(victron_key)
         self.bthome_parser = BTHomeBluetoothDeviceData()
         
-        # 💡 Stockage complet de TOUS les attributs Victron
-        self.victron_state = {
-            "battery_voltage": None,
-            "battery_charging_current": None,
-            "solar_power": None,
-            "yield_today": None,
-            "charge_state": None
-        }
+        # Fenêtre de capture (ex: on n'accepte les données que les 15 premières secondes de chaque minute)
+        self.intervalle_ecoute_seconds = 60
+        self.duree_fenetre_seconds = 15
+        
+        # Stockage des états actuels
+        self.victron_state = {}
         self.bthome_states = {} 
 
+    def _est_dans_la_fenetre_d_ecoute(self) -> bool:
+        """Détermine si on est dans la fenêtre temporelle où on accepte de stocker"""
+        secondes_courantes = time.time() % self.intervalle_ecoute_seconds
+        return secondes_courantes < self.duree_fenetre_seconds
+
     def update_victron(self, advertise_data):
-        """Décode et stocke les données réelles et certifiées du régulateur Victron MPPT"""
+        """Décode et ne stocke le Victron que si on est dans la fenêtre ET que ça a changé"""
+        if not self._est_dans_la_fenetre_d_ecoute():
+            return  # On ignore le paquet pour économiser les calculs
+
         try:
             raw_data = None
             if advertise_data.manufacturer_data:
@@ -44,33 +46,29 @@ class GlobalStateManager:
             if raw_data:
                 parsed = self.victron_parser.parse(raw_data)
                 
-                # 💡 Utilisation des STRICTES méthodes listées par l'inspection
-                self.victron_state.update({
+                # Récupération des nouvelles valeurs
+                nouvelles_valeurs = {
                     "battery_voltage": parsed.get_battery_voltage(),
                     "battery_charging_current": parsed.get_battery_charging_current(),
                     "solar_power": parsed.get_solar_power(),
                     "yield_today": parsed.get_yield_today(),
-                    "charge_state": parsed.get_charge_state()
-                })
+                    "charge_state": getattr(parsed.get_charge_state(), "name", str(parsed.get_charge_state()))
+                }
                 
-                # On extrait le nom de l'énumération (ex: BULK) pour l'affichage
-                nom_etat = getattr(self.victron_state["charge_state"], "name", str(self.victron_state["charge_state"]))
-
-                print(
-                    f"⚡ [STORE VICTRON] "
-                    f"Batterie: {self.victron_state['battery_voltage']}V / {self.victron_state['battery_charging_current']}A | "
-                    f"Panneaux: {self.victron_state['solar_power']}W | "
-                    f"Rendement du jour: {self.victron_state['yield_today']}Wh | "
-                    f"Statut: {nom_etat}"
-                )
-            else:
-                logger.warning("[VICTRON] Paquet reçu mais pas de données constructeur brutes trouvées.")
-                
+                # 💡 FILTRE DE CHANGEMENT : On compare avec l'ancien état
+                if nouvelles_valeurs != self.victron_state:
+                    self.victron_state = nouvelles_valeurs
+                    print(
+                        f"⚡ [CHANGEMENT VICTRON] "
+                        f"Batterie: {self.victron_state['battery_voltage']}V / {self.victron_state['battery_charging_current']}A | "
+                        f"Panneaux: {self.victron_state['solar_power']}W | "
+                        f"Statut: {self.victron_state['charge_state']}"
+                    )
         except Exception as e:
             logger.error(f"Erreur stockage Victron : {e}")
 
     def update_bthome(self, mac_address: str, device_obj, advertise_data):
-        """Décode et stocke les données d'un capteur BTHome (Shelly, etc.)"""
+        """Décode et ne stocke le Shelly que si la valeur a changé (on n'applique pas la fenêtre de temps ici pour ne pas le rater)"""
         try:
             service_info = BluetoothServiceInfoBleak.from_scan(
                 "local", device_obj, advertise_data, 0.0, False
@@ -78,71 +76,46 @@ class GlobalStateManager:
             annotation = self.bthome_parser.update(service_info) 
             
             if annotation and annotation.entity_values:
-                # Extraction brute des nouvelles valeurs reçues
-                nouvelles_valeurs = {dev_key.key: sensor_val.native_value for dev_key, sensor_val in annotation.entity_values.items()}
+                valeurs_paquet = {dev_key.key: sensor_val.native_value for dev_key, sensor_val in annotation.entity_values.items()}
                 
-                # Si le capteur n'existe pas encore dans notre dictionnaire, on l'initialise
                 if mac_address not in self.bthome_states:
-                    self.bthome_states[mac_address] = {
-                        "name": annotation.title or "Capteur Inconnu",
-                        "temperature": None,
-                        "humidity": None,
-                        "illuminance": None,
-                        "battery": None
-                    }
+                    self.bthome_states[mac_address] = {"name": annotation.title or "Capteur", "temperature": None, "humidity": None, "illuminance": None, "battery": None}
                 
-                # Mise à jour partielle (uniquement ce que le paquet contient)
-                for cle, valeur in nouvelles_valeurs.items():
-                    if cle in self.bthome_states[mac_address]:
-                        if valeur is not None:
-                            self.bthome_states[mac_address][cle] = valeur
+                # On vérifie s'il y a du nouveau par rapport à ce qu'on a déjà en mémoire
+                un_changement = False
+                for cle, valeur in valeurs_paquet.items():
+                    if cle in self.bthome_states[mac_address] and self.bthome_states[mac_address][cle] != valeur:
+                        self.bthome_states[mac_address][cle] = valeur
+                        un_changement = True
                 
-                # Log de l'état actuel de ce capteur spécifique
-                s = self.bthome_states[mac_address]
-                print(f"🌡️ [STORE BTHOME] [{s['name']}] T°: {s['temperature']}°C | Hum: {s['humidity']}% | Lum: {s['illuminance']} lx | Bat: {s['battery']}%")
-                
+                # 💡 FILTRE DE CHANGEMENT : On ne print que s'il y a une vraie évolution
+                if un_changement:
+                    s = self.bthome_states[mac_address]
+                    print(f"🌡️ [CHANGEMENT BTHOME] [{s['name']}] T°: {s['temperature']}°C | Hum: {s['humidity']}% | Lum: {s['illuminance']} lx")
+                    
         except Exception as e:
             logger.error(f"Erreur stockage BTHome ({mac_address}) : {e}")
 
 
-# =====================================================================
-# PROGRAMME PRINCIPAL
-# =====================================================================
-
 # --- CONFIGURATION MATÉRIEL ---
 VICTRON_MAC = "FC:40:BC:FC:A8:D4"
 VICTRON_KEY = "8ebf134b9339e9524eb24979c5e87505"
-
-# Liste de tes adresses MAC BTHome à écouter
-LISTE_MAC_BTHOME = [
-    "C0:2C:ED:A8:EE:6E",  # Ton Shelly BLU actuel
-    # "00:11:22:33:44:55",  # (Exemple d'un deuxième capteur si tu en ajoutes un)
-]
-# ------------------------------
+LISTE_MAC_BTHOME = ["C0:2C:ED:A8:EE:6E"]
 
 async def main():
-    # Instanciation de notre classe de stockage
     manager = GlobalStateManager(victron_key=VICTRON_KEY)
-    
-    logger.info("Démarrage du superviseur Kepler (Victron + Multi-BTHome)...")
+    logger.info("Démarrage du superviseur Kepler (Optimisé : Fenêtré + Filtre de changement)...")
 
     def bleak_callback(device, advertisement_data):
         mac_upper = device.address.upper()
-        
-        # 💡 BIP DE VIE : Affiche TOUS les appareils détectés aux alentours
-        # print(f"📡 [ANTENNE ACTIVE] Vu passer l'appareil : {mac_upper} (RSSI: {advertisement_data.rssi})")
-        
         if mac_upper == VICTRON_MAC.upper():
-            # On ne passe que advertise_data
             manager.update_victron(advertisement_data)
-            
         elif mac_upper in [mac.upper() for mac in LISTE_MAC_BTHOME]:
             manager.update_bthome(mac_upper, device, advertisement_data)
 
     scanner = BleakScanner(detection_callback=bleak_callback, scanning_mode="active")
     await scanner.start()
     
-    # Boucle infinie pour maintenir le script en vie
     while True:
         await asyncio.sleep(1)
 
