@@ -30,25 +30,29 @@ class GlobalStateManager:
         # Dictionnaire dynamique pour stocker plusieurs capteurs de température
         self.bthome_states = {} 
 
-    def update_victron(self, device_obj, advertise_data):
+    def update_victron(self, advertise_data):
         """Décode et stocke les données du régulateur Victron"""
         try:
-            # 💡 On standardise l'objet pour victron-ble
-            service_info = BluetoothServiceInfoBleak.from_scan(
-                "local",
-                device_obj,
-                advertise_data,
-                0.0,
-                False
-            )
-            
-            # On passe l'objet complet au décodeur Victron
-            parsed = self.victron_parser.parse(service_info)
-            self.victron_state.update({
-                "battery_voltage": parsed.get_battery_voltage(),
-                "solar_power": parsed.get_solar_power()
-            })
-            print(f"⚡ [STORE VICTRON] Batterie: {self.victron_state['battery_voltage']}V | Solaire: {self.victron_state['solar_power']}W")
+            # 💡 Sous Windows, Bleak transmet un dictionnaire de manufacturer_data.
+            # Victron utilise l'ID de fabricant 0x02e1 ou similaire. On fusionne les données brutes.
+            raw_data = None
+            if advertise_data.manufacturer_data:
+                # On récupère le premier bloc de données binaires disponible
+                for manufacturer_id, data_bytes in advertise_data.manufacturer_data.items():
+                    raw_data = data_bytes
+                    break
+
+            if raw_data:
+                # On passe les octets bruts (bytes) attendus par victron-ble
+                parsed = self.victron_parser.parse(raw_data)
+                self.victron_state.update({
+                    "battery_voltage": parsed.get_battery_voltage(),
+                    "solar_power": parsed.get_solar_power()
+                })
+                print(f"⚡ [STORE VICTRON] Batterie: {self.victron_state['battery_voltage']}V | Solaire: {self.victron_state['solar_power']}W")
+            else:
+                logger.warning("[VICTRON] Paquet reçu mais pas de données constructeur brutes trouvées.")
+                
         except Exception as e:
             logger.error(f"Erreur stockage Victron : {e}")
 
