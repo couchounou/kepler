@@ -97,6 +97,22 @@ class GlobalStateManager:
         except Exception as e:
             logger.error(f"Erreur stockage BTHome ({mac_address}) : {e}")
 
+async def run_supervisor(victron_key, victron_mac, bthome_macs):
+    manager = GlobalStateManager(victron_key)
+    
+    def bleak_callback(device, advertisement_data):
+        mac_upper = device.address.upper()
+        if mac_upper == victron_mac.upper():
+            manager.update_victron(advertisement_data)
+        elif mac_upper in [mac.upper() for mac in bthome_macs]:
+            manager.update_bthome(mac_upper, device, advertisement_data)
+
+    scanner = BleakScanner(detection_callback=bleak_callback, scanning_mode="active")
+    await scanner.start()
+    logger.info("Superviseur Kepler démarré.")
+    
+    # On retourne le manager pour que l'autre module puisse le manipuler
+    return manager, scanner
 
 # --- CONFIGURATION MATÉRIEL ---
 VICTRON_MAC = "FC:40:BC:FC:A8:D4"

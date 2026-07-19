@@ -1,8 +1,8 @@
+import asyncio
 from asyncio import subprocess
 from datetime import datetime, UTC
 import configparser
 import os
-import asyncio
 import sys
 import math
 import logging
@@ -19,8 +19,9 @@ from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 from influxdb_client.client.exceptions import InfluxDBError
 from lte_init import is_lte_used, test_ping, ready_or_connect
-from btantarion import Btantarion
 
+# 💡 Importation de la nouvelle classe de stockage et du lanceur
+from testmulti import GlobalStateManager, BleakScanner
 
 stdout_handler = logging.StreamHandler(sys.stdout)
 stderr_handler = logging.StreamHandler(sys.stderr)
@@ -42,8 +43,13 @@ logging.getLogger("bleak.backends.bluez").setLevel(logging.WARNING)
 logging.getLogger("org.bluez").setLevel(logging.WARNING)
 logging.info("Service démarré")
 
+# --- CONFIGURATION MATÉRIEL ---
+VICTRON_MAC = "FC:40:BC:FC:A8:D4"
+VICTRON_KEY = "8ebf134b9339e9524eb24979c5e87505"
 SHELLY_MAC = "C0:2C:ED:A8:EE:6E"
 SHELLY_MAC_2 = "7C:C6:B6:57:53:BA"
+LISTE_MAC_BTHOME = [SHELLY_MAC, SHELLY_MAC_2]
+
 POINTS = []
 BUCKET = None
 ORG = None
@@ -313,32 +319,50 @@ async def read_loop(interval_minutes=2):
     every 'interval_minutes' minutes and prints the results.
     """
     global LAST_UPDATE
-    asyncio.create_task(supervisor_bt.run())
+    
+    # 1. 💡 INITIALISATION & LANCEMENT EN PARALLÈLE DU MANAGER BLE DANS LA BOUCLE D'ÉVÉNEMENTS
+    manager = GlobalStateManager(victron_key=VICTRON_KEY)
+    
+    def bleak_callback(device, advertisement_data):
+        mac_upper = device.address.upper()
+        if mac_upper == VICTRON_MAC.upper():
+            manager.update_victron(advertisement_data)
+        elif mac_upper in [mac.upper() for mac in LISTE_MAC_BTHOME]:
+            manager.update_bthome(mac_upper, device, advertisement_data)
+
+    scanner = BleakScanner(detection_callback=bleak_callback, scanning_mode="active")
+    await scanner.start()
+    logging.info("[MAIN] Scanner Bluetooth global initialisé en arrière-plan.")
+
     lte_failed = 0
     while True:
-        btstate = supervisor_bt.get_state()
-        logging.info("[MAIN] Bluetooth read %s", btstate)
+        # 2. 💡 RÉCUPÉRATION DIRECTE DE L'ÉTAT DU MANAGER EN ARRIÈRE-PLAN
+        v_state = manager.victron_state
+        sh_state = manager.bthome_states.get(SHELLY_MAC, {}) # Lecture du capteur principal
 
-        aux_volt = btstate.get("battery_voltage", 0.0)
+        logging.info("[MAIN] Bluetooth read Victron: %s | Shelly: %s", v_state, sh_state)
+
+        aux_volt = v_state.get("battery_voltage", 0.0)
         if aux_volt:
             logging.info("[MAIN] Calculating auxiliary SOC with voltage: %f", aux_volt)
-            aux_level = agm_soc(aux_volt, btstate.get("temperature_1", 10))
+            aux_level = agm_soc(aux_volt, sh_state.get("temperature", 10))
             if aux_level:
                 SiteStatus_instance.update(
                     aux_level=aux_level
                 )
 
+        # Extraction et alignement visuel respecté
         SiteStatus_instance.update(
             aux_voltage=aux_volt,
-            panel_voltage=btstate.get("panel_voltage", 0.0),
-            panel_power=btstate.get("charging_power", 0.0),
-            charging_current=btstate.get("charging_current", 0.0),
-            charging_capacity=btstate.get("charging_capacity", 0.0),
-            energy_daily=btstate.get("energy_daily", 0.0),
-            bt_temperature=btstate.get("bt_temperature", None),
-            bt_humidity=btstate.get("bt_humidity", None),
-            bt_last_update=btstate.get("bt_last_update", None),
-            bt_light_txt=btstate.get("bt_light", "")
+            panel_voltage=0.0, # Pas d'attribut de tension panneaux en BLE passif
+            panel_power=v_state.get("solar_power", 0.0),
+            charging_current=v_state.get("battery_charging_current", 0.0),
+            charging_capacity=0.0,
+            energy_daily=v_state.get("yield_today", 0.0),
+            bt_temperature=sh_state.get("temperature", None),
+            bt_humidity=sh_state.get("humidity", None),
+            bt_last_update=None,
+            bt_light_txt=str(sh_state.get("illuminance", ""))
             )
 
         logging.info("[MAIN] try Reading ADS1115 channels...")
@@ -390,7 +414,6 @@ async def read_loop(interval_minutes=2):
 
 
 SiteStatus_instance = SiteStatus(site_id="site_001")
-supervisor_bt = Btantarion(scan_addresses=[SHELLY_MAC])
 
 
 if __name__ == "__main__":
