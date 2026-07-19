@@ -33,7 +33,7 @@ class GlobalStateManager:
         self.bthome_states = {} 
 
     def update_victron(self, advertise_data):
-        """Crash-test pour inspecter les entrailles de l'objet Victron"""
+        """Décode et stocke les données réelles et certifiées du régulateur Victron MPPT"""
         try:
             raw_data = None
             if advertise_data.manufacturer_data:
@@ -44,28 +44,30 @@ class GlobalStateManager:
             if raw_data:
                 parsed = self.victron_parser.parse(raw_data)
                 
-                print("\n--- INSPECTION DU DÉCODEUR VICTRON ---")
-                print(f"Type exact de l'objet : {type(parsed)}")
+                # 💡 Utilisation des STRICTES méthodes listées par l'inspection
+                self.victron_state.update({
+                    "battery_voltage": parsed.get_battery_voltage(),
+                    "battery_charging_current": parsed.get_battery_charging_current(),
+                    "solar_power": parsed.get_solar_power(),
+                    "yield_today": parsed.get_yield_today(),
+                    "charge_state": parsed.get_charge_state()
+                })
                 
-                # 1. On liste TOUTES les méthodes et attributs de l'objet
-                print("\n[Attributs et méthodes disponibles] :")
-                for attr in dir(parsed):
-                    if not attr.startswith("_"):  # On cache les fonctions privées
-                        print(f" -> {attr}")
-                
-                # 2. On regarde s'il y a un dictionnaire de variables internes
-                if hasattr(parsed, "__dict__"):
-                    print("\n[Variables internes disponibles] :")
-                    for k, v in parsed.__dict__.items():
-                        print(f" -> {k}: {v}")
-                        
-                print("---------------------------------------\n")
-                
+                # On extrait le nom de l'énumération (ex: BULK) pour l'affichage
+                nom_etat = getattr(self.victron_state["charge_state"], "name", str(self.victron_state["charge_state"]))
+
+                print(
+                    f"⚡ [STORE VICTRON] "
+                    f"Batterie: {self.victron_state['battery_voltage']}V / {self.victron_state['battery_charging_current']}A | "
+                    f"Panneaux: {self.victron_state['solar_power']}W | "
+                    f"Rendement du jour: {self.victron_state['yield_today']}Wh | "
+                    f"Statut: {nom_etat}"
+                )
             else:
-                logger.warning("[VICTRON] Pas de données constructeur brutes.")
+                logger.warning("[VICTRON] Paquet reçu mais pas de données constructeur brutes trouvées.")
                 
         except Exception as e:
-            logger.error(f"❌ Erreur inspection Victron : {e}")
+            logger.error(f"Erreur stockage Victron : {e}")
 
     def update_bthome(self, mac_address: str, device_obj, advertise_data):
         """Décode et stocke les données d'un capteur BTHome (Shelly, etc.)"""
