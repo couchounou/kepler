@@ -62,6 +62,7 @@ class GlobalStateManager:
                         f"⚡ [CHANGEMENT VICTRON] "
                         f"Batterie: {self.victron_state['battery_voltage']}V / {self.victron_state['battery_charging_current']}A | "
                         f"Panneaux: {self.victron_state['solar_power']}W | "
+                        f"Rendement du jour: {self.victron_state['yield_today']}Wh | "
                         f"Statut: {self.victron_state['charge_state']}"
                     )
         except Exception as e:
