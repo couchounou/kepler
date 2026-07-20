@@ -186,6 +186,7 @@ class SiteStatus:
             "main_level": 0.0,
             "panel_voltage": 0.0,
             "panel_power": 0.0,
+            "charging_state": "Unknown",
             "charging_current": 0.0,
             "charging_capacity": 0.0,
             "water_level": 0.0,
@@ -219,9 +220,12 @@ class SiteStatus:
             if key in self.status:
                 logging.debug("[SiteStatus] Updating %s: %s", key, value)
                 try:
-                    self.status[key] = float(value)
+                    if key in ["charging_state"]:
+                        self.status[key] = str(value)
+                    else:
+                        self.status[key] = float(value)
                 except (ValueError, TypeError):
-                    logging.debug("[SiteStatus] Could not convert %s to float for key %s, setting as is.", value, key)
+                    logging.debug("[SiteStatus] Could not convert %s for key %s, setting as is.", value, key)
                     self.status[key] = value
             else:
                 raise KeyError(f"{key} n'est pas un champ valide")
@@ -244,7 +248,7 @@ class SiteStatus:
             if isinstance(value, str):
                 point = point.field(field, value)
             else:
-                if (float(value) == 0.0) and field in ["main_voltage", "aux_voltage", "bt_humidity"]:
+                if (float(value) == 0.0) and field in ["main_voltage", "aux_voltage", "bt_temperature", "bt_humidity"]:
                     continue
                 point = point.field(field, float(value))
         point = point.time(datetime.now(UTC))
@@ -359,10 +363,11 @@ async def read_loop(interval_minutes=2):
         # Extraction et alignement visuel respecté
         SiteStatus_instance.update(
             aux_voltage=aux_volt,
-            panel_voltage=0.0, # Pas d'attribut de tension panneaux en BLE passif
+            panel_voltage=v_state.get("panel_voltage", 0.0),
             panel_power=v_state.get("solar_power", 0.0),
             charging_current=v_state.get("battery_charging_current", 0.0),
             charging_capacity=0.0,
+            charging_state=v_state.get("charge_state", "Unknown"),
             energy_daily=v_state.get("yield_today", 0.0),
             bt_temperature=sh_state.get("temperature", None),
             bt_humidity=sh_state.get("humidity", None),

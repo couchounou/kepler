@@ -44,15 +44,22 @@ class GlobalStateManager:
                     break
 
             if raw_data:
+                # Récupération des nouvelles valeurs
                 parsed = self.victron_parser.parse(raw_data)
                 
-                # Récupération des nouvelles valeurs
+                # Pas d'attribut de tension panneaux en BLE passif
+                if parsed.get_solar_power() and parsed.get_battery_charging_current() > 0:
+                    panel_voltage = parsed.get_solar_power() / parsed.get_battery_charging_current()
+                else:
+                    panel_voltage = 0
+
                 nouvelles_valeurs = {
                     "battery_voltage": parsed.get_battery_voltage(),
                     "battery_charging_current": parsed.get_battery_charging_current(),
                     "solar_power": parsed.get_solar_power(),
                     "yield_today": parsed.get_yield_today(),
-                    "charge_state": getattr(parsed.get_charge_state(), "name", str(parsed.get_charge_state()))
+                    "charge_state": getattr(parsed.get_charge_state(), "name", str(parsed.get_charge_state())),
+                    "panel_voltage": panel_voltage,
                 }
                 
                 # 💡 FILTRE DE CHANGEMENT : On compare avec l'ancien état
