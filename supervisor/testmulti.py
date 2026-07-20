@@ -92,7 +92,7 @@ class GlobalStateManager:
                 # On vérifie s'il y a du nouveau par rapport à ce qu'on a déjà en mémoire
                 un_changement = False
                 for cle, valeur in valeurs_paquet.items():
-                    print(f"[DEBUG] BTHome {mac_address} - {cle}: {valeur}")
+                    # print(f"[DEBUG] BTHome {mac_address} - {cle}: {valeur}")
                     if cle in self.bthome_states[mac_address] and self.bthome_states[mac_address][cle] != valeur:
                         self.bthome_states[mac_address][cle] = valeur
                         un_changement = True
