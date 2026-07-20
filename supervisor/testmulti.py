@@ -87,7 +87,7 @@ class GlobalStateManager:
                 valeurs_paquet = {dev_key.key: sensor_val.native_value for dev_key, sensor_val in annotation.entity_values.items()}
                 
                 if mac_address not in self.bthome_states:
-                    self.bthome_states[mac_address] = {"name": annotation.title or "Capteur", "temperature": None, "humidity": None, "light_level": None, "battery": None}
+                    self.bthome_states[mac_address] = {"name": annotation.title or "Capteur", "temperature": None, "humidity": None, "light_level": 0, "battery": None}
                 
                 # On vérifie s'il y a du nouveau par rapport à ce qu'on a déjà en mémoire
                 un_changement = False
