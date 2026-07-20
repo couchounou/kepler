@@ -198,7 +198,7 @@ class SiteStatus:
             "bt_temperature": None,
             "bt_humidity": None,
             "bt_last_update": None,
-            "bt_light_txt": 0
+            "bt_light_txt": ""
         }
 
     def update(self, **kwargs):
@@ -220,7 +220,7 @@ class SiteStatus:
             if key in self.status:
                 logging.debug("[SiteStatus] Updating %s: %s", key, value)
                 try:
-                    if key in ["charging_state"]:
+                    if key in ["charging_state", "bt_light_txt"]:
                         self.status[key] = str(value)
                     else:
                         self.status[key] = float(value)
