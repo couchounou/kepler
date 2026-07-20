@@ -372,7 +372,7 @@ async def read_loop(interval_minutes=2):
             bt_temperature=sh_state.get("temperature", None),
             bt_humidity=sh_state.get("humidity", None),
             bt_last_update=None,
-            bt_light_txt=str(sh_state.get("illuminance", ""))
+            bt_light_txt=str(sh_state.get("light_level", ""))
             )
 
         logging.info("[MAIN] try Reading ADS1115 channels...")

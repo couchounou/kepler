@@ -87,7 +87,7 @@ class GlobalStateManager:
                 valeurs_paquet = {dev_key.key: sensor_val.native_value for dev_key, sensor_val in annotation.entity_values.items()}
                 
                 if mac_address not in self.bthome_states:
-                    self.bthome_states[mac_address] = {"name": annotation.title or "Capteur", "temperature": None, "humidity": None, "illuminance": None, "battery": None}
+                    self.bthome_states[mac_address] = {"name": annotation.title or "Capteur", "temperature": None, "humidity": None, "light_level": None, "battery": None}
                 
                 # On vérifie s'il y a du nouveau par rapport à ce qu'on a déjà en mémoire
                 un_changement = False
@@ -100,7 +100,7 @@ class GlobalStateManager:
                 # 💡 FILTRE DE CHANGEMENT : On ne print que s'il y a une vraie évolution
                 if un_changement:
                     s = self.bthome_states[mac_address]
-                    print(f"🌡️ [CHANGEMENT BTHOME] [{s['name']}] T°: {s['temperature']}°C | Hum: {s['humidity']}% | Lum: {s['illuminance']} lx")
+                    print(f"🌡️ [CHANGEMENT BTHOME] [{s['name']}] T°: {s['temperature']}°C | Hum: {s['humidity']}% | Lum: {s['light_level']} lx")
                     
         except Exception as e:
             logger.error(f"Erreur stockage BTHome ({mac_address}) : {e}")
