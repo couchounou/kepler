@@ -22,16 +22,32 @@ restart_rpiconnect() {
     USER_ID=$(id -u "$USER_NAME")
     export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/${USER_ID}/bus"
     
-    # Redémarrage du service utilisateur rpi-connect
     sudo -u "$USER_NAME" DBUS_SESSION_BUS_ADDRESS="$DBUS_SESSION_BUS_ADDRESS" \
         systemctl --user restart rpi-connect.service 2>/dev/null || pkill -f rpi-connectd || true
+}
+
+# ── Reset physique / AT du modem Air780E si freeze ─────────────────────────────
+reset_modem_hardware() {
+    echo "$(date) - [RECOVERY] Modem non fonctionnel. Envoi de AT+RESET..." | tee -a "$LOG_FILE"
+    python3 -c '
+import serial, time
+try:
+    ser = serial.Serial("'$MODEM_TTY'", 115200, timeout=1)
+    ser.write(b"AT+RESET\r\n")
+    time.sleep(1)
+    ser.close()
+    print("Reset AT envoyé au modem.")
+except Exception as e:
+    print("Erreur envoi AT+RESET:", e)
+' | tee -a "$LOG_FILE"
+    sleep 10
 }
 
 # ── Configuration eth0 et modem ───────────────────────────────────────────────
 init_backup_interface() {
     echo "$(date) - Initialisation eth0 et modem Air780E (SFR)..." | tee -a "$LOG_FILE"
 
-    # 1. Montage interface, IP fixe locale et réduction MTU pour le CGNAT SFR
+    # 1. Montage interface, IP fixe locale et MTU CGNAT SFR
     ip link set dev $BACKUP_DEV up
     ip link set dev $BACKUP_DEV mtu 1420 2>/dev/null
     ip addr add 192.168.10.2/24 dev $BACKUP_DEV 2>/dev/null
@@ -82,8 +98,14 @@ bascule_backup() {
     echo "nameserver 8.8.8.8"  > /etc/resolv.conf
     echo "nameserver 1.1.1.1" >> /etc/resolv.conf
 
-    # Laisser 5 secondes au réseau 4G pour ouvrir les routes
-    sleep 5
+    # Vérification que le ping passe sur eth0
+    sleep 3
+    if ! ping -c 2 -W 2 -I $BACKUP_DEV 8.8.8.8 &>/dev/null; then
+        echo "$(date) - [ATTENTION] eth0 ne repond pas. Tentative de Reset Modem..." | tee -a "$LOG_FILE"
+        reset_modem_hardware
+        init_backup_interface
+        ip route replace default via $BACKUP_GW dev $BACKUP_DEV metric 50 2>/dev/null
+    fi
 
     echo "$(date) - Reconnexion de Raspberry Pi Connect sur la 4G..." | tee -a "$LOG_FILE"
     restart_rpiconnect
@@ -126,6 +148,12 @@ while true; do
 
         if [ "$current_gw" = "primary" ]; then
             bascule_backup
+        else
+            # Si on est déjà sur backup mais que le ping eth0 échoue, on relance le modem
+            if ! ping -c 2 -W 2 -I $BACKUP_DEV 8.8.8.8 &>/dev/null; then
+                echo "$(date) - eth0 a perdu la connexion 4G. Re-initialisation..." | tee -a "$LOG_FILE"
+                bascule_backup
+            fi
         fi
     fi
     sleep $INTERVAL

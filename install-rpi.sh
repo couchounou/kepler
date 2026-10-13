@@ -45,6 +45,9 @@ TEMPLATE=~/kepler/services/kepler.service
 TARGET=/etc/systemd/system/kepler.service
 sudo sed "s|\$USER|${REAL_USER}|g" "$TEMPLATE" | sudo tee "$TARGET" > /dev/null
 
+sudo chmod +x "/home/$REAL_USER/kepler/supervisor/kepler-status"
+sudo ln -sf "/home/$REAL_USER/kepler/supervisor/kepler-status" /usr/local/bin/kepler-status
+
 
 sudo chmod +x ~/kepler/git-update.sh
 TEMPLATE=~/kepler/services/git-update.service

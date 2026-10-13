@@ -1,0 +1,30 @@
+#!/usr/bin/env python3
+import json
+import sys
+from pathlib import Path
+
+
+STATUS_FILE = Path("/run/kepler/status.json")
+
+
+def main():
+    try:
+        with STATUS_FILE.open(encoding="utf-8") as status_file:
+            snapshot = json.load(status_file)
+    except FileNotFoundError:
+        print(
+            "Aucun état Kepler disponible. Vérifiez que kepler.service tourne "
+            "et a terminé son premier cycle.",
+            file=sys.stderr
+        )
+        return 1
+    except (OSError, json.JSONDecodeError) as error:
+        print(f"Impossible de lire l'état Kepler : {error}", file=sys.stderr)
+        return 1
+
+    print(json.dumps(snapshot, indent=2, ensure_ascii=False))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -7,6 +7,7 @@ Type=idle
 User=root
 ExecStart=/home/$USER/kepler/venv/bin/python3 /home/$USER/kepler/supervisor/supervisor.py
 WorkingDirectory=/home/$USER/kepler/supervisor/
+RuntimeDirectory=kepler
 StandardOutput=journal
 StandardError=journal
 Restart=always

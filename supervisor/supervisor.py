@@ -2,10 +2,12 @@ import asyncio
 from asyncio import subprocess
 from datetime import datetime, UTC
 import configparser
+import json
 import os
 import sys
 import math
 import logging
+import tempfile
 try:
     import board
     import busio
@@ -64,6 +66,8 @@ R0 = 10000.0            # NTC à 25°C
 BETA = 3950.0           # Coefficient Beta
 T0 = 298.15             # 25°C en Kelvi
 LAST_UPDATE = None
+STATUS_DIRECTORY = "/run/kepler"
+STATUS_FILE = os.path.join(STATUS_DIRECTORY, "status.json")
 
 
 def lead_soc(voltage, temperature_c):
@@ -171,6 +175,35 @@ def ntc_temperature(voltage):
 def reboot_system():
     logging.info("[MAIN] Rebooting system...")
     subprocess.run(['sudo', 'reboot'], check=False)
+
+
+def write_status_snapshot():
+    temporary_path = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            dir=STATUS_DIRECTORY,
+            prefix=".status-",
+            suffix=".tmp",
+            delete=False
+        ) as status_file:
+            temporary_path = status_file.name
+            json.dump(
+                {
+                    "updated_at": datetime.now(UTC).isoformat(),
+                    "status": SiteStatus_instance.status
+                },
+                status_file,
+                ensure_ascii=False
+            )
+            status_file.write("\n")
+        os.chmod(temporary_path, 0o644)
+        os.replace(temporary_path, STATUS_FILE)
+    except OSError:
+        logging.exception("[MAIN] Could not publish the status snapshot.")
+        if temporary_path and os.path.exists(temporary_path):
+            os.unlink(temporary_path)
 
 
 class SiteStatus:
@@ -399,6 +432,7 @@ async def read_loop(interval_minutes=2):
             lte_signal = is_lte_used() if connected else False
         logging.info("[MAIN] Internet connected: %s via %s", connected, "LTE" if lte_signal else "WLAN0")
         SiteStatus_instance.update(lte_signal=lte_signal, lte_registered=is_registered)
+        write_status_snapshot()
         POINTS.append(SiteStatus_instance.to_point())
         SiteStatus_instance.reset()
         if connected:
