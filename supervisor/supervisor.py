@@ -180,6 +180,7 @@ def reboot_system():
 def write_status_snapshot():
     temporary_path = None
     try:
+        os.makedirs(STATUS_DIRECTORY, mode=0o755, exist_ok=True)
         with tempfile.NamedTemporaryFile(
             mode="w",
             encoding="utf-8",
@@ -203,7 +204,10 @@ def write_status_snapshot():
     except OSError:
         logging.exception("[MAIN] Could not publish the status snapshot.")
         if temporary_path and os.path.exists(temporary_path):
-            os.unlink(temporary_path)
+            try:
+                os.unlink(temporary_path)
+            except OSError:
+                logging.exception("[MAIN] Could not remove the temporary status snapshot.")
 
 
 class SiteStatus:
